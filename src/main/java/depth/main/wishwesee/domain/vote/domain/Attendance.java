@@ -1,5 +1,6 @@
-package depth.main.wishwesee.domain.invitation.domain;
+package depth.main.wishwesee.domain.vote.domain;
 
+import depth.main.wishwesee.domain.invitation.domain.Invitation;
 import depth.main.wishwesee.domain.user.domain.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
