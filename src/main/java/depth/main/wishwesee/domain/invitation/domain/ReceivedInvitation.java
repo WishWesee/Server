@@ -1,7 +1,8 @@
-package depth.main.wishwesee.domain.user.domain;
+package depth.main.wishwesee.domain.invitation.domain;
 
 import depth.main.wishwesee.domain.common.BaseEntity;
 import depth.main.wishwesee.domain.invitation.domain.Invitation;
+import depth.main.wishwesee.domain.user.domain.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
