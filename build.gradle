@@ -41,6 +41,9 @@ dependencies {
 	implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '2.1.0'
 	testImplementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-api', version: '2.1.0'
 
+	// AWS S3
+	implementation 'com.amazonaws:aws-java-sdk-s3:1.12.545'
+
 }
 
 tasks.named('test') {
