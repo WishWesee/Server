@@ -93,14 +93,7 @@ public class InvitationService {
     private Invitation createNewInvitation(InvitationReq invitationReq, MultipartFile cardImage,
                                            UserPrincipal userPrincipal, boolean isTemporary) {
         // S3에 카드 이미지 업로드
-        String cardImageUrl;
-
-        try {
-            cardImageUrl = cardImage != null ? s3Uploader.uploadFile(cardImage) : null;
-        } catch (Exception e) {
-            throw new DefaultException(ErrorCode.INVALID_FILE_PATH, "S3 업로드 중 오류가 발생했습니다.");
-        }
-
+        String cardImageUrl = uploadImageIfPresent(cardImage, null);
 
         User user = null;
         if(userPrincipal != null){
@@ -140,15 +133,9 @@ public class InvitationService {
         invitation.updateScheduleVoteClosed(invitationReq.isScheduleVoteClosed());
         invitation.updateAttendanceSurveyClosed(invitationReq.isAttendanceSurveyClosed());
 
-        String cardImageUrl;
-
-        try {
-            cardImageUrl = cardImage != null ? s3Uploader.uploadFile(cardImage) : null;
-        } catch (Exception e) {
-            throw new DefaultException(ErrorCode.INVALID_FILE_PATH, "S3 업로드 중 오류가 발생했습니다.");
-        }
-
-        invitation.updateCardImage(cardImageUrl);
+        // 기존 이미지와 다를 경우 삭제 및 이미지 업로드
+        String updatedCardImageUrl = uploadImageIfPresent(cardImage, invitation.getCardImage());
+        invitation.updateCardImage(updatedCardImageUrl);
 
         // 기존 블록 및 일정 투표 삭제 후 다시 추가
         blockRepository.deleteAllByInvitation(invitation);
@@ -212,24 +199,42 @@ public class InvitationService {
                         .build();
             } else if (blockReq instanceof PhotoBlockReq) {
                 // JSON에 명시된 photo 블록에 파일 매칭
+                String currentPhotoUrl = blockRepository.findExistingPhotoUrlBySequence(invitation.getId(), blockReq.getSequence()).orElse(null);
+                String newPhotoUrl = null;
+
                 if (photoImages != null && photoIndex < photoImages.size()) {
-                    PhotoBlockReq photoBlockReq = (PhotoBlockReq)blockReq;
-                    String photoUrl = s3Uploader.uploadFile(photoImages.get(photoIndex++));
-                    block = Photo.builder()
-                            .sequence(blockReq.getSequence())
-                            .image(photoUrl) // 업로드된 S3 URL 사용
-                            .invitation(invitation)
-                            .build();
-                } else {
-                    throw new DefaultException(ErrorCode.INVALID_PARAMETER, "photo 블록에 대한 이미지가 충분하지 않습니다.");
+                    newPhotoUrl = s3Uploader.uploadFile(photoImages.get(photoIndex++));
+                    deleteOldImageIfExists(currentPhotoUrl);
                 }
-            } else {
-                throw new DefaultException(ErrorCode.INVALID_PARAMETER, "지원되지 않는 블록 타입입니다.");
-            }
 
-            blockRepository.save(block);
+                block = Photo.builder()
+                        .sequence(blockReq.getSequence())
+                        .image(newPhotoUrl != null ? newPhotoUrl : currentPhotoUrl)
+                        .invitation(invitation)
+                        .build();
+            } else{
+            throw new DefaultException(ErrorCode.INVALID_PARAMETER, "지원되지 않는 블록 타입입니다.");
+        }
 
+        blockRepository.save(block);
+
+    }
+    }
+    private String uploadImageIfPresent(MultipartFile file, String oldImageUrl) {
+        if (file != null && !file.isEmpty()) {
+            String uploadedUrl = s3Uploader.uploadFile(file);
+            deleteOldImageIfExists(oldImageUrl);
+            return uploadedUrl;
+        }
+        return oldImageUrl;
+    }
+
+    private void deleteOldImageIfExists(String imageUrl) {
+        if (imageUrl != null && !imageUrl.isEmpty()) {
+            s3Uploader.deleteFile(imageUrl);
         }
     }
 }
+
+
 
