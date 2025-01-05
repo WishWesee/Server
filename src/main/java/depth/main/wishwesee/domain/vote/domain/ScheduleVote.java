@@ -3,6 +3,7 @@ package depth.main.wishwesee.domain.vote.domain;
 import depth.main.wishwesee.domain.invitation.domain.Invitation;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
@@ -27,5 +28,14 @@ public class ScheduleVote {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "invitation_id")
     private Invitation invitation;
+
+    @Builder
+    public ScheduleVote(LocalDate startDate, LocalTime startTime, LocalDate endDate, LocalTime endTime, Invitation invitation){
+        this.startDate = startDate;
+        this.startTime = startTime;
+        this.endDate = endDate;
+        this.endTime = endTime;
+        this.invitation = invitation;
+    }
 
 }
