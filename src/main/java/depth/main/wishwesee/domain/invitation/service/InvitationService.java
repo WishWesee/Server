@@ -33,22 +33,48 @@ public class InvitationService {
     private final VoteRepository voteRepository;
     private  final UserRepository userRepository;
     @Transactional
+    public ResponseEntity<?> saveTemporaryInvitation(InvitationReq invitationReq, MultipartFile cardImage, List<MultipartFile> photoImages, UserPrincipal userPrincipal){
+        // 사용자 인증 여부 확인
+        if(userPrincipal == null){
+            throw new DefaultException(ErrorCode.INVALID_AUTHENTICATION, "회원만 임시 저장이 가능합니다.");
+        }
+
+        // 공통 저장 로직 호출 (임시 저장 필드를 true로 설정)
+        Invitation invitation = saveOrUpdateInvitation(invitationReq, cardImage, photoImages, userPrincipal, true);
+
+        ApiResponse apiResponse = ApiResponse.builder()
+                .check(true)
+                .information("초대장이 임시 저장되었습니다.")
+                .build();
+        return ResponseEntity.ok(apiResponse);
+    }
+    @Transactional
     public ResponseEntity<?> publishInvitation(InvitationReq invitationReq, MultipartFile cardImage, List<MultipartFile> photoImages,
                                                        UserPrincipal userPrincipal) {
+        // 공통 저장 로직 호출 (임시 저장 필드를 false로 설정)
+        Invitation invitation = saveOrUpdateInvitation(invitationReq, cardImage, photoImages, userPrincipal, false);
 
+        ApiResponse apiResponse = ApiResponse.builder()
+                .check(true)
+                .information("초대장이 게시되었습니다.")
+                .build();
+        return ResponseEntity.ok(apiResponse);
+
+    }
+    private Invitation saveOrUpdateInvitation(InvitationReq invitationReq, MultipartFile cardImage, List<MultipartFile> photoImages, UserPrincipal userPrincipal, boolean isTemporary) {
         Invitation invitation;
 
-        if(invitationReq.getId() != null){
-            // 기존에 임시저장된 초대장이 있을 경우
-            invitation = invitationRepository.findById(invitationReq.getId())
+        if (invitationReq.getInvitationId() != null) {
+            // 기존 초대장 수정
+            invitation = invitationRepository.findById(invitationReq.getInvitationId())
                     .orElseThrow(() -> new DefaultException(ErrorCode.NOT_FOUND, "해당 초대장이 존재하지 않습니다."));
 
-            invitation.updateToPublished(); // 임시저장을 게시 상태로 변경
+            invitation.updateTempSaved(isTemporary);  // 임시 저장 여부 업데이트
             updateInvitationDetails(invitation, invitationReq, cardImage, photoImages);
 
-        } else{
-            // 새로운 초대장 생성
-            invitation = createNewInvitation(invitationReq, cardImage, userPrincipal);
+        } else {
+            // 새 초대장 생성
+            invitation = createNewInvitation(invitationReq, cardImage, userPrincipal, isTemporary);
             invitationRepository.save(invitation);
 
             // 블럭 데이터 저장
@@ -61,15 +87,11 @@ public class InvitationService {
                 saveScheduleVotes(invitationReq.getScheduleVotes(), invitation);
             }
         }
-
-        ApiResponse apiResponse = ApiResponse.builder()
-                .check(true)
-                .information("새로운 초대장이 생성되었습니다.")
-                .build();
-        return ResponseEntity.ok(apiResponse);
+        return invitation;
     }
 
-    private Invitation createNewInvitation(InvitationReq invitationReq, MultipartFile cardImage, UserPrincipal userPrincipal) {
+    private Invitation createNewInvitation(InvitationReq invitationReq, MultipartFile cardImage,
+                                           UserPrincipal userPrincipal, boolean isTemporary) {
         // S3에 카드 이미지 업로드
         String cardImageUrl;
 
@@ -89,7 +111,7 @@ public class InvitationService {
         return Invitation.builder()
                 .title(invitationReq.getTitle())
                 .cardImage(cardImageUrl)
-                .tempSaved(false)
+                .tempSaved(isTemporary)
                 .startDate(invitationReq.getStartDate())
                 .startTime(invitationReq.getStartTime())
                 .endDate(invitationReq.getEndDate())
@@ -132,8 +154,15 @@ public class InvitationService {
         blockRepository.deleteAllByInvitation(invitation);
         voteRepository.deleteAllByInvitation(invitation);
 
-        saveBlocks(invitationReq.getBlocks(), invitation, photoImages);
-        saveScheduleVotes(invitationReq.getScheduleVotes(), invitation);
+        // 블럭 데이터 저장
+        if (invitationReq.getBlocks() != null && !invitationReq.getBlocks().isEmpty()) {
+            saveBlocks(invitationReq.getBlocks(), invitation, photoImages);
+        }
+
+        // 일정 투표 데이터 저장
+        if (invitationReq.getScheduleVotes() != null && !invitationReq.getScheduleVotes().isEmpty()) {
+            saveScheduleVotes(invitationReq.getScheduleVotes(), invitation);
+        }
 
     }
 

@@ -85,8 +85,8 @@ public class Invitation extends BaseEntity{
         this.sender = sender;
     }
 
-    public void updateToPublished() {
-        tempSaved = false;
+    public void updateTempSaved(boolean isTemporary) {
+        tempSaved = isTemporary;
     }
 
     public void updateTitle(String title) {
@@ -133,4 +133,6 @@ public class Invitation extends BaseEntity{
     public void updateAttendanceSurveyClosed(boolean attendanceSurveyClosed) {
         this.attendanceSurveyClosed = attendanceSurveyClosed;
     }
+
+
 }
