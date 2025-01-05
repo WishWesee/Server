@@ -8,7 +8,7 @@ import java.time.LocalTime;
 import java.util.List;
 @Getter
 public class InvitationReq {
-    private Long id; // 초대장 ID (임시저장확인용)
+    private Long invitationId; // 초대장 ID (임시저장확인용)
     private String title; // 제목
     private boolean tempSaved; // 임시저장여부
     private LocalDate startDate; // 시작날짜

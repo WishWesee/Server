@@ -20,7 +20,7 @@ import java.util.List;
 @RequestMapping("/api/v1/invitation")
 public class InvitationController {
     private final InvitationService invitationService;
-    @PostMapping(consumes = {"multipart/form-data"})
+    @PostMapping(value = "/publish", consumes = {"multipart/form-data"})
     public ResponseEntity<?> createInvitation(
             @RequestPart("invitation")@Valid InvitationReq invitationReq,
             @RequestPart(value = "cardImage", required = false) MultipartFile cardImage,
@@ -29,5 +29,13 @@ public class InvitationController {
 
         return invitationService.publishInvitation(invitationReq, cardImage, photoImages, userPrincipal);
     }
+    @PostMapping(value = "/save-temporary", consumes = {"multipart/form-data"})
+    public ResponseEntity<?> saveTemporaryInvitation(
+            @RequestPart("invitation") @Valid InvitationReq invitationReq,
+            @RequestPart(value = "cardImage", required = false) MultipartFile cardImage,
+            @RequestPart(value = "photoImages", required = false) List<MultipartFile> photoImages,
+            @CurrentUser UserPrincipal userPrincipal) {
 
+        return invitationService.saveTemporaryInvitation(invitationReq, cardImage, photoImages, userPrincipal);
+    }
 }
