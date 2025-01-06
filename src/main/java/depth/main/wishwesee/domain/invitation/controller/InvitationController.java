@@ -25,9 +25,9 @@ import java.util.List;
 public class InvitationController {
     private final InvitationService invitationService;
     @Operation(summary = "초대장 작성 완료", description = "임시저장된 초대장 혹은 새로운 초대장 작성을 완료합니다.")
-    @PostMapping(value = "/publish", consumes = {"multipart/form-data"})
+    @PostMapping
     public ResponseEntity<?> createInvitation(
-            @Parameter(description = "초대장에 들어갈 데이터를 넣어주세요.(Schemas의 InvitationReq를 참고해주세요.", required = true) @RequestPart("invitation")@Valid InvitationReq invitationReq,
+            @Parameter(description = "초대장에 들어갈 데이터를 넣어주세요. Schemas의 InvitationReq를 참고해주세요.", required = true) @RequestPart("invitation")@Valid InvitationReq invitationReq,
             @Parameter(description = "초대장 카드 이미지를 넣어주세요.", required = true ) @RequestPart(value = "cardImage", required = true) MultipartFile cardImage,
             @Parameter(description = "초대장에 들어갈 사진 목록을 넣어주세요.", required = false) @RequestPart(value = "photoImages", required = false) List<MultipartFile> photoImages,
             @Parameter(description = "Accesstoken을 입력해주세요.", required = false) @CurrentUser UserPrincipal userPrincipal){
@@ -35,9 +35,9 @@ public class InvitationController {
         return invitationService.publishInvitation(invitationReq, cardImage, photoImages, userPrincipal);
     }
     @Operation(summary = "초대장 임시 저장", description = "임시저장된 초대장 혹은 새로운 초대장을 임시저장합니다.")
-    @PostMapping(value = "/save-temporary", consumes = {"multipart/form-data"})
+    @PostMapping(value = "/save-temporary")
     public ResponseEntity<?> saveTemporaryInvitation(
-            @Parameter(description = "초대장에 들어갈 데이터를 넣어주세요.(Schemas의 InvitationReq를 참고해주세요.", required = true) @RequestPart("invitation") @Valid InvitationReq invitationReq,
+            @Parameter(description = "초대장에 들어갈 데이터를 넣어주세요. Schemas의 InvitationReq를 참고해주세요.", required = true) @RequestPart("invitation") @Valid InvitationReq invitationReq,
             @Parameter(description = "초대장 카드 이미지를 넣어주세요.", required = false ) @RequestPart(value = "cardImage", required = false) MultipartFile cardImage,
             @Parameter(description = "초대장에 들어갈 사진 목록을 넣어주세요.", required = false) @RequestPart(value = "photoImages", required = false) List<MultipartFile> photoImages,
             @Parameter(description = "Accesstoken을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal) {
