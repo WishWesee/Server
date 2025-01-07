@@ -3,15 +3,18 @@ package depth.main.wishwesee.domain.invitation.service;
 import depth.main.wishwesee.domain.content.domain.*;
 import depth.main.wishwesee.domain.content.domain.repository.BlockRepository;
 import depth.main.wishwesee.domain.content.dto.request.*;
+import depth.main.wishwesee.domain.content.dto.response.*;
 import depth.main.wishwesee.domain.invitation.domain.Invitation;
 import depth.main.wishwesee.domain.invitation.domain.repository.InvitationRepository;
 import depth.main.wishwesee.domain.invitation.dto.request.InvitationReq;
+import depth.main.wishwesee.domain.invitation.dto.response.CompletedInvitationRes;
 import depth.main.wishwesee.domain.s3.service.S3Uploader;
 import depth.main.wishwesee.domain.user.domain.User;
 import depth.main.wishwesee.domain.user.domain.repository.UserRepository;
 import depth.main.wishwesee.domain.vote.domain.ScheduleVote;
 import depth.main.wishwesee.domain.vote.domain.repository.VoteRepository;
 import depth.main.wishwesee.domain.vote.dto.request.ScheduleVoteReq;
+import depth.main.wishwesee.domain.vote.dto.response.ScheduleVoteRes;
 import depth.main.wishwesee.global.config.security.token.UserPrincipal;
 import depth.main.wishwesee.global.exception.DefaultException;
 import depth.main.wishwesee.global.payload.ApiResponse;
@@ -234,6 +237,82 @@ public class InvitationService {
             s3Uploader.deleteFile(imageUrl);
         }
     }
+
+    public ResponseEntity<?> getCompletedInvitation(Long id, UserPrincipal userPrincipal) {
+        // 초대장 조회
+        Invitation invitation = invitationRepository.findById(id)
+                .orElseThrow(() -> new DefaultException(ErrorCode.NOT_FOUND, "해당 초대장이 존재하지 않습니다."));
+
+        // 초대장의 모든 블록 조회
+        List<Block> allBlocks = blockRepository.findByInvitationId(invitation.getId());
+
+        List<BlockRes> blockResList = allBlocks.stream()
+                .map(block -> {
+                    if (block instanceof Photo photoBlock) {
+                        return PhotoBlockRes.builder()
+                                .sequence(photoBlock.getSequence())
+                                .image(photoBlock.getImage())
+                                .build();
+                    } else if (block instanceof Text textBlock) {
+                        return TextBlockRes.builder()
+                                .sequence(textBlock.getSequence())
+                                .content(textBlock.getContent())
+                                .build();
+                    } else if (block instanceof Box boxBlock) {
+                        return BoxBlockRes.builder()
+                                .sequence(boxBlock.getSequence())
+                                .title(boxBlock.getTitle())
+                                .content(boxBlock.getContent())
+                                .color(boxBlock.getColor())
+                                .build();
+                    } else if (block instanceof TimeTable timeTableBlock) {
+                        return TimeTableBlockRes.builder()
+                                .sequence(timeTableBlock.getSequence())
+                                .content(timeTableBlock.getContent())
+                                .build();
+                    } else {
+                        throw new DefaultException(ErrorCode.INVALID_PARAMETER, "지원되지 않는 블록 타입입니다.");
+                    }
+                }).toList();
+
+        // 일정 투표 리스트 조회
+        List<ScheduleVote> scheduleVotes = voteRepository.findByInvitationId(invitation.getId());
+
+        List<ScheduleVoteRes> scheduleVoteResList = scheduleVotes.stream()
+                .map(vote -> ScheduleVoteRes.builder()
+                        .startDate(vote.getStartDate())
+                        .startTime(vote.getStartTime())
+                        .endDate(vote.getEndDate())
+                        .endTime(vote.getEndTime())
+                        .build())
+                .toList();
+
+        // 응답 DTO 생성
+        CompletedInvitationRes response = CompletedInvitationRes.builder()
+                .invitationId(invitation.getId())
+                .title(invitation.getTitle())
+                .cardImage(invitation.getCardImage())
+                .tempSaved(invitation.isTempSaved())
+                .startDate(invitation.getStartDate())
+                .startTime(invitation.getStartTime())
+                .endDate(invitation.getEndDate())
+                .endTime(invitation.getEndTime())
+                .location(invitation.getLocation())
+                .address(invitation.getAddress())
+                .mapLink(invitation.getMapLink())
+                .mapViewType(invitation.getMapViewType())
+                .voteDeadline(invitation.getVoteDeadline())
+                .attendanceSurveyEnabled(invitation.isAttendanceSurveyEnabled())
+                .scheduleVoteMultiple(invitation.isScheduleVoteMultiple())
+                .scheduleVoteClosed(invitation.isScheduleVoteClosed())
+                .attendanceSurveyClosed(invitation.isAttendanceSurveyClosed())
+                .blocks(blockResList)
+                .scheduleVotes(scheduleVoteResList)
+                .build();
+
+        return ResponseEntity.ok(response);
+    }
+
 }
 
 

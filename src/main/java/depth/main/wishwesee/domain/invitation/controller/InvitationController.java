@@ -10,10 +10,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -43,5 +40,14 @@ public class InvitationController {
             @Parameter(description = "Accesstoken을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal) {
 
         return invitationService.saveTemporaryInvitation(invitationReq, cardImage, photoImages, userPrincipal);
+    }
+
+    @Operation(summary = "완성된 초대장 조회", description = "완성된 초대장의 ID를 통해 초대장의 상세 정보를 조회합니다.")
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getCompletedInvitation(
+            @Parameter(description = "조회할 완성된 초대장의 ID", required = true) @PathVariable Long id,
+            @Parameter(description = "Accesstoken을 입력해주세요.", required = false) @CurrentUser UserPrincipal userPrincipal) {
+
+        return invitationService.getCompletedInvitation(id, userPrincipal);
     }
 }

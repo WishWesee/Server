@@ -13,6 +13,7 @@ import java.util.List;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Getter
 public class TimeTable extends Block {
     @Convert(converter = TimeTableEntryListConverter.class) // JSON 변환기 설정
     private List<TimeTableEntry> content; // 타임테이블 내용
