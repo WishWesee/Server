@@ -31,7 +31,12 @@ public class InvitationService {
         Invitation invitation = invitationRepository.findById(invitationId)
                 .orElseThrow(() -> new DefaultException(ErrorCode.NOT_FOUND, "해당 초대장이 존재하지 않습니다."));
 
-        // 3. 중복 확인 (초대장이 이미 저장된 경우 예외 발생)
+        // 작성자 본인 확인
+        if(invitation.getSender().getId().equals(receiver.getId())){
+            throw new DefaultException(ErrorCode.INVALID_PARAMETER, "본인이 작성한 초대장은 저장할 수 없습니다.");
+        }
+
+        // 중복 확인 (초대장이 이미 저장된 경우 예외 발생)
         boolean alreadyExists = receivedInvitationRepository.existsByReceiverAndInvitation(receiver, invitation);
         if (alreadyExists) {
             throw new DefaultException(ErrorCode.DUPLICATE_ERROR, "이미 내 목록에 저장된 초대장입니다.");
