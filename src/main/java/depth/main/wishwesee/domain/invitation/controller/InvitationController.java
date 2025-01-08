@@ -1,6 +1,6 @@
 package depth.main.wishwesee.domain.invitation.controller;
 
-import depth.main.wishwesee.domain.invitation.dto.req.CreateFeedbackReq;
+import depth.main.wishwesee.domain.invitation.dto.request.CreateFeedbackReq;
 import depth.main.wishwesee.domain.invitation.dto.request.InvitationReq;
 import depth.main.wishwesee.domain.invitation.service.FeedbackService;
 import depth.main.wishwesee.global.config.security.token.CurrentUser;
@@ -20,7 +20,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.net.URI;
 import java.util.Optional;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

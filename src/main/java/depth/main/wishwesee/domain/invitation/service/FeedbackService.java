@@ -4,7 +4,7 @@ import depth.main.wishwesee.domain.invitation.domain.Feedback;
 import depth.main.wishwesee.domain.invitation.domain.ReceivedInvitation;
 import depth.main.wishwesee.domain.invitation.domain.repository.FeedbackRepository;
 import depth.main.wishwesee.domain.invitation.domain.repository.ReceivedInvitationRepository;
-import depth.main.wishwesee.domain.invitation.dto.req.CreateFeedbackReq;
+import depth.main.wishwesee.domain.invitation.dto.request.CreateFeedbackReq;
 import depth.main.wishwesee.domain.s3.service.S3Uploader;
 import depth.main.wishwesee.domain.user.domain.User;
 import depth.main.wishwesee.domain.user.domain.repository.UserRepository;
@@ -59,7 +59,10 @@ public class FeedbackService {
 
 
     // 후기 삭제
+
+
     // 후기 조회
+    // 후기 리스트 + 작성자 본인 여부, 총 후기의 개수 전달
 
     private User validateUserById(Long userId) {
         Optional<User> userOptional = userRepository.findById(userId);

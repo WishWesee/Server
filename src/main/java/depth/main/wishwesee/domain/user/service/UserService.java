@@ -2,7 +2,7 @@ package depth.main.wishwesee.domain.user.service;
 
 import depth.main.wishwesee.domain.user.domain.User;
 import depth.main.wishwesee.domain.user.domain.repository.UserRepository;
-import depth.main.wishwesee.domain.user.dto.res.UserProfileRes;
+import depth.main.wishwesee.domain.user.dto.response.UserProfileRes;
 import depth.main.wishwesee.global.DefaultAssert;
 import depth.main.wishwesee.global.config.security.token.UserPrincipal;
 import depth.main.wishwesee.global.payload.ApiResponse;

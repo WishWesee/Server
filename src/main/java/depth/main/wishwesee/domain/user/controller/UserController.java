@@ -1,6 +1,5 @@
 package depth.main.wishwesee.domain.user.controller;
 
-import depth.main.wishwesee.domain.invitation.dto.req.CreateFeedbackReq;
 import depth.main.wishwesee.domain.user.service.UserService;
 import depth.main.wishwesee.global.config.security.token.CurrentUser;
 import depth.main.wishwesee.global.config.security.token.UserPrincipal;
@@ -14,9 +13,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.util.Optional;
 
 @RequiredArgsConstructor
 @RestController
