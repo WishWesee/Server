@@ -4,7 +4,9 @@ import depth.main.wishwesee.domain.content.domain.*;
 import depth.main.wishwesee.domain.content.domain.repository.BlockRepository;
 import depth.main.wishwesee.domain.content.dto.request.*;
 import depth.main.wishwesee.domain.invitation.domain.Invitation;
+import depth.main.wishwesee.domain.invitation.domain.ReceivedInvitation;
 import depth.main.wishwesee.domain.invitation.domain.repository.InvitationRepository;
+import depth.main.wishwesee.domain.invitation.domain.repository.ReceivedInvitationRepository;
 import depth.main.wishwesee.domain.invitation.dto.request.InvitationReq;
 import depth.main.wishwesee.domain.s3.service.S3Uploader;
 import depth.main.wishwesee.domain.user.domain.User;
@@ -15,6 +17,7 @@ import depth.main.wishwesee.domain.vote.dto.request.ScheduleVoteReq;
 import depth.main.wishwesee.global.config.security.token.UserPrincipal;
 import depth.main.wishwesee.global.exception.DefaultException;
 import depth.main.wishwesee.global.payload.ErrorCode;
+import depth.main.wishwesee.global.payload.ErrorResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,7 +36,8 @@ public class InvitationService {
     private final BlockRepository blockRepository;
     private final VoteRepository voteRepository;
     private  final UserRepository userRepository;
-    @Transactional
+    private final ReceivedInvitationRepository receivedInvitationRepository;
+
     public ResponseEntity<?> saveTemporaryInvitation(InvitationReq invitationReq, MultipartFile cardImage, List<MultipartFile> photoImages, UserPrincipal userPrincipal){
         // 사용자 인증 여부 확인
         if(userPrincipal == null){
@@ -208,12 +212,27 @@ public class InvitationService {
                         .image(newPhotoUrl != null ? newPhotoUrl : currentPhotoUrl)
                         .invitation(invitation)
                         .build();
-            } else{
-            throw new DefaultException(ErrorCode.INVALID_PARAMETER, "지원되지 않는 블록 타입입니다.");
+            } else {
+                throw new DefaultException(ErrorCode.INVALID_PARAMETER, "지원되지 않는 블록 타입입니다.");
+            }
+            blockRepository.save(block);
         }
-    private final InvitationRepository invitationRepository;
-    private final UserRepository userRepository;
-    private final ReceivedInvitationRepository receivedInvitationRepository;
+    }
+    private String uploadImageIfPresent(MultipartFile file, String oldImageUrl) {
+        if (file != null && !file.isEmpty()) {
+            String uploadedUrl = s3Uploader.uploadFile(file);
+            deleteOldImageIfExists(oldImageUrl);
+            return uploadedUrl;
+        }
+        return oldImageUrl;
+    }
+
+    private void deleteOldImageIfExists(String imageUrl) {
+        if (imageUrl != null && !imageUrl.isEmpty()) {
+            s3Uploader.deleteFile(imageUrl);
+        }
+    }
+
     @Transactional
     public ResponseEntity<?> saveReceivedInvitation(Long invitationId, UserPrincipal userPrincipal) {
         // 현재 사용자 정보 가져오기
@@ -246,26 +265,8 @@ public class InvitationService {
 
         return ResponseEntity.noContent().build();
     }
-}
 
-        blockRepository.save(block);
 
-    }
-    }
-    private String uploadImageIfPresent(MultipartFile file, String oldImageUrl) {
-        if (file != null && !file.isEmpty()) {
-            String uploadedUrl = s3Uploader.uploadFile(file);
-            deleteOldImageIfExists(oldImageUrl);
-            return uploadedUrl;
-        }
-        return oldImageUrl;
-    }
-
-    private void deleteOldImageIfExists(String imageUrl) {
-        if (imageUrl != null && !imageUrl.isEmpty()) {
-            s3Uploader.deleteFile(imageUrl);
-        }
-    }
 }
 
 
