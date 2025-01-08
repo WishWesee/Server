@@ -1,6 +1,7 @@
 package depth.main.wishwesee.domain.invitation.controller;
 
 import depth.main.wishwesee.domain.invitation.dto.req.CreateFeedbackReq;
+import depth.main.wishwesee.domain.invitation.dto.request.InvitationReq;
 import depth.main.wishwesee.domain.invitation.service.FeedbackService;
 import depth.main.wishwesee.global.config.security.token.CurrentUser;
 import depth.main.wishwesee.global.config.security.token.UserPrincipal;
