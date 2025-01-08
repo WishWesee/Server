@@ -1,6 +1,7 @@
 package depth.main.wishwesee.domain.invitation.service;
 
 import depth.main.wishwesee.domain.invitation.domain.Feedback;
+import depth.main.wishwesee.domain.invitation.domain.Invitation;
 import depth.main.wishwesee.domain.invitation.domain.ReceivedInvitation;
 import depth.main.wishwesee.domain.invitation.domain.repository.FeedbackRepository;
 import depth.main.wishwesee.domain.invitation.domain.repository.ReceivedInvitationRepository;
@@ -10,12 +11,14 @@ import depth.main.wishwesee.domain.user.domain.User;
 import depth.main.wishwesee.domain.user.domain.repository.UserRepository;
 import depth.main.wishwesee.global.DefaultAssert;
 import depth.main.wishwesee.global.config.security.token.UserPrincipal;
+import depth.main.wishwesee.global.payload.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.security.InvalidParameterException;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -34,13 +37,13 @@ public class FeedbackService {
     public void saveFeedback(UserPrincipal userPrincipal, Long receivedInvitationId, Optional<MultipartFile> image, CreateFeedbackReq createFeedbackReq) {
         User user = validateUserById(userPrincipal.getId());
         ReceivedInvitation receivedInvitation = validateReceivedInvitation(receivedInvitationId);
-        DefaultAssert.isTrue(receivedInvitation.getReceiver() == user, "내가 받은 초대장이 아닙니다.");
+        DefaultAssert.isTrue(receivedInvitation.getReceiver() == user || receivedInvitation.getInvitation().getSender() == user, "잘못된 접근입니다.");
         String imageUrl = uploadImageIfPresent(image);
         String content = validateContentIfPresent(createFeedbackReq);
         Feedback feedback = Feedback.builder()
                 .image(imageUrl)
                 .content(content)
-                .invitation(receivedInvitation.getInvitation())
+                .receivedInvitation(receivedInvitation)
                 .build();
         feedbackRepository.save(feedback);
     }
@@ -62,7 +65,7 @@ public class FeedbackService {
 
 
     // 후기 조회
-    // 후기 리스트 + 작성자 본인 여부, 총 후기의 개수 전달
+
 
     private User validateUserById(Long userId) {
         Optional<User> userOptional = userRepository.findById(userId);
