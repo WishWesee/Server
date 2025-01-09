@@ -2,7 +2,6 @@ package depth.main.wishwesee.domain.invitation.service;
 
 import depth.main.wishwesee.domain.invitation.domain.Feedback;
 import depth.main.wishwesee.domain.invitation.domain.Invitation;
-import depth.main.wishwesee.domain.invitation.domain.ReceivedInvitation;
 import depth.main.wishwesee.domain.invitation.domain.repository.FeedbackRepository;
 import depth.main.wishwesee.domain.invitation.domain.repository.InvitationRepository;
 import depth.main.wishwesee.domain.invitation.domain.repository.ReceivedInvitationRepository;
@@ -24,7 +23,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.security.InvalidParameterException;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -59,7 +57,9 @@ public class FeedbackService {
     }
 
     private String uploadImageIfPresent(Optional<MultipartFile> image) {
-        return (image != null && image.isPresent()) ? s3Uploader.uploadFile(image.get()) : null;
+        return image.filter(file -> !file.isEmpty())
+                .map(s3Uploader::uploadFile)
+                .orElse(null);
     }
 
     private String validateContentIfPresent(CreateFeedbackReq createFeedbackReq) {
@@ -109,13 +109,13 @@ public class FeedbackService {
 
     private User validateUserById(Long userId) {
         Optional<User> userOptional = userRepository.findById(userId);
-        DefaultAssert.isOptionalPresent(userOptional);
+        DefaultAssert.isOptionalPresent(userOptional, "사용자가 존재하지 않습니다.");
         return userOptional.get();
     }
 
     private Invitation validateInvitationById(Long invitationId) {
         Optional<Invitation> invitationOptional = invitationRepository.findById(invitationId);
-        DefaultAssert.isOptionalPresent(invitationOptional);
+        DefaultAssert.isOptionalPresent(invitationOptional, "초대장이 존재하지 않습니다.");
         return invitationOptional.get();
     }
 }
