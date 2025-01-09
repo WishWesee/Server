@@ -6,6 +6,8 @@ import depth.main.wishwesee.domain.invitation.domain.ReceivedInvitation;
 import depth.main.wishwesee.domain.invitation.domain.repository.FeedbackRepository;
 import depth.main.wishwesee.domain.invitation.domain.repository.ReceivedInvitationRepository;
 import depth.main.wishwesee.domain.invitation.dto.request.CreateFeedbackReq;
+import depth.main.wishwesee.domain.invitation.dto.response.FeedbackListRes;
+import depth.main.wishwesee.domain.invitation.dto.response.FeedbackRes;
 import depth.main.wishwesee.domain.s3.service.S3Uploader;
 import depth.main.wishwesee.domain.user.domain.User;
 import depth.main.wishwesee.domain.user.domain.repository.UserRepository;
@@ -13,6 +15,7 @@ import depth.main.wishwesee.global.DefaultAssert;
 import depth.main.wishwesee.global.config.security.token.UserPrincipal;
 import depth.main.wishwesee.global.payload.ApiResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.security.InvalidParameterException;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -34,7 +38,7 @@ public class FeedbackService {
 
     // 후기 등록
     @Transactional
-    public void saveFeedback(UserPrincipal userPrincipal, Long receivedInvitationId, Optional<MultipartFile> image, CreateFeedbackReq createFeedbackReq) {
+    public ResponseEntity<Void> saveFeedback(UserPrincipal userPrincipal, Long receivedInvitationId, Optional<MultipartFile> image, CreateFeedbackReq createFeedbackReq) {
         User user = validateUserById(userPrincipal.getId());
         ReceivedInvitation receivedInvitation = validateReceivedInvitation(receivedInvitationId);
         DefaultAssert.isTrue(receivedInvitation.getReceiver() == user || receivedInvitation.getInvitation().getSender() == user, "잘못된 접근입니다.");
@@ -46,6 +50,7 @@ public class FeedbackService {
                 .receivedInvitation(receivedInvitation)
                 .build();
         feedbackRepository.save(feedback);
+        return ResponseEntity.ok().build();
     }
 
     private String uploadImageIfPresent(Optional<MultipartFile> image) {
@@ -65,7 +70,36 @@ public class FeedbackService {
 
 
     // 후기 조회
+    public ResponseEntity<ApiResponse> getFeedbacks(UserPrincipal userPrincipal, Long receivedInvitationId) {
+        User user = validateUserById(userPrincipal.getId());
+        ReceivedInvitation receivedInvitation = validateReceivedInvitation(receivedInvitationId);
+        Invitation invitation = receivedInvitation.getInvitation();
+        DefaultAssert.isTrue(receivedInvitation.getReceiver() == user || invitation.getSender() == user, "잘못된 접근입니다.");
+        boolean isSender = (receivedInvitation.getInvitation().getSender() == user);
+        List<Feedback> feedbacks = feedbackRepository.findByReceivedInvitationOrderByCreatedDateDesc(receivedInvitation);
 
+        List<FeedbackRes> feedbackResList = feedbacks.stream().map(
+                feedback -> FeedbackRes.builder()
+                        .feedbackId(feedback.getId())
+                        .content(feedback.getContent() != null ? feedback.getContent() : null)
+                        .image(feedback.getImage() != null ? feedback.getImage() : null)
+                        .isDeletable(isSender || feedback.getReceivedInvitation().getReceiver() == user)
+                        .build()
+        ).toList();
+
+        int feedbackCount = feedbackRepository.countByReceivedInvitation(receivedInvitation);
+        FeedbackListRes feedbackListRes = FeedbackListRes.builder()
+                .count(feedbackCount)
+                .feedbackResList(feedbackResList)
+                .build();
+
+        return ResponseEntity.ok(
+                ApiResponse.builder()
+                        .check(true)
+                        .information(feedbackListRes)
+                .build()
+        );
+    }
 
     private User validateUserById(Long userId) {
         Optional<User> userOptional = userRepository.findById(userId);
