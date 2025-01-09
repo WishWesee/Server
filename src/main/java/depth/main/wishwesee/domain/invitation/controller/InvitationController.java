@@ -55,9 +55,9 @@ public class InvitationController {
     })
     @PostMapping("/save-received")
     public ResponseEntity<?> saveReceivedInvitation(
-            @Parameter(description = "저장할 초대장의 ID를 입력해주세요.", required = true) @RequestParam Long invitationId,
+            @Parameter(description = "저장할 초대장의 UUID토큰을 입력해주세요.", required = true) @RequestParam String invitationToken,
             @Parameter(description = "Accesstoken을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal) {
 
-        return invitationService.saveReceivedInvitation(invitationId, userPrincipal);
+        return invitationService.saveReceivedInvitation(invitationToken, userPrincipal);
     }
 }

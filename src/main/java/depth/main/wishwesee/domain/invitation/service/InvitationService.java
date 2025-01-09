@@ -26,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -37,7 +38,7 @@ public class InvitationService {
     private final VoteRepository voteRepository;
     private  final UserRepository userRepository;
     private final ReceivedInvitationRepository receivedInvitationRepository;
-
+    @Transactional
     public ResponseEntity<?> saveTemporaryInvitation(InvitationReq invitationReq, MultipartFile cardImage, List<MultipartFile> photoImages, UserPrincipal userPrincipal){
         // 사용자 인증 여부 확인
         if(userPrincipal == null){
@@ -48,7 +49,10 @@ public class InvitationService {
         Invitation invitation = saveOrUpdateInvitation(invitationReq, cardImage, photoImages, userPrincipal, true);
 
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(Map.of("message", "초대장이 임시 저장되었습니다.", "invitationId", invitation.getId()));
+                .body(Map.of(
+                        "message", "초대장이 임시 저장되었습니다.",
+                        "invitationId", invitation.getId()
+                ));
 
     }
     @Transactional
@@ -58,7 +62,11 @@ public class InvitationService {
         Invitation invitation = saveOrUpdateInvitation(invitationReq, cardImage, photoImages, userPrincipal, false);
 
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(Map.of("message", "초대장 작성을 완료하였습니다.", "invitationId", invitation.getId()));
+                .body(Map.of(
+                        "message", "초대장 작성을 완료하였습니다.",
+                        "invitationId", invitation.getId(),
+                        "invitationToken", invitation.getInvitationToken()
+                ));
 
     }
     private Invitation saveOrUpdateInvitation(InvitationReq invitationReq, MultipartFile cardImage, List<MultipartFile> photoImages, UserPrincipal userPrincipal, boolean isTemporary) {
@@ -102,6 +110,7 @@ public class InvitationService {
         }
 
         return Invitation.builder()
+                .invitationToken(UUID.randomUUID().toString()) // UUID 토큰 자동 생성
                 .title(invitationReq.getTitle())
                 .cardImage(cardImageUrl)
                 .tempSaved(isTemporary)
@@ -234,13 +243,13 @@ public class InvitationService {
     }
 
     @Transactional
-    public ResponseEntity<?> saveReceivedInvitation(Long invitationId, UserPrincipal userPrincipal) {
+    public ResponseEntity<?> saveReceivedInvitation(String invitationToken, UserPrincipal userPrincipal) {
         // 현재 사용자 정보 가져오기
         User receiver = userRepository.findById(userPrincipal.getId())
                 .orElseThrow(() -> new DefaultException(ErrorCode.NOT_FOUND, "사용자를 찾을 수 없습니다."));
 
-        // 초대장 정보 가져오기
-        Invitation invitation = invitationRepository.findById(invitationId)
+        // 초대장 정보 가져오기 (UUID 기반 조회)
+        Invitation invitation = invitationRepository.findByInvitationToken(invitationToken)
                 .orElseThrow(() -> new DefaultException(ErrorCode.NOT_FOUND, "해당 초대장이 존재하지 않습니다."));
 
         // 작성자 본인 확인
