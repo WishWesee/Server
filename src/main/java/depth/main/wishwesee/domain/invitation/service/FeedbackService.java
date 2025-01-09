@@ -87,7 +87,8 @@ public class FeedbackService {
 
     private void deleteFeedbackImage(String image) {
         if (image != null) {
-            s3Uploader.extractImageNameFromUrl(image);
+            String imageName = s3Uploader.extractImageNameFromUrl(image);
+            s3Uploader.deleteFile(imageName);
         }
     }
 
