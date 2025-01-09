@@ -59,8 +59,8 @@ public class InvitationController {
 
     @Operation(summary = "후기 작성", description = "내가 받은/보낸 초대장의 후기를 작성합니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "후기 등록 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = Void.class) ) } ),
-            @ApiResponse(responseCode = "400", description = "후기 등록 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
+            @ApiResponse(responseCode = "200", description = "후기 등록 성공", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = Void.class))}),
+            @ApiResponse(responseCode = "400", description = "후기 등록 실패", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))}),
     })
     @PostMapping(value = "/{invitationId}/feedback")
     public ResponseEntity<Void> saveFeedback(
@@ -74,10 +74,10 @@ public class InvitationController {
 
     @Operation(summary = "후기 조회", description = "내가 받은/보낸 초대장의 후기를 조회합니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "후기 조회 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponse.class) ) } ),
-            @ApiResponse(responseCode = "400", description = "후기 조회 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
+            @ApiResponse(responseCode = "200", description = "후기 조회 성공", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponse.class))}),
+            @ApiResponse(responseCode = "400", description = "후기 조회 실패", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))}),
     })
-    @GetMapping(value = "/{invitationId}/feedback")
+    @GetMapping("/{invitationId}/feedback")
     public ResponseEntity<depth.main.wishwesee.global.payload.ApiResponse> getFeedbacks(
             @Parameter(description = "Accesstoken을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
             @Parameter(description = "초대장의 id를 입력해주세요.", required = true) @PathVariable Long invitationId
