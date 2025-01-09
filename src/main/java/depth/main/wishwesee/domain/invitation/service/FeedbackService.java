@@ -38,7 +38,7 @@ public class FeedbackService {
 
     // 후기 등록
     @Transactional
-    public ResponseEntity<Void> saveFeedback(UserPrincipal userPrincipal, Long invitationId, Optional<MultipartFile> image, CreateFeedbackReq createFeedbackReq) {
+    public ResponseEntity<Void> saveFeedback(UserPrincipal userPrincipal, Long invitationId, MultipartFile image, CreateFeedbackReq createFeedbackReq) {
         User user = validateUserById(userPrincipal.getId());
         Invitation invitation = validateInvitationById(invitationId);
         if (invitation.getSender() != user) {
@@ -56,14 +56,17 @@ public class FeedbackService {
         return ResponseEntity.ok().build();
     }
 
-    private String uploadImageIfPresent(Optional<MultipartFile> image) {
-        return image.filter(file -> !file.isEmpty())
-                .map(s3Uploader::uploadFile)
-                .orElse(null);
+    private String uploadImageIfPresent(MultipartFile image) {
+        return image != null && !image.isEmpty() ? s3Uploader.uploadFile(image) : null;
     }
 
     private String validateContentIfPresent(CreateFeedbackReq createFeedbackReq) {
-        String content = (createFeedbackReq.getContent() != null && !createFeedbackReq.getContent().isEmpty()) ? createFeedbackReq.getContent() : null;
+        if (createFeedbackReq == null) {
+            return null;
+        }
+        String content = (createFeedbackReq.getContent() != null && !createFeedbackReq.getContent().isEmpty())
+                ? createFeedbackReq.getContent()
+                : null;
         if (content != null && content.length() > 50) {
             throw new InvalidParameterException("후기는 50자까지 작성 가능합니다.");
         }

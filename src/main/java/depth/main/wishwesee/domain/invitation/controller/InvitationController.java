@@ -66,8 +66,8 @@ public class InvitationController {
     public ResponseEntity<Void> saveFeedback(
             @Parameter(description = "Accesstoken을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
             @Parameter(description = "초대장의 id를 입력해주세요.", required = true) @PathVariable Long invitationId,
-            @Parameter(description = "후기 이미지입니다. 1장만 입력 가능합니다.") @RequestPart Optional<MultipartFile> image,
-            @Parameter(description = "Schemas의 CreateFeedbackReq를 확인해주세요. 후기에 들어갈 내용입니다.") @RequestPart CreateFeedbackReq createFeedbackReq
+            @Parameter(description = "후기 이미지입니다. 1장만 입력 가능합니다.") @RequestPart(required = false) MultipartFile image,
+            @Parameter(description = "Schemas의 CreateFeedbackReq를 확인해주세요. 후기에 들어갈 내용입니다.") @RequestPart(required = false) CreateFeedbackReq createFeedbackReq
     ) {
         return feedbackService.saveFeedback(userPrincipal, invitationId, image, createFeedbackReq);
     }
