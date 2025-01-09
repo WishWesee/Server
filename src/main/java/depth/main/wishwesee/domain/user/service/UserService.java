@@ -34,7 +34,7 @@ public class UserService {
 
     private User validateUserById(Long userId) {
         Optional<User> userOptional = userRepository.findById(userId);
-        DefaultAssert.isOptionalPresent(userOptional);
+        DefaultAssert.isOptionalPresent(userOptional, "사용자가 존재하지 않습니다.");
         return userOptional.get();
     }
 }
