@@ -70,9 +70,16 @@ public class FeedbackService {
         return content;
     }
 
-
     // 후기 삭제
-
+    @Transactional
+    public ResponseEntity<Void> deleteFeedback(UserPrincipal userPrincipal, Long invitationId, Long feedbackId) {
+        User user = validateUserById(userPrincipal.getId());
+        Invitation invitation = validateInvitationById(invitationId);
+        Feedback feedback = validateFeedbackById(feedbackId);
+        DefaultAssert.isTrue(invitation.getSender() == user || feedback.getUser() == user, "삭제 권한이 없습니다.");
+        feedbackRepository.delete(feedback);
+        return ResponseEntity.noContent().build();
+    }
 
     // 후기 조회
     public ResponseEntity<ApiResponse> getFeedbacks(UserPrincipal userPrincipal, Long invitationId) {
@@ -117,5 +124,11 @@ public class FeedbackService {
         Optional<Invitation> invitationOptional = invitationRepository.findById(invitationId);
         DefaultAssert.isOptionalPresent(invitationOptional, "초대장이 존재하지 않습니다.");
         return invitationOptional.get();
+    }
+
+    private Feedback validateFeedbackById(Long feedbackId) {
+        Optional<Feedback> feedbackOptional = feedbackRepository.findById(feedbackId);
+        DefaultAssert.isOptionalPresent(feedbackOptional, "후기가 존재하지 않습니다.");
+        return feedbackOptional.get();
     }
 }

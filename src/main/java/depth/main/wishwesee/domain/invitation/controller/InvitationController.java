@@ -85,4 +85,18 @@ public class InvitationController {
         return feedbackService.getFeedbacks(userPrincipal, invitationId);
     }
 
+    @Operation(summary = "후기 삭제", description = "내가 받은/보낸 초대장의 후기를 삭제합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "후기 삭제 성공", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = Void.class))}),
+            @ApiResponse(responseCode = "400", description = "후기 삭제 실패", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))}),
+    })
+    @DeleteMapping ("/{invitationId}/feedback/{feedbackId}")
+    public ResponseEntity<Void> deleteFeedback(
+            @Parameter(description = "Accesstoken을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
+            @Parameter(description = "초대장의 id를 입력해주세요.", required = true) @PathVariable Long invitationId,
+            @Parameter(description = "후기의 id를 입력해주세요.", required = true) @PathVariable Long feedbackId
+    ) {
+        return feedbackService.deleteFeedback(userPrincipal, invitationId, feedbackId);
+    }
+
 }
