@@ -80,8 +80,15 @@ public class FeedbackService {
         Invitation invitation = validateInvitationById(invitationId);
         Feedback feedback = validateFeedbackById(feedbackId);
         DefaultAssert.isTrue(invitation.getSender() == user || feedback.getUser() == user, "삭제 권한이 없습니다.");
+        deleteFeedbackImage(feedback.getImage());
         feedbackRepository.delete(feedback);
         return ResponseEntity.noContent().build();
+    }
+
+    private void deleteFeedbackImage(String image) {
+        if (image != null) {
+            s3Uploader.extractImageNameFromUrl(image);
+        }
     }
 
     // 후기 조회
