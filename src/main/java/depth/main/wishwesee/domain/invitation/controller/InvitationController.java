@@ -62,14 +62,14 @@ public class InvitationController {
             @ApiResponse(responseCode = "200", description = "후기 등록 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = Void.class) ) } ),
             @ApiResponse(responseCode = "400", description = "후기 등록 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
     })
-    @PostMapping(value = "/{receivedInvitationId}/feedback")
+    @PostMapping(value = "/{invitationId}/feedback")
     public ResponseEntity<Void> saveFeedback(
             @Parameter(description = "Accesstoken을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
-            @Parameter(description = "받은 초대장의 id를 입력해주세요.", required = true) @PathVariable Long receivedInvitationId,
+            @Parameter(description = "초대장의 id를 입력해주세요.", required = true) @PathVariable Long invitationId,
             @Parameter(description = "후기 이미지입니다. 1장만 입력 가능합니다.") @RequestPart Optional<MultipartFile> image,
             @Parameter(description = "Schemas의 CreateFeedbackReq를 확인해주세요. 후기에 들어갈 내용입니다.") @RequestPart CreateFeedbackReq createFeedbackReq
     ) {
-        return feedbackService.saveFeedback(userPrincipal, receivedInvitationId, image, createFeedbackReq);
+        return feedbackService.saveFeedback(userPrincipal, invitationId, image, createFeedbackReq);
     }
 
     @Operation(summary = "후기 조회", description = "내가 받은/보낸 초대장의 후기를 조회합니다.")
@@ -77,12 +77,12 @@ public class InvitationController {
             @ApiResponse(responseCode = "200", description = "후기 조회 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponse.class) ) } ),
             @ApiResponse(responseCode = "400", description = "후기 조회 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
     })
-    @GetMapping(value = "/{receivedInvitationId}/feedback")
+    @GetMapping(value = "/{invitationId}/feedback")
     public ResponseEntity<depth.main.wishwesee.global.payload.ApiResponse> getFeedbacks(
             @Parameter(description = "Accesstoken을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
-            @Parameter(description = "받은 초대장의 id를 입력해주세요.", required = true) @PathVariable Long receivedInvitationId
+            @Parameter(description = "초대장의 id를 입력해주세요.", required = true) @PathVariable Long invitationId
     ) {
-        return feedbackService.getFeedbacks(userPrincipal, receivedInvitationId);
+        return feedbackService.getFeedbacks(userPrincipal, invitationId);
     }
 
 }

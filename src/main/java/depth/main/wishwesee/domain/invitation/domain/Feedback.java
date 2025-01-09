@@ -1,6 +1,7 @@
 package depth.main.wishwesee.domain.invitation.domain;
 
 import depth.main.wishwesee.domain.common.BaseEntity;
+import depth.main.wishwesee.domain.user.domain.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -21,13 +22,18 @@ public class Feedback extends BaseEntity {
     private String content;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "received_invitation_id")
-    private ReceivedInvitation receivedInvitation;
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "invitation_id")
+    private Invitation invitation;
 
     @Builder
-    public Feedback(String image, String content, ReceivedInvitation receivedInvitation) {
+    public Feedback(String image, String content, User user, Invitation invitation) {
         this.image = image;
         this.content = content;
-        this.receivedInvitation = receivedInvitation;
+        this.user = user;
+        this.invitation = invitation;
     }
 }
