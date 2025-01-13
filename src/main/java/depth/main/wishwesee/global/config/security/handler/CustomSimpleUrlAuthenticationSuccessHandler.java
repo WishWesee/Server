@@ -3,7 +3,7 @@ package depth.main.wishwesee.global.config.security.handler;
 import depth.main.wishwesee.domain.auth.domain.Token;
 import depth.main.wishwesee.domain.auth.domain.repository.CustomAuthorizationRequestRepository;
 import depth.main.wishwesee.domain.auth.domain.repository.TokenRepository;
-import depth.main.wishwesee.domain.auth.dto.res.TokenMapping;
+import depth.main.wishwesee.domain.auth.dto.response.TokenMapping;
 import depth.main.wishwesee.domain.auth.service.CustomTokenProviderService;
 import depth.main.wishwesee.global.DefaultAssert;
 import depth.main.wishwesee.global.config.security.OAuth2Config;

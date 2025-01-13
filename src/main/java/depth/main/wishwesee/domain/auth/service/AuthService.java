@@ -1,11 +1,11 @@
 package depth.main.wishwesee.domain.auth.service;
 
 import depth.main.wishwesee.domain.auth.domain.Token;
-import depth.main.wishwesee.domain.auth.dto.res.AuthRes;
+import depth.main.wishwesee.domain.auth.dto.response.AuthRes;
 import depth.main.wishwesee.domain.auth.exception.InvalidTokenException;
 import depth.main.wishwesee.domain.auth.domain.repository.TokenRepository;
-import depth.main.wishwesee.domain.auth.dto.req.RefreshTokenReq;
-import depth.main.wishwesee.domain.auth.dto.res.TokenMapping;
+import depth.main.wishwesee.domain.auth.dto.request.RefreshTokenReq;
+import depth.main.wishwesee.domain.auth.dto.response.TokenMapping;
 import depth.main.wishwesee.domain.user.domain.repository.UserRepository;
 import depth.main.wishwesee.global.DefaultAssert;
 import depth.main.wishwesee.global.config.security.token.UserPrincipal;
