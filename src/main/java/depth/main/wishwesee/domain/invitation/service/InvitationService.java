@@ -17,14 +17,15 @@ import depth.main.wishwesee.domain.vote.dto.request.ScheduleVoteReq;
 import depth.main.wishwesee.domain.vote.dto.response.ScheduleVoteRes;
 import depth.main.wishwesee.global.config.security.token.UserPrincipal;
 import depth.main.wishwesee.global.exception.DefaultException;
-import depth.main.wishwesee.global.payload.ApiResponse;
 import depth.main.wishwesee.global.payload.ErrorCode;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -45,11 +46,9 @@ public class InvitationService {
         // 공통 저장 로직 호출 (임시 저장 필드를 true로 설정)
         Invitation invitation = saveOrUpdateInvitation(invitationReq, cardImage, photoImages, userPrincipal, true);
 
-        ApiResponse apiResponse = ApiResponse.builder()
-                .check(true)
-                .information("초대장이 임시 저장되었습니다.")
-                .build();
-        return ResponseEntity.ok(apiResponse);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(Map.of("message", "초대장이 임시 저장되었습니다.", "invitationId", invitation.getId()));
+
     }
     @Transactional
     public ResponseEntity<?> publishInvitation(InvitationReq invitationReq, MultipartFile cardImage, List<MultipartFile> photoImages,
@@ -57,11 +56,8 @@ public class InvitationService {
         // 공통 저장 로직 호출 (임시 저장 필드를 false로 설정)
         Invitation invitation = saveOrUpdateInvitation(invitationReq, cardImage, photoImages, userPrincipal, false);
 
-        ApiResponse apiResponse = ApiResponse.builder()
-                .check(true)
-                .information("초대장이 게시되었습니다.")
-                .build();
-        return ResponseEntity.ok(apiResponse);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(Map.of("message", "초대장 작성을 완료하였습니다.", "invitationId", invitation.getId()));
 
     }
     private Invitation saveOrUpdateInvitation(InvitationReq invitationReq, MultipartFile cardImage, List<MultipartFile> photoImages, UserPrincipal userPrincipal, boolean isTemporary) {
