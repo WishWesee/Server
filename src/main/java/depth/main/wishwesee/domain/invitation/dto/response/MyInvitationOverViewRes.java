@@ -9,6 +9,9 @@ import java.util.List;
 
 @Getter
 public class MyInvitationOverViewRes {
+    @Schema(description = "작성중인 초대장 개수")
+    private int draftCount;
+
     @Schema(description = "작성 중인 초대장 목록")
     private List<InvitationRes> draftingInvitations;
 
@@ -19,8 +22,9 @@ public class MyInvitationOverViewRes {
     private List<InvitationRes> receivedInvitations;
 
     @Builder
-    MyInvitationOverViewRes(List<InvitationRes> draftingInvitations, List<InvitationRes> sentInvitations,
-                            List<InvitationRes> receivedInvitations){
+    MyInvitationOverViewRes(int draftCount, List<InvitationRes> draftingInvitations,
+                            List<InvitationRes> sentInvitations, List<InvitationRes> receivedInvitations){
+        this.draftCount = draftCount;
         this.draftingInvitations = draftingInvitations;
         this.sentInvitations = sentInvitations;
         this.receivedInvitations = receivedInvitations;

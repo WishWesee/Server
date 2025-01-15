@@ -327,6 +327,7 @@ public class InvitationService {
                         .build())
                 .toList();
 
+        int draftCount = draftingInvitations.size(); //작성중인 초대장 개수
 
         // 보낸 초대장 최신순 3개 조회
          List<MyInvitationOverViewRes.InvitationRes> sentInvitations = invitationRepository.findTop3BySenderAndTempSavedFalseOrderByCreatedDateDesc(user)
@@ -352,6 +353,7 @@ public class InvitationService {
                 .toList();
 
         MyInvitationOverViewRes myInvitationOverViewRes = MyInvitationOverViewRes.builder()
+                .draftCount(draftCount)
                 .draftingInvitations(draftingInvitations)
                 .sentInvitations(sentInvitations)
                 .receivedInvitations(receivedInvitations)
