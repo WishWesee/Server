@@ -10,7 +10,7 @@ import depth.main.wishwesee.domain.invitation.domain.repository.ReceivedInvitati
 import depth.main.wishwesee.domain.invitation.dto.request.InvitationReq;
 import depth.main.wishwesee.domain.invitation.dto.response.CompletedInvitationRes;
 import depth.main.wishwesee.domain.invitation.dto.response.MyInvitationOverViewRes;
-import depth.main.wishwesee.domain.invitation.dto.response.SentInvitationRes;
+import depth.main.wishwesee.domain.invitation.dto.response.InvitationListRes;
 import depth.main.wishwesee.domain.s3.service.S3Uploader;
 import depth.main.wishwesee.domain.user.domain.User;
 import depth.main.wishwesee.domain.user.domain.repository.UserRepository;
@@ -367,10 +367,7 @@ public class InvitationService {
         User user = userRepository.findById(userPrincipal.getId())
                 .orElseThrow(() -> new DefaultException(ErrorCode.NOT_FOUND, "사용자를 찾을 수 없습니다"));
 
-        // 전체 보낸 초대장 개수
-        int totalSentInvitations = invitationRepository.countBySenderAndTempSavedFalse(user);
-
-        List<MyInvitationOverViewRes.InvitationRes> receivedInvitations = invitationRepository.findBySenderAndYearAndTempSavedFalse(user, year)
+        List<MyInvitationOverViewRes.InvitationRes> sentInvitations = invitationRepository.findBySenderAndYearAndTempSavedFalse(user, year)
                 .stream()
                 .map(invitation -> MyInvitationOverViewRes.InvitationRes.builder()
                         .invitationId(invitation.getId())
@@ -380,12 +377,41 @@ public class InvitationService {
                         .build())
                 .toList();
 
-        SentInvitationRes response = SentInvitationRes.builder()
-                .totalSentInvitations(totalSentInvitations)
+        // 전체 보낸 초대장 개수
+        int totalSentInvitations = sentInvitations.size();
+
+        InvitationListRes response = InvitationListRes.builder()
+                .totalInvitations(totalSentInvitations)
+                .invitations(sentInvitations)
+                .build();
+
+        return ResponseEntity.ok(response);
+    }
+
+    public ResponseEntity<?> getReceivedInvitationsByYear(UserPrincipal userPrincipal, int year) {
+        User user = userRepository.findById(userPrincipal.getId())
+                .orElseThrow(() -> new DefaultException(ErrorCode.NOT_FOUND, "사용자를 찾을 수 없습니다"));
+
+        List<MyInvitationOverViewRes.InvitationRes> receivedInvitations = receivedInvitationRepository.findByReceiverAndYear(user, year)
+                .stream()
+                .map(receivedInvitation -> MyInvitationOverViewRes.InvitationRes.builder()
+                        .invitationId(receivedInvitation.getInvitation().getId())
+                        .title(receivedInvitation.getInvitation().getTitle())
+                        .cardImage(receivedInvitation.getInvitation().getCardImage())
+                        .date(receivedInvitation.getCreatedDate())
+                        .build())
+                .toList();
+
+        // 전체 받은 초대장 총 개수
+        int totalReceivedCount = receivedInvitations.size();
+
+        InvitationListRes response = InvitationListRes.builder()
+                .totalInvitations(totalReceivedCount)
                 .invitations(receivedInvitations)
                 .build();
 
         return ResponseEntity.ok(response);
+
     }
 }
 

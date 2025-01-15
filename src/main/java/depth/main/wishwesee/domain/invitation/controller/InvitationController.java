@@ -125,4 +125,14 @@ public class InvitationController {
     ) {
         return invitationService.getSentInvitationByYear(userPrincipal, year);
     }
+
+    @Operation(summary = "연도별 내가 받은 초대장 목록 조회", description = "연도별로 내가 받은 초대장 목록을 조회합니다.")
+    @GetMapping("/received/{year}")
+    public ResponseEntity<?> getReceivedInvitationsByYear(
+            @Parameter(description = "Accesstoken을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
+            @Parameter(description = "연도를 입력해주세요", required = true) @PathVariable int year
+    ) {
+        return invitationService.getReceivedInvitationsByYear(userPrincipal, year);
+    }
+
 }
