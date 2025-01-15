@@ -6,8 +6,10 @@ import depth.main.wishwesee.domain.content.dto.request.*;
 import depth.main.wishwesee.domain.content.dto.response.*;
 import depth.main.wishwesee.domain.invitation.domain.Invitation;
 import depth.main.wishwesee.domain.invitation.domain.repository.InvitationRepository;
+import depth.main.wishwesee.domain.invitation.domain.repository.ReceivedInvitationRepository;
 import depth.main.wishwesee.domain.invitation.dto.request.InvitationReq;
 import depth.main.wishwesee.domain.invitation.dto.response.CompletedInvitationRes;
+import depth.main.wishwesee.domain.invitation.dto.response.MyInvitationOverViewRes;
 import depth.main.wishwesee.domain.s3.service.S3Uploader;
 import depth.main.wishwesee.domain.user.domain.User;
 import depth.main.wishwesee.domain.user.domain.repository.UserRepository;
@@ -35,7 +37,8 @@ public class InvitationService {
     private final InvitationRepository invitationRepository;
     private final BlockRepository blockRepository;
     private final VoteRepository voteRepository;
-    private  final UserRepository userRepository;
+    private final UserRepository userRepository;
+    private final ReceivedInvitationRepository receivedInvitationRepository;
     @Transactional
     public ResponseEntity<?> saveTemporaryInvitation(InvitationReq invitationReq, MultipartFile cardImage, List<MultipartFile> photoImages, UserPrincipal userPrincipal){
         // 사용자 인증 여부 확인
@@ -212,12 +215,12 @@ public class InvitationService {
                         .invitation(invitation)
                         .build();
             } else{
-            throw new DefaultException(ErrorCode.INVALID_PARAMETER, "지원되지 않는 블록 타입입니다.");
-        }
+                throw new DefaultException(ErrorCode.INVALID_PARAMETER, "지원되지 않는 블록 타입입니다.");
+            }
 
         blockRepository.save(block);
 
-    }
+        }
     }
     private String uploadImageIfPresent(MultipartFile file, String oldImageUrl) {
         if (file != null && !file.isEmpty()) {
@@ -309,6 +312,57 @@ public class InvitationService {
         return ResponseEntity.ok(response);
     }
 
+    public ResponseEntity<?> getMyInvitations(UserPrincipal userPrincipal) {
+        User user = userRepository.findById(userPrincipal.getId())
+                .orElseThrow(() -> new DefaultException(ErrorCode.NOT_FOUND,"사용자를 찾을 수 없습니다"));
+
+        // 작성 중인 초대장 조회
+        List<MyInvitationOverViewRes.InvitationRes> draftingInvitations = invitationRepository.findBySenderAndTempSavedTrue(user)
+                .stream()
+                .map(invitation -> MyInvitationOverViewRes.InvitationRes.builder()
+                        .invitationId(invitation.getId())
+                        .title(invitation.getTitle())
+                        .cardImage(invitation.getCardImage())
+                        .date(invitation.getModifiedDate())
+                        .build())
+                .toList();
+
+
+        // 보낸 초대장 최신순 3개 조회
+        List<MyInvitationOverViewRes.InvitationRes> sentInvitations = receivedInvitationRepository.findTop3ByInvitationSenderOrderByCreatedDateDesc(user)
+                .stream()
+                .map(receivedInvitation -> {
+                    Invitation invitation = receivedInvitation.getInvitation(); // 초대장 정보 가져오기
+                    return MyInvitationOverViewRes.InvitationRes.builder()
+                            .invitationId(invitation.getId())
+                            .title(invitation.getTitle())
+                            .cardImage(invitation.getCardImage())
+                            .date(invitation.getCreatedDate()) // 초대장 생성 날짜 기준
+                            .build();
+                })
+                .toList();
+
+
+
+        // 받은 초대장 최신순 3개 조회
+        List<MyInvitationOverViewRes.InvitationRes> receivedInvitations = receivedInvitationRepository.findTop3ByReceiverOrderByCreatedDateDesc(user)
+                .stream()
+                .map(receivedInvitation -> MyInvitationOverViewRes.InvitationRes.builder()
+                        .invitationId(receivedInvitation.getInvitation().getId())
+                        .title(receivedInvitation.getInvitation().getTitle())
+                        .cardImage(receivedInvitation.getInvitation().getCardImage())
+                        .date(receivedInvitation.getCreatedDate()) // 받은 초대장 생성 날짜 기준
+                        .build())
+                .toList();
+
+        MyInvitationOverViewRes myInvitationOverViewRes = MyInvitationOverViewRes.builder()
+                .draftingInvitations(draftingInvitations)
+                .sentInvitations(sentInvitations)
+                .receivedInvitations(receivedInvitations)
+                .build();
+
+        return ResponseEntity.ok(myInvitationOverViewRes);
+    }
 }
 
 
