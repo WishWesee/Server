@@ -10,6 +10,7 @@ import depth.main.wishwesee.domain.invitation.domain.repository.ReceivedInvitati
 import depth.main.wishwesee.domain.invitation.dto.request.InvitationReq;
 import depth.main.wishwesee.domain.invitation.dto.response.CompletedInvitationRes;
 import depth.main.wishwesee.domain.invitation.dto.response.MyInvitationOverViewRes;
+import depth.main.wishwesee.domain.invitation.dto.response.SentInvitationRes;
 import depth.main.wishwesee.domain.s3.service.S3Uploader;
 import depth.main.wishwesee.domain.user.domain.User;
 import depth.main.wishwesee.domain.user.domain.repository.UserRepository;
@@ -360,6 +361,31 @@ public class InvitationService {
                 .build();
 
         return ResponseEntity.ok(myInvitationOverViewRes);
+    }
+
+    public ResponseEntity<?> getSentInvitationByYear(UserPrincipal userPrincipal, int year) {
+        User user = userRepository.findById(userPrincipal.getId())
+                .orElseThrow(() -> new DefaultException(ErrorCode.NOT_FOUND, "사용자를 찾을 수 없습니다"));
+
+        // 전체 보낸 초대장 개수
+        int totalSentInvitations = invitationRepository.countBySenderAndTempSavedFalse(user);
+
+        List<MyInvitationOverViewRes.InvitationRes> receivedInvitations = invitationRepository.findBySenderAndYearAndTempSavedFalse(user, year)
+                .stream()
+                .map(invitation -> MyInvitationOverViewRes.InvitationRes.builder()
+                        .invitationId(invitation.getId())
+                        .title(invitation.getTitle())
+                        .cardImage(invitation.getCardImage())
+                        .date(invitation.getCreatedDate())
+                        .build())
+                .toList();
+
+        SentInvitationRes response = SentInvitationRes.builder()
+                .totalSentInvitations(totalSentInvitations)
+                .invitations(receivedInvitations)
+                .build();
+
+        return ResponseEntity.ok(response);
     }
 }
 
