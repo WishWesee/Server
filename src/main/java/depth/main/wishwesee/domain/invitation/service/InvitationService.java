@@ -318,40 +318,24 @@ public class InvitationService {
                 .orElseThrow(() -> new DefaultException(ErrorCode.NOT_FOUND,"사용자를 찾을 수 없습니다"));
 
         // 작성 중인 초대장 조회
-        List<MyInvitationOverViewRes.InvitationRes> draftingInvitations = invitationRepository.findBySenderAndTempSavedTrue(user)
-                .stream()
-                .map(invitation -> MyInvitationOverViewRes.InvitationRes.builder()
-                        .invitationId(invitation.getId())
-                        .title(invitation.getTitle())
-                        .cardImage(invitation.getCardImage())
-                        .date(invitation.getModifiedDate())
-                        .build())
-                .toList();
+        List<MyInvitationOverViewRes.InvitationRes> draftingInvitations = convertToInvitationRes(
+                invitationRepository.findBySenderAndTempSavedTrue(user)
+        );
 
         int draftCount = draftingInvitations.size(); //작성중인 초대장 개수
 
         // 보낸 초대장 최신순 3개 조회
-         List<MyInvitationOverViewRes.InvitationRes> sentInvitations = invitationRepository.findTop3BySenderAndTempSavedFalseOrderByCreatedDateDesc(user)
-                .stream()
-                .map(invitation -> MyInvitationOverViewRes.InvitationRes.builder()
-                        .invitationId(invitation.getId())
-                        .title(invitation.getTitle())
-                        .cardImage(invitation.getCardImage())
-                        .date(invitation.getCreatedDate()) // 보낸 초대장 생성 날짜
-                        .build())
-                .toList();
+         List<MyInvitationOverViewRes.InvitationRes> sentInvitations = convertToInvitationRes(
+                 invitationRepository.findTop3BySenderAndTempSavedFalseOrderByCreatedDateDesc(user)
+         );
 
-
-        // 받은 초대장 최신순 3개 조회
-        List<MyInvitationOverViewRes.InvitationRes> receivedInvitations = receivedInvitationRepository.findTop3ByReceiverOrderByCreatedDateDesc(user)
-                .stream()
-                .map(receivedInvitation -> MyInvitationOverViewRes.InvitationRes.builder()
-                        .invitationId(receivedInvitation.getInvitation().getId())
-                        .title(receivedInvitation.getInvitation().getTitle())
-                        .cardImage(receivedInvitation.getInvitation().getCardImage())
-                        .date(receivedInvitation.getCreatedDate()) // 받은 날짜 기준
-                        .build())
-                .toList();
+        // 받은 초대장 최신순 3개
+        List<MyInvitationOverViewRes.InvitationRes> receivedInvitations = convertToInvitationRes(
+                receivedInvitationRepository.findTop3ByReceiverOrderByCreatedDateDesc(user)
+                        .stream()
+                        .map(receivedInvitation -> receivedInvitation.getInvitation())
+                        .toList()
+        );
 
         MyInvitationOverViewRes myInvitationOverViewRes = MyInvitationOverViewRes.builder()
                 .draftCount(draftCount)
@@ -367,8 +351,37 @@ public class InvitationService {
         User user = userRepository.findById(userPrincipal.getId())
                 .orElseThrow(() -> new DefaultException(ErrorCode.NOT_FOUND, "사용자를 찾을 수 없습니다"));
 
-        List<MyInvitationOverViewRes.InvitationRes> sentInvitations = invitationRepository.findBySenderAndYearAndTempSavedFalse(user, year)
-                .stream()
+        List<MyInvitationOverViewRes.InvitationRes> sentInvitations = convertToInvitationRes(
+                invitationRepository.findBySenderAndYearAndTempSavedFalse(user, year)
+        );
+
+        // 전체 보낸 초대장 개수
+        int totalSentInvitations = sentInvitations.size();
+
+        return createInvitationListResponse(sentInvitations, totalSentInvitations);
+    }
+
+    public ResponseEntity<?> getReceivedInvitationsByYear(UserPrincipal userPrincipal, int year) {
+        User user = userRepository.findById(userPrincipal.getId())
+                .orElseThrow(() -> new DefaultException(ErrorCode.NOT_FOUND, "사용자를 찾을 수 없습니다"));
+
+        List<MyInvitationOverViewRes.InvitationRes> receivedInvitations = convertToInvitationRes(
+                receivedInvitationRepository.findByReceiverAndYear(user, year)
+                        .stream()
+                        .map(receivedInvitation -> receivedInvitation.getInvitation())
+                        .toList()
+        );
+
+        // 전체 받은 초대장 총 개수
+        int totalReceivedCount = receivedInvitations.size();
+
+        return createInvitationListResponse(receivedInvitations, totalReceivedCount);
+
+    }
+
+    // 초대장 리스트 반환 메서드
+    private List<MyInvitationOverViewRes.InvitationRes> convertToInvitationRes(List<Invitation> invitations) {
+        return invitations.stream()
                 .map(invitation -> MyInvitationOverViewRes.InvitationRes.builder()
                         .invitationId(invitation.getId())
                         .title(invitation.getTitle())
@@ -376,42 +389,15 @@ public class InvitationService {
                         .date(invitation.getCreatedDate())
                         .build())
                 .toList();
-
-        // 전체 보낸 초대장 개수
-        int totalSentInvitations = sentInvitations.size();
-
-        InvitationListRes response = InvitationListRes.builder()
-                .totalInvitations(totalSentInvitations)
-                .invitations(sentInvitations)
-                .build();
-
-        return ResponseEntity.ok(response);
     }
 
-    public ResponseEntity<?> getReceivedInvitationsByYear(UserPrincipal userPrincipal, int year) {
-        User user = userRepository.findById(userPrincipal.getId())
-                .orElseThrow(() -> new DefaultException(ErrorCode.NOT_FOUND, "사용자를 찾을 수 없습니다"));
-
-        List<MyInvitationOverViewRes.InvitationRes> receivedInvitations = receivedInvitationRepository.findByReceiverAndYear(user, year)
-                .stream()
-                .map(receivedInvitation -> MyInvitationOverViewRes.InvitationRes.builder()
-                        .invitationId(receivedInvitation.getInvitation().getId())
-                        .title(receivedInvitation.getInvitation().getTitle())
-                        .cardImage(receivedInvitation.getInvitation().getCardImage())
-                        .date(receivedInvitation.getCreatedDate())
-                        .build())
-                .toList();
-
-        // 전체 받은 초대장 총 개수
-        int totalReceivedCount = receivedInvitations.size();
-
+    // InvitationListRes 응답 생성 메서드
+    private ResponseEntity<InvitationListRes> createInvitationListResponse(List<MyInvitationOverViewRes.InvitationRes> invitations, int totalCount) {
         InvitationListRes response = InvitationListRes.builder()
-                .totalInvitations(totalReceivedCount)
-                .invitations(receivedInvitations)
+                .totalInvitations(totalCount)
+                .invitations(invitations)
                 .build();
-
         return ResponseEntity.ok(response);
-
     }
 }
 
