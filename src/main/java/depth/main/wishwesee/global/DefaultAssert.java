@@ -35,9 +35,9 @@ public class DefaultAssert extends Assert {
         }
     }
 
-    public static void isOptionalPresent(Optional<?> value){
+    public static void isOptionalPresent(Optional<?> value, String message){
         if(!value.isPresent()){
-            throw new DefaultException(ErrorCode.INVALID_PARAMETER);
+            throw new DefaultException(ErrorCode.INVALID_PARAMETER, message);
         }
     }
 

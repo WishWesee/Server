@@ -1,4 +1,4 @@
-package depth.main.wishwesee.domain.auth.dto.res;
+package depth.main.wishwesee.domain.auth.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

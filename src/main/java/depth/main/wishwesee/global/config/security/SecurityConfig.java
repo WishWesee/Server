@@ -68,7 +68,7 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOriginPatterns(List.of(
                 "http://localhost:3000"));
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
 
@@ -88,12 +88,17 @@ public class SecurityConfig {
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(new CustomAuthenticationEntryPoint()))
                 .authorizeHttpRequests(
                         authorize -> authorize
-                                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                                .requestMatchers("/auth/**").permitAll()
-                                .requestMatchers("/api/v1/invitation").permitAll()
+                                .requestMatchers("/auth/**", "/oauth2/**")
+                                .permitAll()
+                                .requestMatchers("/error", "/favicon.ico", "/**.png", "/**.gif", "/**.svg", "/**.jpg", "/**.html", "/**.css", "/**.js")
+                                .permitAll()
+                                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**")
+                                .permitAll()
+                                .requestMatchers("/api/v1/invitation")
+                                .permitAll()
                                 .anyRequest().authenticated()
                 )
-                .addFilterBefore(customOncePerRequestFilter(), UsernamePasswordAuthenticationFilter.class) // JWT 필터 추가
+                .addFilterBefore(customOncePerRequestFilter(), UsernamePasswordAuthenticationFilter.class)
                 .oauth2Login(oauth2 -> oauth2
                         .authorizationEndpoint(authorization -> authorization
                                 .baseUri("/oauth2/authorize")
@@ -108,5 +113,4 @@ public class SecurityConfig {
 
         return http.build();
     }
-
 }

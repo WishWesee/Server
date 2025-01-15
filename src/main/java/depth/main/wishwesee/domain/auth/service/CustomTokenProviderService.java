@@ -1,6 +1,6 @@
 package depth.main.wishwesee.domain.auth.service;
 
-import depth.main.wishwesee.domain.auth.dto.res.TokenMapping;
+import depth.main.wishwesee.domain.auth.dto.response.TokenMapping;
 import depth.main.wishwesee.global.config.security.OAuth2Config;
 import depth.main.wishwesee.global.config.security.token.UserPrincipal;
 import io.jsonwebtoken.*;

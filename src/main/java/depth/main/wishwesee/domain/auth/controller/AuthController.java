@@ -1,7 +1,7 @@
 package depth.main.wishwesee.domain.auth.controller;
 
-import depth.main.wishwesee.domain.auth.dto.req.RefreshTokenReq;
-import depth.main.wishwesee.domain.auth.dto.res.AuthRes;
+import depth.main.wishwesee.domain.auth.dto.request.RefreshTokenReq;
+import depth.main.wishwesee.domain.auth.dto.response.AuthRes;
 import depth.main.wishwesee.domain.auth.service.AuthService;
 import depth.main.wishwesee.global.config.security.token.CurrentUser;
 import depth.main.wishwesee.global.config.security.token.UserPrincipal;

@@ -29,7 +29,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Transactional
     public UserDetails loadUserById(Long id) {
         Optional<User> user = userRepository.findById(id);
-        DefaultAssert.isOptionalPresent(user);
+        DefaultAssert.isOptionalPresent(user, "사용자를 찾을 수 없습니다.");
         return UserPrincipal.create(user.get());
     }
 }

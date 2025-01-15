@@ -4,10 +4,12 @@ import depth.main.wishwesee.domain.common.BaseEntity;
 import depth.main.wishwesee.domain.user.domain.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
 
 @Entity
+@Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ReceivedInvitation extends BaseEntity{
     @Id
