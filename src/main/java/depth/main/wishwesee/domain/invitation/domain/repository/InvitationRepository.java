@@ -9,4 +9,5 @@ import java.util.List;
 public interface InvitationRepository extends JpaRepository<Invitation, Long> {
     List<Invitation> findBySenderAndTempSavedTrue(User user); // 작성중 초대장
 
+    List<Invitation> findTop3BySenderAndTempSavedFalseOrderByCreatedDateDesc(User user);  // 보낸 초대장 최신순 3개 조회
 }

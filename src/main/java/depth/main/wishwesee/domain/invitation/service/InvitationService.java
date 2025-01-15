@@ -329,19 +329,15 @@ public class InvitationService {
 
 
         // 보낸 초대장 최신순 3개 조회
-        List<MyInvitationOverViewRes.InvitationRes> sentInvitations = receivedInvitationRepository.findTop3ByInvitationSenderOrderByCreatedDateDesc(user)
+         List<MyInvitationOverViewRes.InvitationRes> sentInvitations = invitationRepository.findTop3BySenderAndTempSavedFalseOrderByCreatedDateDesc(user)
                 .stream()
-                .map(receivedInvitation -> {
-                    Invitation invitation = receivedInvitation.getInvitation(); // 초대장 정보 가져오기
-                    return MyInvitationOverViewRes.InvitationRes.builder()
-                            .invitationId(invitation.getId())
-                            .title(invitation.getTitle())
-                            .cardImage(invitation.getCardImage())
-                            .date(invitation.getCreatedDate()) // 초대장 생성 날짜 기준
-                            .build();
-                })
+                .map(invitation -> MyInvitationOverViewRes.InvitationRes.builder()
+                        .invitationId(invitation.getId())
+                        .title(invitation.getTitle())
+                        .cardImage(invitation.getCardImage())
+                        .date(invitation.getCreatedDate()) // 보낸 초대장 생성 날짜
+                        .build())
                 .toList();
-
 
 
         // 받은 초대장 최신순 3개 조회
@@ -351,7 +347,7 @@ public class InvitationService {
                         .invitationId(receivedInvitation.getInvitation().getId())
                         .title(receivedInvitation.getInvitation().getTitle())
                         .cardImage(receivedInvitation.getInvitation().getCardImage())
-                        .date(receivedInvitation.getCreatedDate()) // 받은 초대장 생성 날짜 기준
+                        .date(receivedInvitation.getCreatedDate()) // 받은 날짜 기준
                         .build())
                 .toList();
 

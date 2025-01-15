@@ -23,7 +23,7 @@ public class MyInvitationOverViewRes {
                             List<InvitationRes> receivedInvitations){
         this.draftingInvitations = draftingInvitations;
         this.sentInvitations = sentInvitations;
-        this.receivedInvitations = sentInvitations;
+        this.receivedInvitations = receivedInvitations;
     }
 
     @Getter

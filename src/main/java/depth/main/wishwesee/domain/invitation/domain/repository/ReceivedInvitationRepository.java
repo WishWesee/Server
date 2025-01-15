@@ -14,6 +14,5 @@ public interface ReceivedInvitationRepository extends JpaRepository<ReceivedInvi
 
     List<ReceivedInvitation> findTop3ByReceiverOrderByCreatedDateDesc(User user); // 받은 초대장 최신순 3개
 
-    List<ReceivedInvitation> findTop3ByInvitationSenderOrderByCreatedDateDesc(User user); // 보낸 초대장 최신순 3개
 
 }
