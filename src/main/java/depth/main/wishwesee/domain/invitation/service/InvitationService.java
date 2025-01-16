@@ -282,9 +282,9 @@ public class InvitationService {
 
 
 
-    public ResponseEntity<?> getCompletedInvitation(Long id, UserPrincipal userPrincipal) {
+    public ResponseEntity<?> getCompletedInvitation(String invitationToken, UserPrincipal userPrincipal) {
         // 초대장 조회
-        Invitation invitation = invitationRepository.findById(id)
+        Invitation invitation = invitationRepository.findByInvitationToken(invitationToken)
                 .orElseThrow(() -> new DefaultException(ErrorCode.NOT_FOUND, "해당 초대장이 존재하지 않습니다."));
 
         // 초대장의 모든 블록 조회
@@ -334,6 +334,7 @@ public class InvitationService {
         // 응답 DTO 생성
         CompletedInvitationRes response = CompletedInvitationRes.builder()
                 .invitationId(invitation.getId())
+                .invitationToken(invitation.getInvitationToken())
                 .title(invitation.getTitle())
                 .cardImage(invitation.getCardImage())
                 .tempSaved(invitation.isTempSaved())

@@ -118,13 +118,13 @@ public class InvitationController {
     }
 
     @Operation(summary = "완성된 초대장 조회", description = "완성된 초대장의 ID를 통해 초대장의 상세 정보를 조회합니다.")
-    @GetMapping("/{id}")
+    @GetMapping("/{invitationToken}")
     public ResponseEntity<?> getCompletedInvitation(
-            @Parameter(description = "조회할 완성된 초대장의 ID", required = true) @PathVariable Long id,
+            @Parameter(description = "조회할 완성된 초대장의 UUID토큰", required = true) @PathVariable String invitationToken,
             @Parameter(description = "Accesstoken을 입력해주세요.", required = false) @CurrentUser UserPrincipal userPrincipal
     ) {
 
-        return invitationService.getCompletedInvitation(id, userPrincipal);
+        return invitationService.getCompletedInvitation(invitationToken, userPrincipal);
     }
 
     @Operation(summary = "나의 초대장 목록 조회", description = "작성 중인 초대장, 보낸 초대장 3개, 받은 초대장 3개를 조회합니다.")

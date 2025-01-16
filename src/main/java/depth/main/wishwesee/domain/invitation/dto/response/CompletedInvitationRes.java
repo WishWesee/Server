@@ -13,6 +13,8 @@ import java.util.List;
 public class CompletedInvitationRes {
     private Long invitationId;
 
+    private String invitationToken;
+
     private String title;
 
     private String cardImage;
@@ -55,11 +57,12 @@ public class CompletedInvitationRes {
     private List<ScheduleVoteRes> scheduleVotes; // 일정 투표 리스트
 
     @Builder
-    public CompletedInvitationRes(Long invitationId, String title, String cardImage, boolean tempSaved, LocalDate startDate,
+    public CompletedInvitationRes(Long invitationId, String invitationToken,String title, String cardImage, boolean tempSaved, LocalDate startDate,
                                   LocalTime startTime, LocalDate endDate, LocalTime endTime, String location, String address,
                                   String mapLink, int mapViewType, LocalDate voteDeadline, boolean attendanceSurveyEnabled,
                                   boolean scheduleVoteMultiple, boolean scheduleVoteClosed, boolean attendanceSurveyClosed,
                                   List<BlockRes> blocks, List<ScheduleVoteRes> scheduleVotes) {
+        this.invitationToken = invitationToken;
         this.invitationId = invitationId;
         this.title = title;
         this.cardImage = cardImage;
