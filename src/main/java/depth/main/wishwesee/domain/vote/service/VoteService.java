@@ -87,7 +87,7 @@ public class VoteService {
         Invitation invitation = validateInvitationById(invitationId);
         User user = validateUserById(userPrincipal.getId());
         DefaultAssert.isTrue(invitation.getSender() == user, "초대장 작성자가 아닙니다.");
-        List<String> voterNames = attendanceRepository.findVoterNamesByInvitationAndAttendance(invitation, isAttend);
+        List<String> voterNames = attendanceRepository.findVoterNamesByInvitationAndAttendanceOrderByNicknameAsc(invitation, isAttend);
         VoterRes voterRes = VoterRes.builder()
                 .voterNum(attendanceRepository.countByInvitationAndAttending(invitation, isAttend))
                 .voterNames(voterNames)
