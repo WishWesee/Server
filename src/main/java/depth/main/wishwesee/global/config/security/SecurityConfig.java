@@ -94,7 +94,7 @@ public class SecurityConfig {
                                 .permitAll()
                                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**")
                                 .permitAll()
-                                .requestMatchers("/api/v1/invitation")
+                                .requestMatchers("/api/v1/invitation", "/api/v1/{invitationId}/vote/check")
                                 .permitAll()
                                 .anyRequest().authenticated()
                 )

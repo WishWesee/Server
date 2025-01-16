@@ -7,6 +7,7 @@ import depth.main.wishwesee.domain.user.domain.repository.UserRepository;
 import depth.main.wishwesee.domain.vote.domain.Attendance;
 import depth.main.wishwesee.domain.vote.domain.repository.AttendanceRepository;
 import depth.main.wishwesee.domain.vote.dto.request.AttendanceVoteReq;
+import depth.main.wishwesee.domain.vote.dto.response.CheckNicknameRes;
 import depth.main.wishwesee.global.DefaultAssert;
 import depth.main.wishwesee.global.config.security.token.UserPrincipal;
 import depth.main.wishwesee.global.payload.ApiResponse;
@@ -26,6 +27,19 @@ public class VoteService {
     private final InvitationRepository invitationRepository;
     private final AttendanceRepository attendanceRepository;
 
+    public ResponseEntity<ApiResponse> checkDuplicateNickname(Long invitationId, String nickname) {
+        Invitation invitation = validateInvitationById(invitationId);
+        CheckNicknameRes checkNicknameRes = CheckNicknameRes.builder()
+                .isDuplicated(checkDuplicateAttendanceNickname(invitation, nickname))
+                .build();
+        return ResponseEntity.ok(ApiResponse.builder()
+                .check(true)
+                .information(checkNicknameRes)
+                .build());
+    }
+
+    // 닉네임 존재
+    // 업데이트
     @Transactional
     public ResponseEntity<?> voteAttendance(Optional<UserPrincipal> userPrincipal, Long invitationId, AttendanceVoteReq attendanceVoteReq) {
         Invitation invitation = validateInvitationById(invitationId);
@@ -35,8 +49,8 @@ public class VoteService {
         User user = userPrincipal.map(principal -> validateUserById(principal.getId())).orElse(null);
         String nickname = user != null ? user.getName() : attendanceVoteReq.getNickname();
         // 비회원 닉네임 검증
-        if (user == null && isDuplicateNickname(invitation, nickname)) {
-            return buildBadRequestResponse("중복된 닉네임이 존재합니다.");
+        if (isDuplicateNickname(invitation, nickname)) {
+
         }
         Attendance attendance = Attendance.builder()
                 .nickname(nickname)

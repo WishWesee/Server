@@ -39,4 +39,17 @@ public class VoteController {
         return voteService.voteAttendance(userPrincipal, invitationId, attendanceVoteReq);
     }
 
+    @Operation(summary = "닉네임 중복여부 확인", description = "투표 전, 닉네임 중복여부를 확인합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "중복 여부 확인 성공", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponse.class))}),
+            @ApiResponse(responseCode = "400", description = "중복 여부 확인 실패", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))}),
+    })
+    @GetMapping("/check")
+    public ResponseEntity<depth.main.wishwesee.global.payload.ApiResponse> checkNickname(
+            @Parameter(description = "초대장의 id를 입력해주세요.", required = true) @PathVariable Long invitationId,
+            @Parameter(description = "중복을 확인할 닉네임을 입력해주세요.") @RequestParam String nickname
+    ) {
+        return voteService.checkDuplicateNickname(invitationId, nickname);
+    }
+
 }
