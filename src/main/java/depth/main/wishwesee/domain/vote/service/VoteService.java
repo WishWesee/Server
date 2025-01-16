@@ -87,8 +87,6 @@ public class VoteService {
                 .build());
     }
 
-    // 닉네임 존재
-    // 업데이트
     @Transactional
     public ResponseEntity<?> voteAttendance(Optional<UserPrincipal> userPrincipal, Long invitationId, AttendanceVoteReq attendanceVoteReq) {
         Invitation invitation = validateInvitationById(invitationId);
@@ -97,48 +95,25 @@ public class VoteService {
         }
         User user = userPrincipal.map(principal -> validateUserById(principal.getId())).orElse(null);
         String nickname = user != null ? user.getName() : attendanceVoteReq.getNickname();
-        // 비회원 닉네임 검증
-        if (isDuplicateNickname(invitation, nickname)) {
-
-        }
-        Attendance attendance = Attendance.builder()
-                .nickname(nickname)
-                .attending(attendanceVoteReq.getAttending())
-                .user(user)
-                .invitation(invitation)
-                .build();
-        attendanceRepository.save(attendance);
-        return ResponseEntity.noContent().build();
-    }
-
-    // 투표 수정
-    public ResponseEntity<?> revoteAttendance(Optional<UserPrincipal> userPrincipal, Long invitationId, AttendanceVoteReq attendanceVoteReq) {
-        Invitation invitation = validateInvitationById(invitationId);
-        if(isVoteClosed(invitation)) {
-            return buildBadRequestResponse("참석 조사가 마감되었습니다.");
-        }
-        Attendance attendance;
-        if (userPrincipal.isPresent()) {
-            User user = validateUserById(userPrincipal.get().getId());
-            attendance = attendanceRepository.findByInvitationAndUser(invitation, user);
+        Attendance attendance = user != null
+                ? attendanceRepository.findByInvitationAndUser(invitation, user)
+                : validateAttendanceByInvitationAndNickname(invitation, nickname);
+        if (attendance != null) {
+            attendance.updateAttending(attendanceVoteReq.getAttending());
         } else {
-            attendance = validateAttendanceByInvitationAndNickname(invitation, attendanceVoteReq.getNickname());
+            Attendance newAttendance = Attendance.builder()
+                    .nickname(nickname)
+                    .attending(attendanceVoteReq.getAttending())
+                    .user(user)
+                    .invitation(invitation)
+                    .build();
+            attendanceRepository.save(newAttendance);
         }
-        attendance.updateAttending(attendanceVoteReq.getAttending());
         return ResponseEntity.noContent().build();
     }
 
-    // 투표자 목록 확인
     // (작성자) 투표 상태 변경
-    // 투표 수 조회 및 본인 투표 여부
-    // 1. 그냥 조회
-    // 2. 회원
-    // 3. 수정 시
 
-    private boolean isDuplicateNickname(Invitation invitation, String nickname) {
-        DefaultAssert.isTrue(nickname != null, "닉네임을 입력해주세요.");
-        return !checkDuplicateAttendanceNickname(invitation, nickname);
-    }
 
     private boolean isVoteClosed(Invitation invitation) {
         DefaultAssert.isTrue(invitation.isAttendanceSurveyEnabled(), "참석 조사가 비활성화되어 투표할 수 없습니다.");

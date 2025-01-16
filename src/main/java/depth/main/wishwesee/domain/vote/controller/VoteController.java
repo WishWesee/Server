@@ -75,7 +75,7 @@ public class VoteController {
     public ResponseEntity<?> voteAttendance(
             @Parameter(description = "Accesstoken을 입력해주세요.") @CurrentUser Optional<UserPrincipal> userPrincipal,
             @Parameter(description = "초대장의 id를 입력해주세요.", required = true) @PathVariable Long invitationId,
-            @Parameter(description = "Schemas의 CreateFeedbackReq를 확인해주세요. 후기에 들어갈 내용입니다.") @RequestBody AttendanceVoteReq attendanceVoteReq
+            @Parameter(description = "Schemas의 AttendanceVoteReq를 확인해주세요. 참석 여부와 닉네임(비회원)입니다.") @RequestBody AttendanceVoteReq attendanceVoteReq
     ) {
         return voteService.voteAttendance(userPrincipal, invitationId, attendanceVoteReq);
     }
