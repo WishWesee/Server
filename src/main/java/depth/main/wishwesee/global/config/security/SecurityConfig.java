@@ -10,6 +10,7 @@ import depth.main.wishwesee.global.config.security.token.CustomOncePerRequestFil
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -94,7 +95,9 @@ public class SecurityConfig {
                                 .permitAll()
                                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**")
                                 .permitAll()
-                                .requestMatchers("/api/v1/invitation", "/api/v1/{invitationId}/vote/check")
+                                .requestMatchers("/api/v1/invitation", "/api/v1/{invitationId}/attendance-vote/check")
+                                .permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/v1/{invitationId}/attendance-vote")
                                 .permitAll()
                                 .anyRequest().authenticated()
                 )

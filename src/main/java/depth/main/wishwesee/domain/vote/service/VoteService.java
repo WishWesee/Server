@@ -7,7 +7,9 @@ import depth.main.wishwesee.domain.user.domain.repository.UserRepository;
 import depth.main.wishwesee.domain.vote.domain.Attendance;
 import depth.main.wishwesee.domain.vote.domain.repository.AttendanceRepository;
 import depth.main.wishwesee.domain.vote.dto.request.AttendanceVoteReq;
+import depth.main.wishwesee.domain.vote.dto.response.AttendanceVoteStatusRes;
 import depth.main.wishwesee.domain.vote.dto.response.CheckNicknameRes;
+import depth.main.wishwesee.domain.vote.dto.response.MyVoteRes;
 import depth.main.wishwesee.global.DefaultAssert;
 import depth.main.wishwesee.global.config.security.token.UserPrincipal;
 import depth.main.wishwesee.global.payload.ApiResponse;
@@ -38,6 +40,37 @@ public class VoteService {
                 .build());
     }
 
+    // 중복된 닉네임이 있는(비회원) || 투표 전적이 있는(회원) 경우 조회
+    public ResponseEntity<ApiResponse> getMyAttendanceVote(Optional<UserPrincipal> userPrincipal, Long invitationId, String nickname) {
+        Invitation invitation = validateInvitationById(invitationId);
+        User user = userPrincipal.map(principal -> validateUserById(principal.getId())).orElse(null);
+        Attendance attendance;
+        if (userPrincipal.isPresent()) {
+            attendance = attendanceRepository.findByInvitationAndUser(invitation, user);
+        } else {
+            attendance = validateAttendanceByInvitationAndNickname(invitation,nickname);
+        }
+        MyVoteRes myVoteRes = MyVoteRes.builder()
+                .attending(attendance.getAttending())
+                .build();
+        return ResponseEntity.ok(ApiResponse.builder()
+                .check(true)
+                .information(myVoteRes)
+                .build());
+    }
+
+    public ResponseEntity<ApiResponse> getAttendanceVoteStatus(Long invitationId) {
+        Invitation invitation = validateInvitationById(invitationId);
+        AttendanceVoteStatusRes attendanceVoteStatusRes = AttendanceVoteStatusRes.builder()
+                .attending(attendanceRepository.countByInvitationAndAttending(invitation, true))
+                .notAttending(attendanceRepository.countByInvitationAndAttending(invitation, false))
+                .build();
+        return ResponseEntity.ok(ApiResponse.builder()
+                .check(true)
+                .information(attendanceVoteStatusRes)
+                .build());
+    }
+
     // 닉네임 존재
     // 업데이트
     @Transactional
@@ -54,7 +87,7 @@ public class VoteService {
         }
         Attendance attendance = Attendance.builder()
                 .nickname(nickname)
-                .attending(attendanceVoteReq.getAttend())
+                .attending(attendanceVoteReq.getAttending())
                 .user(user)
                 .invitation(invitation)
                 .build();
@@ -75,7 +108,7 @@ public class VoteService {
         } else {
             attendance = validateAttendanceByInvitationAndNickname(invitation, attendanceVoteReq.getNickname());
         }
-        attendance.updateAttending(attendanceVoteReq.getAttend());
+        attendance.updateAttending(attendanceVoteReq.getAttending());
         return ResponseEntity.noContent().build();
     }
 

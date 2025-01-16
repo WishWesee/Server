@@ -13,4 +13,6 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
     Optional<Attendance> findByInvitationAndNickname(Invitation invitation, String nickname);
 
     Attendance findByInvitationAndUser(Invitation invitation, User user);
+
+    int countByInvitationAndAttending(Invitation invitation, boolean b);
 }

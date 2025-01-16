@@ -10,5 +10,5 @@ public class AttendanceVoteReq {
     private String nickname;
 
     @Schema(type = "Boolean", example = "true", description = "투표자의 참석 여부입니다. true: 참석, false: 불참")
-    private Boolean attend;
+    private Boolean attending;
 }
