@@ -19,8 +19,6 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
 
     int countByInvitationAndAttending(Invitation invitation, boolean b);
 
-    @Query("SELECT a.user.name FROM Attendance a WHERE a.invitation = :invitation AND a.attending = :isAttend")
+    @Query("SELECT a.nickname FROM Attendance a WHERE a.invitation = :invitation AND a.attending = :isAttend")
     List<String> findVoterNamesByInvitationAndAttendance(@Param("invitation") Invitation invitation, @Param("isAttend") boolean isAttend);
-
-    boolean existsByInvitationAndUser(Invitation invitation, User user);
 }
