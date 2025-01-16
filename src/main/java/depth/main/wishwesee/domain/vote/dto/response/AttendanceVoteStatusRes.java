@@ -20,4 +20,7 @@ public class AttendanceVoteStatusRes {
 
     @Schema(type = "Boolean", example = "true", description = "회원의 경우, 내 투표 상태입니다. true, false, null(비회원이거나 투표하지 않은 경우)")
     private Boolean myAttending;
+
+    @Schema(type = "boolean", example = "false", description = "작성자 본인 여부입니다.")
+    private boolean isSender;
 }

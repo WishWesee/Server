@@ -64,10 +64,12 @@ public class VoteService {
         Invitation invitation = validateInvitationById(invitationId);
         User user = userPrincipal.map(principal -> validateUserById(principal.getId())).orElse(null);
         Boolean myAttendance = user != null ? attendanceRepository.findByInvitationAndUser(invitation, user).getAttending() : null;
+        boolean isSender = invitation.getSender() == user;
         AttendanceVoteStatusRes attendanceVoteStatusRes = AttendanceVoteStatusRes.builder()
                 .attending(attendanceRepository.countByInvitationAndAttending(invitation, true))
                 .notAttending(attendanceRepository.countByInvitationAndAttending(invitation, false))
                 .myAttending(myAttendance)
+                .isSender(isSender)
                 .build();
         return ResponseEntity.ok(ApiResponse.builder()
                 .check(true)
