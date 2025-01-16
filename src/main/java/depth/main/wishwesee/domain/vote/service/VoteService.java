@@ -60,9 +60,11 @@ public class VoteService {
 
     // 투표 현황 조회
     // (회원은 투표 전적이 있는 경우 본인 투표 상태도 함께 전달)
-    public ResponseEntity<ApiResponse> getAttendanceVoteStatus(Optional<UserPrincipal> userPrincipal, Long invitationId) {
+    public ResponseEntity<ApiResponse> getAttendanceVoteStatus(UserPrincipal userPrincipal, Long invitationId) {
         Invitation invitation = validateInvitationById(invitationId);
-        User user = userPrincipal.map(principal -> validateUserById(principal.getId())).orElse(null);
+        User user = Optional.ofNullable(userPrincipal)
+                .map(principal -> validateUserById(principal.getId()))
+                .orElse(null);
         Boolean myAttendance = user != null
                 ? attendanceRepository.findByInvitationAndUser(invitation, user)
                 .map(Attendance::getAttending)
@@ -97,13 +99,14 @@ public class VoteService {
     }
 
     @Transactional
-    public ResponseEntity<?> voteAttendance(Optional<UserPrincipal> userPrincipal, Long invitationId, AttendanceVoteReq attendanceVoteReq) {
+    public ResponseEntity<?> voteAttendance(UserPrincipal userPrincipal, Long invitationId, AttendanceVoteReq attendanceVoteReq) {
         Invitation invitation = validateInvitationById(invitationId);
-        if(isVoteClosed(invitation)) {
-            return buildBadRequestResponse("참석 조사가 마감되었습니다.");
-        }
-        User user = userPrincipal.map(principal -> validateUserById(principal.getId())).orElse(null);
+        checkVoteClosed(invitation);
+        User user = Optional.ofNullable(userPrincipal)
+                .map(principal -> validateUserById(principal.getId()))
+                .orElse(null);
         String nickname = user != null ? user.getName() : attendanceVoteReq.getNickname();
+        DefaultAssert.isTrue(nickname != null && !nickname.isEmpty(), "닉네임이 존재하지 않습니다.");
         Attendance attendance = (user != null)
                 ? attendanceRepository.findByInvitationAndUser(invitation, user).orElse(null)
                 : attendanceRepository.findByInvitationAndNickname(invitation, nickname).orElse(null);
@@ -138,18 +141,9 @@ public class VoteService {
                 .build());
     }
 
-    private boolean isVoteClosed(Invitation invitation) {
-        DefaultAssert.isTrue(invitation.isAttendanceSurveyEnabled(), "참석 조사가 비활성화되어 투표할 수 없습니다.");
-        return invitation.isAttendanceSurveyClosed();
-    }
-
-    private ResponseEntity<ApiResponse> buildBadRequestResponse(String msg) {
-        return ResponseEntity.badRequest().body(
-                ApiResponse.builder()
-                        .check(false)
-                        .information(msg)
-                        .build()
-        );
+    private void checkVoteClosed(Invitation invitation) {
+        DefaultAssert.isTrue(!invitation.isAttendanceSurveyEnabled(), "참석 조사가 비활성화되어 투표할 수 없습니다.");
+        DefaultAssert.isTrue(!invitation.isAttendanceSurveyClosed(), "참석 조사가 마감되었습니다.");
     }
 
     private boolean checkDuplicateAttendanceNickname(Invitation invitation, String nickname) {

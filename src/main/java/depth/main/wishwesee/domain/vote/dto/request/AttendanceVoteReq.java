@@ -1,6 +1,7 @@
 package depth.main.wishwesee.domain.vote.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.Column;
 import lombok.Getter;
 
 @Getter
@@ -10,5 +11,6 @@ public class AttendanceVoteReq {
     private String nickname;
 
     @Schema(type = "boolean", example = "true", description = "투표자의 참석 여부입니다. true: 참석, false: 불참")
+    @Column(nullable = false)
     private boolean attending;
 }

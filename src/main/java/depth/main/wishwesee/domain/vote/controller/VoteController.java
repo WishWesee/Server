@@ -18,8 +18,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Optional;
-
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/v1/{invitationId}/attendance")
@@ -34,7 +32,7 @@ public class VoteController {
     })
     @GetMapping()
     public ResponseEntity<depth.main.wishwesee.global.payload.ApiResponse> getAttendanceVoteStatus(
-            @Parameter(description = "Accesstoken을 입력해주세요.") @CurrentUser Optional<UserPrincipal> userPrincipal,
+            @Parameter(description = "Accesstoken을 입력해주세요.") @CurrentUser UserPrincipal userPrincipal,
             @Parameter(description = "초대장의 id를 입력해주세요.", required = true) @PathVariable Long invitationId
     ) {
         return voteService.getAttendanceVoteStatus(userPrincipal, invitationId);
@@ -74,7 +72,7 @@ public class VoteController {
     })
     @PostMapping()
     public ResponseEntity<?> voteAttendance(
-            @Parameter(description = "Accesstoken을 입력해주세요.") @CurrentUser Optional<UserPrincipal> userPrincipal,
+            @Parameter(description = "Accesstoken을 입력해주세요.") @CurrentUser UserPrincipal userPrincipal,
             @Parameter(description = "초대장의 id를 입력해주세요.", required = true) @PathVariable Long invitationId,
             @Parameter(description = "Schemas의 AttendanceVoteReq를 확인해주세요. 참석 여부와 닉네임(비회원)입니다.") @RequestBody AttendanceVoteReq attendanceVoteReq
     ) {
