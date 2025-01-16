@@ -16,6 +16,7 @@ import depth.main.wishwesee.domain.s3.service.S3Uploader;
 import depth.main.wishwesee.domain.user.domain.User;
 import depth.main.wishwesee.domain.user.domain.repository.UserRepository;
 import depth.main.wishwesee.domain.vote.domain.ScheduleVote;
+import depth.main.wishwesee.domain.vote.domain.repository.AttendanceRepository;
 import depth.main.wishwesee.domain.vote.domain.repository.VoteRepository;
 import depth.main.wishwesee.domain.vote.dto.request.ScheduleVoteReq;
 import depth.main.wishwesee.domain.vote.dto.response.ScheduleVoteRes;
@@ -43,6 +44,7 @@ public class InvitationService {
     private final VoteRepository voteRepository;
     private  final UserRepository userRepository;
     private final ReceivedInvitationRepository receivedInvitationRepository;
+    private  final AttendanceRepository attendanceRepository;
     @Transactional
     public ResponseEntity<?> saveTemporaryInvitation(InvitationReq invitationReq, MultipartFile cardImage, List<MultipartFile> photoImages, UserPrincipal userPrincipal){
         // 사용자 인증 여부 확인
@@ -319,6 +321,10 @@ public class InvitationService {
                     }
                 }).toList();
 
+        // 참석 가능/불가능 투표 수 집계
+        int attendingCount = attendanceRepository.countByInvitationIdAndAttending(invitation.getId(), true);
+        int notAttendingCount = attendanceRepository.countByInvitationIdAndAttending(invitation.getId(), false);
+
         // 일정 투표 리스트 조회
         List<ScheduleVote> scheduleVotes = voteRepository.findByInvitationId(invitation.getId());
 
@@ -337,7 +343,6 @@ public class InvitationService {
                 .invitationToken(invitation.getInvitationToken())
                 .title(invitation.getTitle())
                 .cardImage(invitation.getCardImage())
-                .tempSaved(invitation.isTempSaved())
                 .startDate(invitation.getStartDate())
                 .startTime(invitation.getStartTime())
                 .endDate(invitation.getEndDate())
@@ -351,6 +356,8 @@ public class InvitationService {
                 .scheduleVoteMultiple(invitation.isScheduleVoteMultiple())
                 .scheduleVoteClosed(invitation.isScheduleVoteClosed())
                 .attendanceSurveyClosed(invitation.isAttendanceSurveyClosed())
+                .attendingCount(attendingCount)
+                .attendingCount(notAttendingCount)
                 .blocks(blockResList)
                 .scheduleVotes(scheduleVoteResList)
                 .build();

@@ -19,8 +19,6 @@ public class CompletedInvitationRes {
 
     private String cardImage;
 
-    private boolean tempSaved;
-
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate startDate;
 
@@ -52,21 +50,25 @@ public class CompletedInvitationRes {
 
     private boolean attendanceSurveyClosed;
 
+    private int attendingCount;
+
+    private int notAttendingCount;
+
     private List<BlockRes> blocks; // 블록 리스트
 
     private List<ScheduleVoteRes> scheduleVotes; // 일정 투표 리스트
 
     @Builder
-    public CompletedInvitationRes(Long invitationId, String invitationToken,String title, String cardImage, boolean tempSaved, LocalDate startDate,
+    public CompletedInvitationRes(Long invitationId, String invitationToken,String title, String cardImage, LocalDate startDate,
                                   LocalTime startTime, LocalDate endDate, LocalTime endTime, String location, String address,
                                   String mapLink, int mapViewType, LocalDate voteDeadline, boolean attendanceSurveyEnabled,
                                   boolean scheduleVoteMultiple, boolean scheduleVoteClosed, boolean attendanceSurveyClosed,
+                                  int attendingCount, int notAttendingCount,
                                   List<BlockRes> blocks, List<ScheduleVoteRes> scheduleVotes) {
         this.invitationToken = invitationToken;
         this.invitationId = invitationId;
         this.title = title;
         this.cardImage = cardImage;
-        this.tempSaved = tempSaved;
         this.startDate = startDate;
         this.startTime = startTime;
         this.endDate = endDate;
@@ -80,6 +82,8 @@ public class CompletedInvitationRes {
         this.scheduleVoteMultiple = scheduleVoteMultiple;
         this.scheduleVoteClosed = scheduleVoteClosed;
         this.attendanceSurveyClosed = attendanceSurveyClosed;
+        this.attendingCount = attendingCount;
+        this.notAttendingCount = notAttendingCount;
         this.blocks = blocks;
         this.scheduleVotes = scheduleVotes;
     }
