@@ -11,14 +11,14 @@ import java.util.List;
 import java.util.Optional;
 
 public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
-    boolean existsByInvitationAndNickname(Invitation invitation, String nickname);
-
-    Optional<Attendance> findByInvitationAndNickname(Invitation invitation, String nickname);
-
     Optional<Attendance> findByInvitationAndUser(Invitation invitation, User user);
 
     int countByInvitationAndAttending(Invitation invitation, boolean b);
 
     @Query("SELECT a.nickname FROM Attendance a WHERE a.invitation = :invitation AND a.attending = :isAttend")
     List<String> findVoterNamesByInvitationAndAttendance(@Param("invitation") Invitation invitation, @Param("isAttend") boolean isAttend);
+
+    Optional<Attendance> findByInvitationAndNicknameAndUser(Invitation invitation, String nickname, User user);
+
+    boolean existsByInvitationAndNicknameAndUser(Invitation invitation, String nickname, User user);
 }

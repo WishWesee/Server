@@ -47,7 +47,7 @@ public class VoteService {
         // if (userPrincipal.isPresent()) {
         //     attendance = validateAttendanceByInvitationAndUser(invitation, user);
         // } else {
-            attendance = validateAttendanceByInvitationAndNickname(invitation,nickname);
+            attendance = validateAttendanceByInvitationAndNicknameAndUserNull(invitation,nickname);
         // }
         MyVoteRes myVoteRes = MyVoteRes.builder()
                 .attending(attendance.getAttending())
@@ -109,7 +109,7 @@ public class VoteService {
         DefaultAssert.isTrue(nickname != null && !nickname.isEmpty(), "닉네임이 존재하지 않습니다.");
         Attendance attendance = (user != null)
                 ? attendanceRepository.findByInvitationAndUser(invitation, user).orElse(null)
-                : attendanceRepository.findByInvitationAndNickname(invitation, nickname).orElse(null);
+                : attendanceRepository.findByInvitationAndNicknameAndUser(invitation, nickname, null).orElse(null);
         if (attendance != null) {
             attendance.updateAttending(attendanceVoteReq.isAttending());
         } else {
@@ -147,11 +147,11 @@ public class VoteService {
     }
 
     private boolean checkDuplicateAttendanceNickname(Invitation invitation, String nickname) {
-        return attendanceRepository.existsByInvitationAndNickname(invitation, nickname);
+        return attendanceRepository.existsByInvitationAndNicknameAndUser(invitation, nickname, null);
     }
 
-    private Attendance validateAttendanceByInvitationAndNickname(Invitation invitation, String nickname) {
-        Optional<Attendance> attendanceOptional = attendanceRepository.findByInvitationAndNickname(invitation, nickname);
+    private Attendance validateAttendanceByInvitationAndNicknameAndUserNull(Invitation invitation, String nickname) {
+        Optional<Attendance> attendanceOptional = attendanceRepository.findByInvitationAndNicknameAndUser(invitation, nickname, null);
         DefaultAssert.isTrue(attendanceOptional.isPresent(), "해당 닉네임의 투표자가 존재하지 않습니다.");
         return attendanceOptional.get();
     }
