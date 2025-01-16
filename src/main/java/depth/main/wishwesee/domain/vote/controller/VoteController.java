@@ -3,7 +3,7 @@ package depth.main.wishwesee.domain.vote.controller;
 import depth.main.wishwesee.domain.vote.dto.request.AttendanceVoteReq;
 import depth.main.wishwesee.domain.vote.dto.response.AttendanceSurveyClosedRes;
 import depth.main.wishwesee.domain.vote.dto.response.AttendanceVoteStatusRes;
-import depth.main.wishwesee.domain.vote.dto.response.VoterNameRes;
+import depth.main.wishwesee.domain.vote.dto.response.VoterRes;
 import depth.main.wishwesee.domain.vote.service.VoteService;
 import depth.main.wishwesee.global.config.security.token.CurrentUser;
 import depth.main.wishwesee.global.config.security.token.UserPrincipal;
@@ -22,7 +22,7 @@ import java.util.Optional;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/v1/{invitationId}/attendance-vote")
+@RequestMapping("/api/v1/{invitationId}/attendance")
 public class VoteController {
 
     private final VoteService voteService;
@@ -40,23 +40,22 @@ public class VoteController {
         return voteService.getAttendanceVoteStatus(userPrincipal, invitationId);
     }
 
-    @Operation(summary = "내 참석 투표 결과 조회", description = "내 참석 조사 투표 결과를 조회합니다.")
+    @Operation(summary = "(비회원) 특정 닉네임의 참석 조사 결과 조회", description = "비회원일 경우, 이름 입력 후 (중복된 이름이 존재한다면) 해당 이름의 참석 조사 투표 결과를 조회합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "조회 성공", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = AttendanceVoteStatusRes.class))}),
             @ApiResponse(responseCode = "400", description = "조회 실패", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))}),
     })
-    @GetMapping("/my-vote")
-    public ResponseEntity<depth.main.wishwesee.global.payload.ApiResponse> getMyAttendanceVote(
-            @Parameter(description = "Accesstoken을 입력해주세요.") @CurrentUser Optional<UserPrincipal> userPrincipal,
+    @GetMapping("/guest")
+    public ResponseEntity<depth.main.wishwesee.global.payload.ApiResponse> getAttendanceVoteByNickname(
             @Parameter(description = "초대장의 id를 입력해주세요.", required = true) @PathVariable Long invitationId,
-            @Parameter(description = "닉네임을 입력해주세요. 회원은 닉네임을 입력하지 않습니다.") @RequestParam(required = false) String nickname
+            @Parameter(description = "닉네임을 입력해주세요.") @RequestParam String nickname
     ) {
-        return voteService.getMyAttendanceVote(userPrincipal, invitationId, nickname);
+        return voteService.getAttendanceVoteByNickname(invitationId, nickname);
     }
 
     @Operation(summary = "투표자 목록 조회", description = "투표자 목록을 조회합니다. 작성자만 가능합니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "조회 성공", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = VoterNameRes.class))}),
+            @ApiResponse(responseCode = "200", description = "조회 성공", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = VoterRes.class))}),
             @ApiResponse(responseCode = "400", description = "조회 실패", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))}),
     })
     @GetMapping("/voters")
@@ -68,7 +67,7 @@ public class VoteController {
         return voteService.getVoterList(userPrincipal, invitationId, isAttend);
     }
 
-    @Operation(summary = "참석 여부 투표", description = "초대 참석 여부를 투표합니다.")
+    @Operation(summary = "참석 여부 투표", description = "참석 여부를 투표합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "투표 성공", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = Void.class))}),
             @ApiResponse(responseCode = "400", description = "투표 실패", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))}),
@@ -82,7 +81,7 @@ public class VoteController {
         return voteService.voteAttendance(userPrincipal, invitationId, attendanceVoteReq);
     }
 
-    @Operation(summary = "참석 조사 마감 여부 수정", description = "참석 조사의 마감 여부를 수정합니다.")
+    @Operation(summary = "참석 조사 마감 여부 수정", description = "참석 조사의 마감 여부를 수정합니다. 작성자만 가능합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "수정 성공", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = AttendanceSurveyClosedRes.class))}),
             @ApiResponse(responseCode = "400", description = "수정 실패", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))}),

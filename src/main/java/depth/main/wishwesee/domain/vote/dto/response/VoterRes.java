@@ -12,11 +12,11 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class VoterNameRes {
+public class VoterRes {
 
     @Schema(type = "int", example = "5", description = "투표자의 수입니다.")
     public int voterNum;
 
-    @Schema(type = "String", example = "김위시", description = "투표자의 이름입니다.")
+    @Schema(type = "array", example = "[\"김위시\", \"홍길동\"]", description = "투표자의 이름 목록입니다.")
     private List<String> voterNames;
 }

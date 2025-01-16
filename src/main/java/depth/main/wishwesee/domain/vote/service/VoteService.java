@@ -39,16 +39,16 @@ public class VoteService {
                 .build());
     }
 
-    // 이름 입력 시 중복된 닉네임이 있는 경우 조회
-    public ResponseEntity<ApiResponse> getMyAttendanceVote(Optional<UserPrincipal> userPrincipal, Long invitationId, String nickname) {
+    // (비회원) 이름 입력 후 중복된 닉네임이 있다면 투표 현황 조회
+    public ResponseEntity<ApiResponse> getAttendanceVoteByNickname(Long invitationId, String nickname) {
         Invitation invitation = validateInvitationById(invitationId);
-        User user = userPrincipal.map(principal -> validateUserById(principal.getId())).orElse(null);
+        // User user = userPrincipal.map(principal -> validateUserById(principal.getId())).orElse(null);
         Attendance attendance;
-        if (userPrincipal.isPresent()) {
-            attendance = attendanceRepository.findByInvitationAndUser(invitation, user);
-        } else {
+        // if (userPrincipal.isPresent()) {
+        //     attendance = validateAttendanceByInvitationAndUser(invitation, user);
+        // } else {
             attendance = validateAttendanceByInvitationAndNickname(invitation,nickname);
-        }
+        // }
         MyVoteRes myVoteRes = MyVoteRes.builder()
                 .attending(attendance.getAttending())
                 .build();
@@ -63,8 +63,12 @@ public class VoteService {
     public ResponseEntity<ApiResponse> getAttendanceVoteStatus(Optional<UserPrincipal> userPrincipal, Long invitationId) {
         Invitation invitation = validateInvitationById(invitationId);
         User user = userPrincipal.map(principal -> validateUserById(principal.getId())).orElse(null);
-        Boolean myAttendance = user != null ? attendanceRepository.findByInvitationAndUser(invitation, user).getAttending() : null;
-        boolean isSender = invitation.getSender() == user;
+        Boolean myAttendance = user != null
+                ? attendanceRepository.findByInvitationAndUser(invitation, user)
+                .map(Attendance::getAttending)
+                .orElse(null)  // 참석 조사 전적이 없다면 null
+                : null;
+        boolean isSender = invitation.getSender().equals(user);
         AttendanceVoteStatusRes attendanceVoteStatusRes = AttendanceVoteStatusRes.builder()
                 .attending(attendanceRepository.countByInvitationAndAttending(invitation, true))
                 .notAttending(attendanceRepository.countByInvitationAndAttending(invitation, false))
@@ -82,13 +86,13 @@ public class VoteService {
         User user = validateUserById(userPrincipal.getId());
         DefaultAssert.isTrue(invitation.getSender() == user, "초대장 작성자가 아닙니다.");
         List<String> voterNames = attendanceRepository.findVoterNamesByInvitationAndAttendance(invitation, isAttend);
-        VoterNameRes voterNameRes = VoterNameRes.builder()
+        VoterRes voterRes = VoterRes.builder()
                 .voterNum(attendanceRepository.countByInvitationAndAttending(invitation, isAttend))
                 .voterNames(voterNames)
                 .build();
         return ResponseEntity.ok(ApiResponse.builder()
                 .check(true)
-                .information(voterNameRes)
+                .information(voterRes)
                 .build());
     }
 
@@ -100,15 +104,15 @@ public class VoteService {
         }
         User user = userPrincipal.map(principal -> validateUserById(principal.getId())).orElse(null);
         String nickname = user != null ? user.getName() : attendanceVoteReq.getNickname();
-        Attendance attendance = user != null
-                ? attendanceRepository.findByInvitationAndUser(invitation, user)
-                : validateAttendanceByInvitationAndNickname(invitation, nickname);
+        Attendance attendance = (user != null)
+                ? attendanceRepository.findByInvitationAndUser(invitation, user).orElse(null)
+                : attendanceRepository.findByInvitationAndNickname(invitation, nickname).orElse(null);
         if (attendance != null) {
-            attendance.updateAttending(attendanceVoteReq.getAttending());
+            attendance.updateAttending(attendanceVoteReq.isAttending());
         } else {
             Attendance newAttendance = Attendance.builder()
                     .nickname(nickname)
-                    .attending(attendanceVoteReq.getAttending())
+                    .attending(attendanceVoteReq.isAttending())
                     .user(user)
                     .invitation(invitation)
                     .build();
@@ -148,7 +152,6 @@ public class VoteService {
         );
     }
 
-    // 닉네임 중복 체크
     private boolean checkDuplicateAttendanceNickname(Invitation invitation, String nickname) {
         return attendanceRepository.existsByInvitationAndNickname(invitation, nickname);
     }
