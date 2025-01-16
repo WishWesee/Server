@@ -60,7 +60,7 @@ public class VoteController {
     public ResponseEntity<depth.main.wishwesee.global.payload.ApiResponse> getAttendanceVoterList(
             @Parameter(description = "Accesstoken을 입력해주세요.") @CurrentUser UserPrincipal userPrincipal,
             @Parameter(description = "초대장의 id를 입력해주세요.", required = true) @PathVariable Long invitationId,
-            @Parameter(description = "확인하고자 하는 참석 여부를 입력해주세요. true: 참석, false: 불참", required = true) @RequestParam boolean isAttend
+            @Parameter(description = "확인하고자 하는 참석 여부를 입력해주세요. true: 참석(기본), false: 불참", required = true) @RequestParam(defaultValue = "true") boolean isAttend
     ) {
         return voteService.getVoterList(userPrincipal, invitationId, isAttend);
     }
