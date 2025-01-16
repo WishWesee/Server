@@ -14,6 +14,9 @@ import java.util.List;
 @AllArgsConstructor
 public class VoterNameRes {
 
+    @Schema(type = "int", example = "5", description = "투표자의 수입니다.")
+    public int voterNum;
+
     @Schema(type = "String", example = "김위시", description = "투표자의 이름입니다.")
-    private List<String> voters;
+    private List<String> voterNames;
 }

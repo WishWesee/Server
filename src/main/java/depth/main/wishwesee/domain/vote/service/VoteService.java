@@ -7,10 +7,7 @@ import depth.main.wishwesee.domain.user.domain.repository.UserRepository;
 import depth.main.wishwesee.domain.vote.domain.Attendance;
 import depth.main.wishwesee.domain.vote.domain.repository.AttendanceRepository;
 import depth.main.wishwesee.domain.vote.dto.request.AttendanceVoteReq;
-import depth.main.wishwesee.domain.vote.dto.response.AttendanceVoteStatusRes;
-import depth.main.wishwesee.domain.vote.dto.response.CheckNicknameRes;
-import depth.main.wishwesee.domain.vote.dto.response.MyVoteRes;
-import depth.main.wishwesee.domain.vote.dto.response.VoterNameRes;
+import depth.main.wishwesee.domain.vote.dto.response.*;
 import depth.main.wishwesee.global.DefaultAssert;
 import depth.main.wishwesee.global.config.security.token.UserPrincipal;
 import depth.main.wishwesee.global.payload.ApiResponse;
@@ -42,7 +39,7 @@ public class VoteService {
                 .build());
     }
 
-    // 중복된 닉네임이 있는(비회원) || 투표 전적이 있는(회원) 경우 조회
+    // 이름 입력 시 중복된 닉네임이 있는 경우 조회
     public ResponseEntity<ApiResponse> getMyAttendanceVote(Optional<UserPrincipal> userPrincipal, Long invitationId, String nickname) {
         Invitation invitation = validateInvitationById(invitationId);
         User user = userPrincipal.map(principal -> validateUserById(principal.getId())).orElse(null);
@@ -61,11 +58,16 @@ public class VoteService {
                 .build());
     }
 
-    public ResponseEntity<ApiResponse> getAttendanceVoteStatus(Long invitationId) {
+    // 투표 현황 조회
+    // (회원은 투표 전적이 있는 경우 본인 투표 상태도 함께 전달)
+    public ResponseEntity<ApiResponse> getAttendanceVoteStatus(Optional<UserPrincipal> userPrincipal, Long invitationId) {
         Invitation invitation = validateInvitationById(invitationId);
+        User user = userPrincipal.map(principal -> validateUserById(principal.getId())).orElse(null);
+        Boolean myAttendance = user != null ? attendanceRepository.findByInvitationAndUser(invitation, user).getAttending() : null;
         AttendanceVoteStatusRes attendanceVoteStatusRes = AttendanceVoteStatusRes.builder()
                 .attending(attendanceRepository.countByInvitationAndAttending(invitation, true))
                 .notAttending(attendanceRepository.countByInvitationAndAttending(invitation, false))
+                .myAttending(myAttendance)
                 .build();
         return ResponseEntity.ok(ApiResponse.builder()
                 .check(true)
@@ -79,7 +81,8 @@ public class VoteService {
         DefaultAssert.isTrue(invitation.getSender() == user, "초대장 작성자가 아닙니다.");
         List<String> voterNames = attendanceRepository.findVoterNamesByInvitationAndAttendance(invitation, isAttend);
         VoterNameRes voterNameRes = VoterNameRes.builder()
-                .voters(voterNames)
+                .voterNum(attendanceRepository.countByInvitationAndAttending(invitation, isAttend))
+                .voterNames(voterNames)
                 .build();
         return ResponseEntity.ok(ApiResponse.builder()
                 .check(true)
@@ -113,7 +116,21 @@ public class VoteService {
     }
 
     // (작성자) 투표 상태 변경
-
+    @Transactional
+    public ResponseEntity<ApiResponse> updateAttendanceSurvey(UserPrincipal userPrincipal, Long invitationId) {
+        Invitation invitation = validateInvitationById(invitationId);
+        User user = validateUserById(userPrincipal.getId());
+        DefaultAssert.isTrue(invitation.getSender() == user, "초대장 작성자가 아닙니다.");
+        boolean attendanceSurveyStatus = invitation.isAttendanceSurveyClosed();
+        invitation.updateAttendanceSurveyClosed(!attendanceSurveyStatus);
+        AttendanceSurveyClosedRes attendanceSurveyClosedRes = AttendanceSurveyClosedRes.builder()
+                .attendanceSurveyClosed(invitation.isAttendanceSurveyClosed())
+                .build();
+        return ResponseEntity.ok(ApiResponse.builder()
+                .check(true)
+                .information(attendanceSurveyClosedRes)
+                .build());
+    }
 
     private boolean isVoteClosed(Invitation invitation) {
         DefaultAssert.isTrue(invitation.isAttendanceSurveyEnabled(), "참석 조사가 비활성화되어 투표할 수 없습니다.");
@@ -129,15 +146,15 @@ public class VoteService {
         );
     }
 
+    // 닉네임 중복 체크
+    private boolean checkDuplicateAttendanceNickname(Invitation invitation, String nickname) {
+        return attendanceRepository.existsByInvitationAndNickname(invitation, nickname);
+    }
+
     private Attendance validateAttendanceByInvitationAndNickname(Invitation invitation, String nickname) {
         Optional<Attendance> attendanceOptional = attendanceRepository.findByInvitationAndNickname(invitation, nickname);
         DefaultAssert.isTrue(attendanceOptional.isPresent(), "해당 닉네임의 투표자가 존재하지 않습니다.");
         return attendanceOptional.get();
-    }
-
-    // 닉네임 중복 체크
-    private boolean checkDuplicateAttendanceNickname(Invitation invitation, String nickname) {
-        return attendanceRepository.existsByInvitationAndNickname(invitation, nickname);
     }
 
     private User validateUserById(Long userId) {

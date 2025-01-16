@@ -1,6 +1,7 @@
 package depth.main.wishwesee.domain.vote.controller;
 
 import depth.main.wishwesee.domain.vote.dto.request.AttendanceVoteReq;
+import depth.main.wishwesee.domain.vote.dto.response.AttendanceSurveyClosedRes;
 import depth.main.wishwesee.domain.vote.dto.response.AttendanceVoteStatusRes;
 import depth.main.wishwesee.domain.vote.dto.response.VoterNameRes;
 import depth.main.wishwesee.domain.vote.service.VoteService;
@@ -33,9 +34,10 @@ public class VoteController {
     })
     @GetMapping()
     public ResponseEntity<depth.main.wishwesee.global.payload.ApiResponse> getAttendanceVoteStatus(
+            @Parameter(description = "Accesstoken을 입력해주세요.") @CurrentUser Optional<UserPrincipal> userPrincipal,
             @Parameter(description = "초대장의 id를 입력해주세요.", required = true) @PathVariable Long invitationId
     ) {
-        return voteService.getAttendanceVoteStatus(invitationId);
+        return voteService.getAttendanceVoteStatus(userPrincipal, invitationId);
     }
 
     @Operation(summary = "내 참석 투표 결과 조회", description = "내 참석 조사 투표 결과를 조회합니다.")
@@ -78,6 +80,19 @@ public class VoteController {
             @Parameter(description = "Schemas의 AttendanceVoteReq를 확인해주세요. 참석 여부와 닉네임(비회원)입니다.") @RequestBody AttendanceVoteReq attendanceVoteReq
     ) {
         return voteService.voteAttendance(userPrincipal, invitationId, attendanceVoteReq);
+    }
+
+    @Operation(summary = "참석 조사 마감 여부 수정", description = "참석 조사의 마감 여부를 수정합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "수정 성공", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = AttendanceSurveyClosedRes.class))}),
+            @ApiResponse(responseCode = "400", description = "수정 실패", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))}),
+    })
+    @PutMapping()
+    public ResponseEntity<?> updateAttendanceSurveyClosed(
+            @Parameter(description = "Accesstoken을 입력해주세요.") @CurrentUser UserPrincipal userPrincipal,
+            @Parameter(description = "초대장의 id를 입력해주세요.", required = true) @PathVariable Long invitationId
+    ) {
+        return voteService.updateAttendanceSurvey(userPrincipal, invitationId);
     }
 
     @Operation(summary = "닉네임 중복여부 확인", description = "투표 전, 닉네임 중복여부를 확인합니다.")
