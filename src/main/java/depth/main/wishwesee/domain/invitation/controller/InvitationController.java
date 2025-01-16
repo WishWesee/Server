@@ -117,7 +117,7 @@ public class InvitationController {
         return invitationService.saveReceivedInvitation(invitationToken, userPrincipal);
     }
 
-    @Operation(summary = "완성된 초대장 조회", description = "완성된 초대장의 ID를 통해 초대장의 상세 정보를 조회합니다.")
+    @Operation(summary = "완성된 초대장 조회", description = "완성된 초대장의 UUID를 통해 초대장의 상세 정보를 조회합니다.")
     @GetMapping("/{invitationToken}")
     public ResponseEntity<?> getCompletedInvitation(
             @Parameter(description = "조회할 완성된 초대장의 UUID토큰", required = true) @PathVariable String invitationToken,
