@@ -15,6 +15,7 @@ public interface ReceivedInvitationRepository extends JpaRepository<ReceivedInvi
     Optional<ReceivedInvitation> findByInvitation(Invitation invitation);
 
     boolean existsByInvitationAndReceiver(Invitation invitation, User user);
+    boolean existsByReceiverAndInvitation(User receiver, Invitation invitation);
 
     List<ReceivedInvitation> findTop3ByReceiverOrderByCreatedDateDesc(User user); // 받은 초대장 최신순 3개
 

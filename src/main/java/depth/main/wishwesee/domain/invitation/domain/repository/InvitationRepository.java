@@ -8,7 +8,10 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
+import java.util.Optional;
+
 public interface InvitationRepository extends JpaRepository<Invitation, Long> {
+    Optional<Invitation> findByInvitationToken(String invitationToken);
     List<Invitation> findBySenderAndTempSavedTrue(User user); // 작성중 초대장
 
     List<Invitation> findTop3BySenderAndTempSavedFalseOrderByCreatedDateDesc(User user);  // 보낸 초대장 최신순 3개
