@@ -19,12 +19,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.util.Optional;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+
 
 import java.util.List;
 
@@ -99,4 +98,21 @@ public class InvitationController {
         return feedbackService.deleteFeedback(userPrincipal, invitationId, feedbackId);
     }
 
+
+    @Operation(summary = "초대장 받기", description = "초대장을 받고 받은 초대장 목록에 저장합니다. " +
+            "만약 이미 받은 초대장이거나 본인이 작성한 초대장일 경우 에러 메시지를 반환합니다")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "초대장 받기 성공"),
+            @ApiResponse(responseCode = "400", description = "본인이 작성한 초대장"),
+            @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
+            @ApiResponse(responseCode = "404", description = "해당 초대장이나 사용자 정보를 찾을 수 없음"),
+            @ApiResponse(responseCode = "409", description = "이미 저장된 초대장")
+    })
+    @PostMapping("/save-received")
+    public ResponseEntity<?> saveReceivedInvitation(
+            @Parameter(description = "저장할 초대장의 UUID토큰을 입력해주세요.", required = true) @RequestParam String invitationToken,
+            @Parameter(description = "Accesstoken을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal) {
+
+        return invitationService.saveReceivedInvitation(invitationToken, userPrincipal);
+    }
 }

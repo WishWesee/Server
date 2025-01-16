@@ -11,4 +11,5 @@ public interface ReceivedInvitationRepository extends JpaRepository<ReceivedInvi
     Optional<ReceivedInvitation> findByInvitation(Invitation invitation);
 
     boolean existsByInvitationAndReceiver(Invitation invitation, User user);
+    boolean existsByReceiverAndInvitation(User receiver, Invitation invitation);
 }
