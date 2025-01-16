@@ -18,7 +18,7 @@ public class AttendanceVoteStatusRes {
     @Schema(type = "int", example = "2", description = "불참에 투표한 투표자들의 수입니다.")
     private int notAttending;
 
-    @Schema(type = "Boolean", example = "true", description = "회원의 경우, 내 투표 상태입니다. true, false, null(비회원이거나 투표하지 않은 경우)")
+    @Schema(type = "Boolean", example = "true", description = "회원의 경우, 내 투표 상태입니다. true: 참석, false: 불참, null: 비회원이거나 투표하지 않은 경우")
     private Boolean myAttending;
 
     @Schema(type = "boolean", example = "false", description = "작성자 본인 여부입니다.")
