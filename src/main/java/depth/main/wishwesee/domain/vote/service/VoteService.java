@@ -10,6 +10,7 @@ import depth.main.wishwesee.domain.vote.dto.request.AttendanceVoteReq;
 import depth.main.wishwesee.domain.vote.dto.response.AttendanceVoteStatusRes;
 import depth.main.wishwesee.domain.vote.dto.response.CheckNicknameRes;
 import depth.main.wishwesee.domain.vote.dto.response.MyVoteRes;
+import depth.main.wishwesee.domain.vote.dto.response.VoterNameRes;
 import depth.main.wishwesee.global.DefaultAssert;
 import depth.main.wishwesee.global.config.security.token.UserPrincipal;
 import depth.main.wishwesee.global.payload.ApiResponse;
@@ -18,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -68,6 +70,20 @@ public class VoteService {
         return ResponseEntity.ok(ApiResponse.builder()
                 .check(true)
                 .information(attendanceVoteStatusRes)
+                .build());
+    }
+
+    public ResponseEntity<ApiResponse> getVoterList(UserPrincipal userPrincipal, Long invitationId, boolean isAttend) {
+        Invitation invitation = validateInvitationById(invitationId);
+        User user = validateUserById(userPrincipal.getId());
+        DefaultAssert.isTrue(invitation.getSender() == user, "초대장 작성자가 아닙니다.");
+        List<String> voterNames = attendanceRepository.findVoterNamesByInvitationAndAttendance(invitation, isAttend);
+        VoterNameRes voterNameRes = VoterNameRes.builder()
+                .voters(voterNames)
+                .build();
+        return ResponseEntity.ok(ApiResponse.builder()
+                .check(true)
+                .information(voterNameRes)
                 .build());
     }
 
