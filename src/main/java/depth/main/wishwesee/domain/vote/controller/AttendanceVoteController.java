@@ -1,9 +1,7 @@
 package depth.main.wishwesee.domain.vote.controller;
 
 import depth.main.wishwesee.domain.vote.dto.request.AttendanceVoteReq;
-import depth.main.wishwesee.domain.vote.dto.response.AttendanceSurveyClosedRes;
-import depth.main.wishwesee.domain.vote.dto.response.AttendanceVoteStatusRes;
-import depth.main.wishwesee.domain.vote.dto.response.VoterRes;
+import depth.main.wishwesee.domain.vote.dto.response.*;
 import depth.main.wishwesee.domain.vote.service.VoteService;
 import depth.main.wishwesee.global.config.security.token.CurrentUser;
 import depth.main.wishwesee.global.config.security.token.UserPrincipal;
@@ -14,18 +12,20 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+@Tag(name = "Attendance Vote", description = "Attendance Vote API")
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/v1/invitation/{invitationId}/attendance")
-public class VoteController {
+public class AttendanceVoteController {
 
     private final VoteService voteService;
 
-    @Operation(summary = "참석 조사 현황 조회", description = "참석 조사 현황을 조회합니다.")
+    @Operation(summary = "참석 조사 조회", description = "참석 조사 현황을 조회합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "조회 성공", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = AttendanceVoteStatusRes.class))}),
             @ApiResponse(responseCode = "400", description = "조회 실패", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))}),
@@ -40,7 +40,7 @@ public class VoteController {
 
     @Operation(summary = "(비회원) 특정 닉네임의 참석 조사 결과 조회", description = "비회원일 경우, 이름 입력 후 (중복된 이름이 존재한다면) 해당 이름의 참석 조사 투표 결과를 조회합니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "조회 성공", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = AttendanceVoteStatusRes.class))}),
+            @ApiResponse(responseCode = "200", description = "조회 성공", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = MyVoteRes.class))}),
             @ApiResponse(responseCode = "400", description = "조회 실패", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))}),
     })
     @GetMapping("/guest")
@@ -65,7 +65,7 @@ public class VoteController {
         return voteService.getVoterList(userPrincipal, invitationId, isAttend);
     }
 
-    @Operation(summary = "참석 여부 투표", description = "참석 여부를 투표합니다.")
+    @Operation(summary = "참석 여부 투표", description = "참석 여부 투표 및 투표를 수정합니다. 비회원의 경우 이미 존재하는 닉네임 입력 시 해당 닉네임의 투표 수정이 가능합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "투표 성공", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = Void.class))}),
             @ApiResponse(responseCode = "400", description = "투표 실패", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))}),
@@ -94,7 +94,7 @@ public class VoteController {
 
     @Operation(summary = "닉네임 중복여부 확인", description = "투표 전, 닉네임 중복여부를 확인합니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "중복 여부 확인 성공", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponse.class))}),
+            @ApiResponse(responseCode = "200", description = "중복 여부 확인 성공", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = CheckNicknameRes.class))}),
             @ApiResponse(responseCode = "400", description = "중복 여부 확인 실패", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))}),
     })
     @GetMapping("/check")

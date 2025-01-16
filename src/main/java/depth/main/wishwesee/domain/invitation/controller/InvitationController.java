@@ -2,6 +2,7 @@ package depth.main.wishwesee.domain.invitation.controller;
 
 import depth.main.wishwesee.domain.invitation.dto.request.CreateFeedbackReq;
 import depth.main.wishwesee.domain.invitation.dto.request.InvitationReq;
+import depth.main.wishwesee.domain.invitation.dto.response.FeedbackListRes;
 import depth.main.wishwesee.domain.invitation.service.FeedbackService;
 import depth.main.wishwesee.global.config.security.token.CurrentUser;
 import depth.main.wishwesee.global.config.security.token.UserPrincipal;
@@ -73,7 +74,7 @@ public class InvitationController {
 
     @Operation(summary = "후기 조회", description = "내가 받은/보낸 초대장의 후기를 조회합니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "후기 조회 성공", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponse.class))}),
+            @ApiResponse(responseCode = "200", description = "후기 조회 성공", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = FeedbackListRes.class))}),
             @ApiResponse(responseCode = "400", description = "후기 조회 실패", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))}),
     })
     @GetMapping("/{invitationId}/feedback")
