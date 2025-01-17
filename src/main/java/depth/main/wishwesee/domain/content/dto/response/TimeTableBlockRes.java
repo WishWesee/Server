@@ -8,8 +8,9 @@ import lombok.Getter;
 
 import java.util.List;
 @Getter
+@Schema(description = "시간표 블록 응답")
 public class TimeTableBlockRes extends BlockRes{
-    @Schema(description = "시간표 내용 목록")
+    @Schema(description = "시간표 내용 목록", type = "List<TimeTable.TimeTableEntry>")
     private List<TimeTable.TimeTableEntry> content;
 
     @Builder

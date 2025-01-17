@@ -11,73 +11,74 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 @Getter
+@Schema(description = "완성된 초대장 응답 객체")
 public class CompletedInvitationRes {
-    @Schema(description = "초대장ID")
+    @Schema(description = "초대장ID", example = "1", type = "Long")
     private Long invitationId;
 
-    @Schema(description = "초대장UUID")
+    @Schema(description = "초대장UUID(고유 식별자)", example = "abcd-1234-efgh-5678", type = "String")
     private String invitationToken;
 
-    @Schema(description = "초대장 제목")
+    @Schema(description = "초대장 제목", example = "크리스마스", type = "String")
     private String title;
 
-    @Schema(description = "카드 이미지")
+    @Schema(description = "카드 이미지 URL", example = "https://wishwesee-s3-image-bucket.s3.amazonaws.com/3f78b60d-c3b5-46db-aab2-9f8245ad7b35.jpg", type = "String")
     private String cardImage;
 
-    @Schema(description = "시작 날짜")
+    @Schema(description = "시작 날짜", example = "2025-01-01", type = "String")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate startDate;
 
-    @Schema(description = "시작 시간")
+    @Schema(description = "시작 시간", example = "18:00", type = "String")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm")
     private LocalTime startTime;
 
-    @Schema(description = "마지막 날짜")
+    @Schema(description = "마지막 날짜", example = "2025-01-02", type = "String")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate endDate;
 
-    @Schema(description = "마지막 시간")
+    @Schema(description = "마지막 시간", example = "22:00", type = "String")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm")
     private LocalTime endTime;
 
-    @Schema(description = "장소명")
+    @Schema(description = "장소명", example = "명지대학교", type = "String")
     private String location;
 
-    @Schema(description = "주소")
+    @Schema(description = "주소", example = "경기도 용인시 처인구 명지로 116 명지대학교", type = "String")
     private String address;
 
-    @Schema(description = "지도 링크")
+    @Schema(description = "지도 링크", example = "https://map.naver.com/v5/search/%EA%B2%BD%EA%B8%B0%EB%8F%84+%EC%9A%A9%EC%9D%B8%EC%8B%9C+%EC%B2%98%EC%9D%B8%EA%B5%AC+%EB%AA%85%EC%A7%80%EB%A1%9C+116+%EB%AA%85%EC%A7%80%EB%8C%80%ED%95%99%EA%B5%90", type = "String")
     private String mapLink;
 
-    @Schema(description = "지도 보기 타입 (0: 주소만 보기, 1: 지도 보기)")
+    @Schema(description = "지도 보기 타입 (0: 주소만 보기, 1: 지도 보기)", example = "1", type = "int")
     private int mapViewType;
 
-    @Schema(description = "투표 마감일")
+    @Schema(description = "투표 마감일", example = "2025-01-05", type = "String")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate voteDeadline;
 
-    @Schema(description = "참석 여부 조사 활성화 여부")
+    @Schema(description = "참석 여부 조사 활성화 여부", example = "true", type = "boolean")
     private boolean attendanceSurveyEnabled;
 
-    @Schema(description = "일정 투표 복수 선택 가능 여부")
+    @Schema(description = "일정 투표 복수 선택 가능 여부", example = "false", type = "boolean")
     private boolean scheduleVoteMultiple;
 
-    @Schema(description = "일정 투표 마감 여부")
+    @Schema(description = "일정 투표 마감 여부", example = "true", type = "boolean")
     private boolean scheduleVoteClosed;
 
-    @Schema(description = "참석 여부 투표 마감 여부")
+    @Schema(description = "참석 여부 투표 마감 여부", example = "false", type = "boolean")
     private boolean attendanceSurveyClosed;
 
-    @Schema(description = "참석 가능한 사람 수")
+    @Schema(description = "참석 가능한 사람 수", example = "10", type = "int")
     private int attendingCount;
 
-    @Schema(description = "참석 불가능한 사람 수")
+    @Schema(description = "참석 불가능한 사람 수", example = "2", type = "int")
     private int notAttendingCount;
 
-    @Schema(description = "블록리스트")
+    @Schema(description = "블록리스트", type = "List<BlockRes>")
     private List<BlockRes> blocks; // 블록 리스트
 
-    @Schema(description = "일정 투표 리스트")
+    @Schema(description = "일정 투표 리스트", type = "List<ScheduleVoteRes>")
     private List<ScheduleVoteRes> scheduleVotes; // 일정 투표 리스트
 
     @Builder
