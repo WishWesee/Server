@@ -378,7 +378,7 @@ public class InvitationService {
 
         // 보낸 초대장 최신순 3개 조회
          List<MyInvitationOverViewRes.InvitationRes> sentInvitations = convertToInvitationRes(
-                 invitationRepository.findTop3BySenderAndTempSavedFalseOrderByCreatedDateDesc(user)
+                 invitationRepository.findTop3BySenderAndTempSavedFalseOrderByModifiedDateDesc(user)
          );
 
         // 받은 초대장 최신순 3개
