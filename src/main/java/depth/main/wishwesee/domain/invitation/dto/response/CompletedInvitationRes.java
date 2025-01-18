@@ -19,11 +19,11 @@ public class CompletedInvitationRes {
     @Schema(description = "초대장UUID(고유 식별자)", example = "abcd-1234-efgh-5678", type = "String")
     private String invitationToken;
 
-    @Schema(description = "초대장 제목", example = "크리스마스", type = "String")
-    private String title;
-
     @Schema(description = "카드 이미지 URL", example = "https://wishwesee-s3-image-bucket.s3.amazonaws.com/3f78b60d-c3b5-46db-aab2-9f8245ad7b35.jpg", type = "String")
     private String cardImage;
+
+    @Schema(description = "초대장 제목", example = "크리스마스", type = "String")
+    private String title;
 
     @Schema(description = "시작 날짜", example = "2025-01-01", type = "String")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
@@ -41,6 +41,22 @@ public class CompletedInvitationRes {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm")
     private LocalTime endTime;
 
+    @Schema(description = "투표 마감일", example = "2025-01-05", type = "String")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    private LocalDate voteDeadline;
+
+    @Schema(description = "일정 투표 복수 선택 가능 여부", example = "false", type = "boolean")
+    private boolean scheduleVoteMultiple;
+
+    @Schema(description = "일정 투표 리스트", type = "List<ScheduleVoteRes>")
+    private List<ScheduleVoteRes> scheduleVotes; // 일정 투표 리스트
+
+    @Schema(description = "일정 투표 마감 여부", example = "true", type = "boolean")
+    private boolean scheduleVoteClosed;
+
+    @Schema(description = "지도 보기 타입 (0: 주소만 보기, 1: 지도 보기)", example = "1", type = "int")
+    private int mapViewType;
+
     @Schema(description = "장소명", example = "명지대학교", type = "String")
     private String location;
 
@@ -50,43 +66,13 @@ public class CompletedInvitationRes {
     @Schema(description = "지도 링크", example = "https://map.naver.com/v5/search/%EA%B2%BD%EA%B8%B0%EB%8F%84+%EC%9A%A9%EC%9D%B8%EC%8B%9C+%EC%B2%98%EC%9D%B8%EA%B5%AC+%EB%AA%85%EC%A7%80%EB%A1%9C+116+%EB%AA%85%EC%A7%80%EB%8C%80%ED%95%99%EA%B5%90", type = "String")
     private String mapLink;
 
-    @Schema(description = "지도 보기 타입 (0: 주소만 보기, 1: 지도 보기)", example = "1", type = "int")
-    private int mapViewType;
-
-    @Schema(description = "투표 마감일", example = "2025-01-05", type = "String")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-    private LocalDate voteDeadline;
-
-    @Schema(description = "참석 여부 조사 활성화 여부", example = "true", type = "boolean")
-    private boolean attendanceSurveyEnabled;
-
-    @Schema(description = "일정 투표 복수 선택 가능 여부", example = "false", type = "boolean")
-    private boolean scheduleVoteMultiple;
-
-    @Schema(description = "일정 투표 마감 여부", example = "true", type = "boolean")
-    private boolean scheduleVoteClosed;
-
-    @Schema(description = "참석 여부 투표 마감 여부", example = "false", type = "boolean")
-    private boolean attendanceSurveyClosed;
-
-    @Schema(description = "참석 가능한 사람 수", example = "10", type = "int")
-    private int attendingCount;
-
-    @Schema(description = "참석 불가능한 사람 수", example = "2", type = "int")
-    private int notAttendingCount;
-
     @Schema(description = "블록리스트", type = "List<BlockRes>")
     private List<BlockRes> blocks; // 블록 리스트
-
-    @Schema(description = "일정 투표 리스트", type = "List<ScheduleVoteRes>")
-    private List<ScheduleVoteRes> scheduleVotes; // 일정 투표 리스트
 
     @Builder
     public CompletedInvitationRes(Long invitationId, String invitationToken,String title, String cardImage, LocalDate startDate,
                                   LocalTime startTime, LocalDate endDate, LocalTime endTime, String location, String address,
-                                  String mapLink, int mapViewType, LocalDate voteDeadline, boolean attendanceSurveyEnabled,
-                                  boolean scheduleVoteMultiple, boolean scheduleVoteClosed, boolean attendanceSurveyClosed,
-                                  int attendingCount, int notAttendingCount,
+                                  String mapLink, int mapViewType, LocalDate voteDeadline, boolean scheduleVoteMultiple, boolean scheduleVoteClosed,
                                   List<BlockRes> blocks, List<ScheduleVoteRes> scheduleVotes) {
         this.invitationToken = invitationToken;
         this.invitationId = invitationId;
@@ -101,14 +87,11 @@ public class CompletedInvitationRes {
         this.mapLink = mapLink;
         this.mapViewType = mapViewType;
         this.voteDeadline = voteDeadline;
-        this.attendanceSurveyEnabled = attendanceSurveyEnabled;
         this.scheduleVoteMultiple = scheduleVoteMultiple;
         this.scheduleVoteClosed = scheduleVoteClosed;
-        this.attendanceSurveyClosed = attendanceSurveyClosed;
-        this.attendingCount = attendingCount;
-        this.notAttendingCount = notAttendingCount;
         this.blocks = blocks;
         this.scheduleVotes = scheduleVotes;
     }
 
 }
+

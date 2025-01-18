@@ -321,10 +321,6 @@ public class InvitationService {
                     }
                 }).toList();
 
-        // 참석 가능/불가능 투표 수 집계
-        int attendingCount = attendanceRepository.countByInvitationIdAndAttending(invitation.getId(), true);
-        int notAttendingCount = attendanceRepository.countByInvitationIdAndAttending(invitation.getId(), false);
-
         // 일정 투표 리스트 조회
         List<ScheduleVote> scheduleVotes = voteRepository.findByInvitationId(invitation.getId());
 
@@ -341,25 +337,21 @@ public class InvitationService {
         CompletedInvitationRes response = CompletedInvitationRes.builder()
                 .invitationId(invitation.getId())
                 .invitationToken(invitation.getInvitationToken())
-                .title(invitation.getTitle())
                 .cardImage(invitation.getCardImage())
+                .title(invitation.getTitle())
                 .startDate(invitation.getStartDate())
                 .startTime(invitation.getStartTime())
                 .endDate(invitation.getEndDate())
                 .endTime(invitation.getEndTime())
+                .voteDeadline(invitation.getVoteDeadline())
+                .scheduleVoteMultiple(invitation.isScheduleVoteMultiple())
+                .scheduleVotes(scheduleVoteResList)
+                .scheduleVoteClosed(invitation.isScheduleVoteClosed())
+                .mapViewType(invitation.getMapViewType())
                 .location(invitation.getLocation())
                 .address(invitation.getAddress())
                 .mapLink(invitation.getMapLink())
-                .mapViewType(invitation.getMapViewType())
-                .voteDeadline(invitation.getVoteDeadline())
-                .attendanceSurveyEnabled(invitation.isAttendanceSurveyEnabled())
-                .scheduleVoteMultiple(invitation.isScheduleVoteMultiple())
-                .scheduleVoteClosed(invitation.isScheduleVoteClosed())
-                .attendanceSurveyClosed(invitation.isAttendanceSurveyClosed())
-                .attendingCount(attendingCount)
-                .attendingCount(notAttendingCount)
                 .blocks(blockResList)
-                .scheduleVotes(scheduleVoteResList)
                 .build();
 
         return ResponseEntity.ok(response);
