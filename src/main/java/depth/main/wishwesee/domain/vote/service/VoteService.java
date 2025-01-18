@@ -142,7 +142,7 @@ public class VoteService {
     }
 
     private void checkVoteClosed(Invitation invitation) {
-        DefaultAssert.isTrue(!invitation.isAttendanceSurveyEnabled(), "참석 조사가 비활성화되어 투표할 수 없습니다.");
+        DefaultAssert.isTrue(invitation.isAttendanceSurveyEnabled(), "참석 조사가 비활성화되어 투표할 수 없습니다.");
         DefaultAssert.isTrue(!invitation.isAttendanceSurveyClosed(), "참석 조사가 마감되었습니다.");
     }
 
@@ -152,7 +152,7 @@ public class VoteService {
 
     private Attendance validateAttendanceByInvitationAndNicknameAndUserNull(Invitation invitation, String nickname) {
         Optional<Attendance> attendanceOptional = attendanceRepository.findByInvitationAndNicknameAndUser(invitation, nickname, null);
-        DefaultAssert.isTrue(attendanceOptional.isPresent(), "해당 닉네임의 투표자가 존재하지 않습니다.");
+        DefaultAssert.isOptionalPresent(attendanceOptional, "해당 닉네임의 투표자가 존재하지 않습니다.");
         return attendanceOptional.get();
     }
 
