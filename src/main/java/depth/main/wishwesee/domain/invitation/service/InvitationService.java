@@ -71,8 +71,7 @@ public class InvitationService {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(Map.of(
                         "message", "초대장 작성을 완료하였습니다.",
-                        "invitationId", invitation.getId(),
-                        "invitationToken", invitation.getInvitationToken()
+                        "invitationId", invitation.getId()
                 ));
 
     }
@@ -117,7 +116,6 @@ public class InvitationService {
         }
 
         return Invitation.builder()
-                .invitationToken(UUID.randomUUID().toString()) // UUID 토큰 자동 생성
                 .title(invitationReq.getTitle())
                 .cardImage(cardImageUrl)
                 .tempSaved(isTemporary)
@@ -250,13 +248,13 @@ public class InvitationService {
     }
 
     @Transactional
-    public ResponseEntity<?> saveReceivedInvitation(String invitationToken, UserPrincipal userPrincipal) {
+    public ResponseEntity<?> saveReceivedInvitation(Long invitationId, UserPrincipal userPrincipal) {
         // 현재 사용자 정보 가져오기
         User receiver = userRepository.findById(userPrincipal.getId())
                 .orElseThrow(() -> new DefaultException(ErrorCode.NOT_FOUND, "사용자를 찾을 수 없습니다."));
 
         // 초대장 정보 가져오기 (UUID 기반 조회)
-        Invitation invitation = invitationRepository.findByInvitationToken(invitationToken)
+        Invitation invitation = invitationRepository.findById(invitationId)
                 .orElseThrow(() -> new DefaultException(ErrorCode.NOT_FOUND, "해당 초대장이 존재하지 않습니다."));
 
         // 작성자 본인 확인
@@ -284,9 +282,9 @@ public class InvitationService {
 
 
 
-    public ResponseEntity<?> getCompletedInvitation(String invitationToken, UserPrincipal userPrincipal) {
+    public ResponseEntity<?> getCompletedInvitation(Long invitationId, UserPrincipal userPrincipal) {
         // 초대장 조회
-        Invitation invitation = invitationRepository.findByInvitationToken(invitationToken)
+        Invitation invitation = invitationRepository.findById(invitationId)
                 .orElseThrow(() -> new DefaultException(ErrorCode.NOT_FOUND, "해당 초대장이 존재하지 않습니다."));
 
         // 초대장의 모든 블록 조회
@@ -336,7 +334,6 @@ public class InvitationService {
         // 응답 DTO 생성
         CompletedInvitationRes response = CompletedInvitationRes.builder()
                 .invitationId(invitation.getId())
-                .invitationToken(invitation.getInvitationToken())
                 .cardImage(invitation.getCardImage())
                 .title(invitation.getTitle())
                 .startDate(invitation.getStartDate())

@@ -114,25 +114,25 @@ public class InvitationController {
     })
     @PostMapping("/save-received")
     public ResponseEntity<?> saveReceivedInvitation(
-            @Parameter(description = "저장할 초대장의 UUID토큰을 입력해주세요.", required = true) @RequestParam String invitationToken,
+            @Parameter(description = "저장할 초대장의 ID를 입력해주세요.", required = true) @RequestParam Long invitationId,
             @Parameter(description = "Accesstoken을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal) {
 
-        return invitationService.saveReceivedInvitation(invitationToken, userPrincipal);
+        return invitationService.saveReceivedInvitation(invitationId, userPrincipal);
     }
 
-    @Operation(summary = "완성된 초대장 조회", description = "완성된 초대장의 UUID를 통해 초대장의 상세 정보를 조회합니다.")
+    @Operation(summary = "완성된 초대장 조회", description = "완성된 초대장의 id를 통해 초대장의 상세 정보를 조회합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "완성된 초대장 조회 성공", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = CompletedInvitationRes.class))}),
             @ApiResponse(responseCode = "404", description = "초대장을 찾을 수 없음", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))}),
             @ApiResponse(responseCode = "400", description = "잘못된 요청", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))})
     })
-    @GetMapping("/{invitationToken}")
+    @GetMapping("/{invitationId}")
     public ResponseEntity<?> getCompletedInvitation(
-            @Parameter(description = "조회할 완성된 초대장의 UUID토큰", required = true) @PathVariable String invitationToken,
+            @Parameter(description = "조회할 완성된 초대장의ID", required = true) @PathVariable Long invitationId,
             @Parameter(description = "Accesstoken을 입력해주세요.", required = false) @CurrentUser UserPrincipal userPrincipal
     ) {
 
-        return invitationService.getCompletedInvitation(invitationToken, userPrincipal);
+        return invitationService.getCompletedInvitation(invitationId, userPrincipal);
     }
 
     @Operation(summary = "나의 초대장 목록 조회", description = "작성 중인 초대장, 보낸 초대장 3개, 받은 초대장 3개를 조회합니다.")

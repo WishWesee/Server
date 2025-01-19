@@ -16,9 +16,6 @@ public class CompletedInvitationRes {
     @Schema(description = "초대장ID", example = "1", type = "Long")
     private Long invitationId;
 
-    @Schema(description = "초대장UUID(고유 식별자)", example = "abcd-1234-efgh-5678", type = "String")
-    private String invitationToken;
-
     @Schema(description = "카드 이미지 URL", example = "https://wishwesee-s3-image-bucket.s3.amazonaws.com/3f78b60d-c3b5-46db-aab2-9f8245ad7b35.jpg", type = "String")
     private String cardImage;
 
@@ -70,11 +67,11 @@ public class CompletedInvitationRes {
     private List<BlockRes> blocks; // 블록 리스트
 
     @Builder
-    public CompletedInvitationRes(Long invitationId, String invitationToken,String title, String cardImage, LocalDate startDate,
+    public CompletedInvitationRes(Long invitationId, String title, String cardImage, LocalDate startDate,
                                   LocalTime startTime, LocalDate endDate, LocalTime endTime, String location, String address,
                                   String mapLink, int mapViewType, LocalDate voteDeadline, boolean scheduleVoteMultiple, boolean scheduleVoteClosed,
                                   List<BlockRes> blocks, List<ScheduleVoteRes> scheduleVotes) {
-        this.invitationToken = invitationToken;
+
         this.invitationId = invitationId;
         this.title = title;
         this.cardImage = cardImage;

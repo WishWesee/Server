@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface InvitationRepository extends JpaRepository<Invitation, Long> {
-    Optional<Invitation> findByInvitationToken(String invitationToken);
+
     List<Invitation> findBySenderAndTempSavedTrue(User user); // 작성중 초대장
 
     List<Invitation> findTop3BySenderAndTempSavedFalseOrderByModifiedDateDesc(User user);  // 보낸 초대장 최신순 3개
@@ -20,4 +20,5 @@ public interface InvitationRepository extends JpaRepository<Invitation, Long> {
     List<Invitation> findBySenderAndYearAndTempSavedFalse(@Param("user") User user, @Param("year") int year); // 연도별 보낸 초대장
 
     int countBySenderAndTempSavedFalse(User user); // 보낸 초대장 개수
+
 }
