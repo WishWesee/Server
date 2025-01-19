@@ -18,7 +18,7 @@ import lombok.Getter;
         @JsonSubTypes.Type(value = PhotoBlockReq.class, name = "photo")
 })
 public abstract class BlockReq {
-    @Schema(description = "초대장에 위치할 블록 순서", type = "integer")
+    @Schema(description = "초대장에 위치할 블록 순서", example = "1", type = "int")
     @NotNull(message = "sequence는 null일 수 없습니다.")
     private int sequence;
 }

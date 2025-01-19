@@ -5,13 +5,13 @@ import lombok.Getter;
 @Schema(description = "박스 블록 요청")
 @Getter
 public class BoxBlockReq extends BlockReq{
-    @Schema(description = "박스 제목", type = "string")
+    @Schema(description = "박스 제목", example = "Dress Code", type = "String")
     private String title;  // 박스 제목
 
-    @Schema(description = "박스 색상", type = "string")
+    @Schema(description = "박스 색상", example = "#FF5733", type = "String")
     private String color;  // 박스 색상
 
-    @Schema(description = "박스 내용", type = "string")
+    @Schema(description = "박스 내용", example = "파랑색으로 입고오세용", type = "String")
     private String content; // 박스 내용
 
 }
