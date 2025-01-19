@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
+    int countByInvitationIdAndAttending(Long invitationId, boolean attending);
     Optional<Attendance> findByInvitationAndUser(Invitation invitation, User user);
 
     int countByInvitationAndAttending(Invitation invitation, boolean b);

@@ -3,6 +3,10 @@ package depth.main.wishwesee.domain.invitation.controller;
 import depth.main.wishwesee.domain.invitation.dto.request.CreateFeedbackReq;
 import depth.main.wishwesee.domain.invitation.dto.request.InvitationReq;
 import depth.main.wishwesee.domain.invitation.dto.response.FeedbackListRes;
+import depth.main.wishwesee.domain.invitation.dto.request.SaveInvitationReq;
+import depth.main.wishwesee.domain.invitation.dto.response.CompletedInvitationRes;
+import depth.main.wishwesee.domain.invitation.dto.response.InvitationListRes;
+import depth.main.wishwesee.domain.invitation.dto.response.MyInvitationOverViewRes;
 import depth.main.wishwesee.domain.invitation.service.FeedbackService;
 import depth.main.wishwesee.global.config.security.token.CurrentUser;
 import depth.main.wishwesee.global.config.security.token.UserPrincipal;
@@ -111,9 +115,65 @@ public class InvitationController {
     })
     @PostMapping("/save-received")
     public ResponseEntity<?> saveReceivedInvitation(
-            @Parameter(description = "저장할 초대장의 UUID토큰을 입력해주세요.", required = true) @RequestParam String invitationToken,
+            @Parameter(description = "저장할 초대장의 ID를 입력해주세요.", required = true) @RequestBody SaveInvitationReq saveInvitationReq,
             @Parameter(description = "Accesstoken을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal) {
 
-        return invitationService.saveReceivedInvitation(invitationToken, userPrincipal);
+        return invitationService.saveReceivedInvitation(saveInvitationReq, userPrincipal);
     }
+
+    @Operation(summary = "완성된 초대장 조회", description = "완성된 초대장의 id를 통해 초대장의 상세 정보를 조회합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "완성된 초대장 조회 성공", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = CompletedInvitationRes.class))}),
+            @ApiResponse(responseCode = "404", description = "초대장을 찾을 수 없음", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))}),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))})
+    })
+    @GetMapping("/{invitationId}")
+    public ResponseEntity<?> getCompletedInvitation(
+            @Parameter(description = "조회할 완성된 초대장의ID", required = true) @PathVariable Long invitationId,
+            @Parameter(description = "Accesstoken을 입력해주세요.", required = false) @CurrentUser UserPrincipal userPrincipal
+    ) {
+
+        return invitationService.getCompletedInvitation(invitationId, userPrincipal);
+    }
+
+    @Operation(summary = "나의 초대장 목록 조회", description = "작성 중인 초대장, 보낸 초대장 3개, 받은 초대장 3개를 조회합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "나의 초대장 목록 조회 성공", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = MyInvitationOverViewRes.class))}),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))}),
+            @ApiResponse(responseCode = "404", description = "사용자 정보 없음", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))})
+    })
+    @GetMapping("/my-invitations")
+    public ResponseEntity<?> getMyInvitations(
+            @Parameter(description = "Accesstoken을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal
+    ){
+        return invitationService.getMyInvitations(userPrincipal);
+    }
+    @Operation(summary = "연도별 내가 보낸 초대장 목록 조회", description = "연도별로 내가 보낸 초대장 목록을 조회합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "연도별 내가 보낸 초대장 목록 조회 성공", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = InvitationListRes.class))}),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))}),
+            @ApiResponse(responseCode = "404", description = "사용자 정보 없음", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))})
+    })
+    @GetMapping("/sent/{year}")
+    public ResponseEntity<?> getSentInvitationsByYear(
+            @Parameter(description = "Accesstoken을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
+            @Parameter(description = "연도를 입력해주세요", required = true) @PathVariable int year
+    ) {
+        return invitationService.getSentInvitationByYear(userPrincipal, year);
+    }
+
+    @Operation(summary = "연도별 내가 받은 초대장 목록 조회", description = "연도별로 내가 받은 초대장 목록을 조회합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "연도별 내가 받은 초대장 목록 조회 성공", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = InvitationListRes.class))}),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))}),
+            @ApiResponse(responseCode = "404", description = "사용자 정보 없음", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))})
+    })
+    @GetMapping("/received/{year}")
+    public ResponseEntity<?> getReceivedInvitationsByYear(
+            @Parameter(description = "Accesstoken을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal,
+            @Parameter(description = "연도를 입력해주세요", required = true) @PathVariable int year
+    ) {
+        return invitationService.getReceivedInvitationsByYear(userPrincipal, year);
+    }
+
 }

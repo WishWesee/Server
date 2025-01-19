@@ -4,6 +4,7 @@ import depth.main.wishwesee.domain.invitation.domain.Invitation;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
@@ -11,6 +12,7 @@ import java.time.LocalTime;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Getter
 public class ScheduleVote {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -97,6 +97,8 @@ public class SecurityConfig {
                                 .permitAll()
                                 .requestMatchers("/api/v1/invitation")
                                 .permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/v1/invitation/{id}")
+                                .permitAll()
                                 .requestMatchers("/api/v1/invitation/{invitationId}/attendance/check", "/api/v1/invitation/{invitationId}/attendance/guest", "/api/v1/invitation/{invitationId}/attendance")
                                 .permitAll()
                                 .anyRequest().authenticated()
