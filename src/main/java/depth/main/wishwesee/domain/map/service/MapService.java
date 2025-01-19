@@ -14,8 +14,10 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 @Service
 @RequiredArgsConstructor
@@ -32,6 +34,11 @@ public class MapService {
 
     public ResponseEntity<?> searchPlaces(String name) {
         try {
+            // 입력값 검증
+            if (name == null || name.trim().length() < 2 || name.matches(".*[^a-zA-Z0-9가-힣\\s].*")) {
+                return ResponseEntity.badRequest().body("올바른 검색어를 입력하세요.");
+            }
+
             List<MapLocationRes> places = new ArrayList<>();
             String encodedQuery = java.net.URLEncoder.encode(name, "UTF-8");
             String apiUrlWithParams = localApiUrl + "?query=" + encodedQuery + "&display=5&start=1";
@@ -59,6 +66,10 @@ public class MapService {
             JSONObject jsonResponse = new JSONObject(response.toString());
             JSONArray itemsArray = jsonResponse.getJSONArray("items");
 
+            if (itemsArray.length() == 0) {
+                return ResponseEntity.status(404).body("검색 결과가 없습니다.");
+            }
+
             for (int i = 0; i < itemsArray.length(); i++) {
                 JSONObject place = itemsArray.getJSONObject(i);
 
@@ -82,6 +93,11 @@ public class MapService {
                         .longitude(longitude)
                         .build());
             }
+
+            // 검색 결과 정렬 (가나다순)
+            Collator collator = Collator.getInstance(Locale.KOREA);
+            places.sort((a, b) -> collator.compare(a.getLocation(), b.getLocation()));
+
             return ResponseEntity.ok(places);
         } catch (Exception e) {
             e.printStackTrace();
