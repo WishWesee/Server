@@ -2,6 +2,7 @@ package depth.main.wishwesee.domain.invitation.controller;
 
 import depth.main.wishwesee.domain.invitation.dto.request.CreateFeedbackReq;
 import depth.main.wishwesee.domain.invitation.dto.request.InvitationReq;
+import depth.main.wishwesee.domain.invitation.dto.request.SaveInvitationReq;
 import depth.main.wishwesee.domain.invitation.dto.response.CompletedInvitationRes;
 import depth.main.wishwesee.domain.invitation.dto.response.InvitationListRes;
 import depth.main.wishwesee.domain.invitation.dto.response.MyInvitationOverViewRes;
@@ -114,10 +115,10 @@ public class InvitationController {
     })
     @PostMapping("/save-received")
     public ResponseEntity<?> saveReceivedInvitation(
-            @Parameter(description = "저장할 초대장의 ID를 입력해주세요.", required = true) @RequestParam Long invitationId,
+            @Parameter(description = "저장할 초대장의 ID를 입력해주세요.", required = true) @RequestBody SaveInvitationReq saveInvitationReq,
             @Parameter(description = "Accesstoken을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal) {
 
-        return invitationService.saveReceivedInvitation(invitationId, userPrincipal);
+        return invitationService.saveReceivedInvitation(saveInvitationReq, userPrincipal);
     }
 
     @Operation(summary = "완성된 초대장 조회", description = "완성된 초대장의 id를 통해 초대장의 상세 정보를 조회합니다.")

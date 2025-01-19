@@ -9,6 +9,7 @@ import depth.main.wishwesee.domain.invitation.domain.ReceivedInvitation;
 import depth.main.wishwesee.domain.invitation.domain.repository.InvitationRepository;
 import depth.main.wishwesee.domain.invitation.domain.repository.ReceivedInvitationRepository;
 import depth.main.wishwesee.domain.invitation.dto.request.InvitationReq;
+import depth.main.wishwesee.domain.invitation.dto.request.SaveInvitationReq;
 import depth.main.wishwesee.domain.invitation.dto.response.CompletedInvitationRes;
 import depth.main.wishwesee.domain.invitation.dto.response.MyInvitationOverViewRes;
 import depth.main.wishwesee.domain.invitation.dto.response.InvitationListRes;
@@ -32,7 +33,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -248,13 +248,13 @@ public class InvitationService {
     }
 
     @Transactional
-    public ResponseEntity<?> saveReceivedInvitation(Long invitationId, UserPrincipal userPrincipal) {
+    public ResponseEntity<?> saveReceivedInvitation(SaveInvitationReq saveInvitationReq, UserPrincipal userPrincipal) {
         // 현재 사용자 정보 가져오기
         User receiver = userRepository.findById(userPrincipal.getId())
                 .orElseThrow(() -> new DefaultException(ErrorCode.NOT_FOUND, "사용자를 찾을 수 없습니다."));
 
-        // 초대장 정보 가져오기 (UUID 기반 조회)
-        Invitation invitation = invitationRepository.findById(invitationId)
+        // 초대장 정보 가져오기
+        Invitation invitation = invitationRepository.findById(saveInvitationReq.getInvitationId())
                 .orElseThrow(() -> new DefaultException(ErrorCode.NOT_FOUND, "해당 초대장이 존재하지 않습니다."));
 
         // 작성자 본인 확인
