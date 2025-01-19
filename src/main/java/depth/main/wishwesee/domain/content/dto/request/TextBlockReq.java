@@ -6,7 +6,7 @@ import lombok.Getter;
 @Getter
 @Schema(description = "텍스트 블록 요청")
 public class TextBlockReq extends BlockReq{
-    @Schema(description = "텍스트 내용", type = "string")
+    @Schema(description = "텍스트 내용", example = "엽떡,치킨,피자 먹자", type = "String")
     private String content;
 
 }

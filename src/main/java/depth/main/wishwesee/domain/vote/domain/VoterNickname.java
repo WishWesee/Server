@@ -1,5 +1,6 @@
 package depth.main.wishwesee.domain.vote.domain;
 
+import depth.main.wishwesee.domain.user.domain.User;
 import depth.main.wishwesee.domain.vote.domain.ScheduleVote;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -14,6 +15,10 @@ public class VoterNickname {
     private Long id;
 
     private String nickname;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "schedule_vote_id")
