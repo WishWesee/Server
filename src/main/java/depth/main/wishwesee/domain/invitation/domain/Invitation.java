@@ -67,6 +67,7 @@ public class Invitation extends BaseEntity{
                       LocalTime startTime, LocalDate endDate, LocalTime endTime, String location,
                       String address, String mapLink, int mapViewType, LocalDate voteDeadline, boolean attendanceSurveyEnabled,
                       boolean scheduleVoteMultiple, boolean scheduleVoteClosed, boolean attendanceSurveyClosed, User sender){
+
         this.title = title;
         this.cardImage = cardImage;
         this.tempSaved = tempSaved;

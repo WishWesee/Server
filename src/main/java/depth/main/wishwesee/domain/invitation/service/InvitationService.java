@@ -3,18 +3,28 @@ package depth.main.wishwesee.domain.invitation.service;
 import depth.main.wishwesee.domain.content.domain.*;
 import depth.main.wishwesee.domain.content.domain.repository.BlockRepository;
 import depth.main.wishwesee.domain.content.dto.request.*;
+import depth.main.wishwesee.domain.content.dto.response.*;
 import depth.main.wishwesee.domain.invitation.domain.Invitation;
+import depth.main.wishwesee.domain.invitation.domain.ReceivedInvitation;
 import depth.main.wishwesee.domain.invitation.domain.repository.InvitationRepository;
+import depth.main.wishwesee.domain.invitation.domain.repository.ReceivedInvitationRepository;
 import depth.main.wishwesee.domain.invitation.dto.request.InvitationReq;
+import depth.main.wishwesee.domain.invitation.dto.request.SaveInvitationReq;
+import depth.main.wishwesee.domain.invitation.dto.response.CompletedInvitationRes;
+import depth.main.wishwesee.domain.invitation.dto.response.MyInvitationOverViewRes;
+import depth.main.wishwesee.domain.invitation.dto.response.InvitationListRes;
 import depth.main.wishwesee.domain.s3.service.S3Uploader;
 import depth.main.wishwesee.domain.user.domain.User;
 import depth.main.wishwesee.domain.user.domain.repository.UserRepository;
 import depth.main.wishwesee.domain.vote.domain.ScheduleVote;
+import depth.main.wishwesee.domain.vote.domain.repository.AttendanceRepository;
 import depth.main.wishwesee.domain.vote.domain.repository.VoteRepository;
 import depth.main.wishwesee.domain.vote.dto.request.ScheduleVoteReq;
+import depth.main.wishwesee.domain.vote.dto.response.ScheduleVoteRes;
 import depth.main.wishwesee.global.config.security.token.UserPrincipal;
 import depth.main.wishwesee.global.exception.DefaultException;
 import depth.main.wishwesee.global.payload.ErrorCode;
+import depth.main.wishwesee.global.payload.ErrorResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,6 +43,8 @@ public class InvitationService {
     private final BlockRepository blockRepository;
     private final VoteRepository voteRepository;
     private  final UserRepository userRepository;
+    private final ReceivedInvitationRepository receivedInvitationRepository;
+    private  final AttendanceRepository attendanceRepository;
     @Transactional
     public ResponseEntity<?> saveTemporaryInvitation(InvitationReq invitationReq, MultipartFile cardImage, List<MultipartFile> photoImages, UserPrincipal userPrincipal){
         // 사용자 인증 여부 확인
@@ -44,7 +56,10 @@ public class InvitationService {
         Invitation invitation = saveOrUpdateInvitation(invitationReq, cardImage, photoImages, userPrincipal, true);
 
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(Map.of("message", "초대장이 임시 저장되었습니다.", "invitationId", invitation.getId()));
+                .body(Map.of(
+                        "message", "초대장이 임시 저장되었습니다.",
+                        "invitationId", invitation.getId()
+                ));
 
     }
     @Transactional
@@ -54,7 +69,10 @@ public class InvitationService {
         Invitation invitation = saveOrUpdateInvitation(invitationReq, cardImage, photoImages, userPrincipal, false);
 
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(Map.of("message", "초대장 작성을 완료하였습니다.", "invitationId", invitation.getId()));
+                .body(Map.of(
+                        "message", "초대장 작성을 완료하였습니다.",
+                        "invitationId", invitation.getId()
+                ));
 
     }
     private Invitation saveOrUpdateInvitation(InvitationReq invitationReq, MultipartFile cardImage, List<MultipartFile> photoImages, UserPrincipal userPrincipal, boolean isTemporary) {
@@ -208,13 +226,11 @@ public class InvitationService {
                         .image(newPhotoUrl != null ? newPhotoUrl : currentPhotoUrl)
                         .invitation(invitation)
                         .build();
-            } else{
-            throw new DefaultException(ErrorCode.INVALID_PARAMETER, "지원되지 않는 블록 타입입니다.");
+            } else {
+                throw new DefaultException(ErrorCode.INVALID_PARAMETER, "지원되지 않는 블록 타입입니다.");
+            }
+            blockRepository.save(block);
         }
-
-        blockRepository.save(block);
-
-    }
     }
     private String uploadImageIfPresent(MultipartFile file, String oldImageUrl) {
         if (file != null && !file.isEmpty()) {
@@ -229,6 +245,200 @@ public class InvitationService {
         if (imageUrl != null && !imageUrl.isEmpty()) {
             s3Uploader.deleteFile(imageUrl);
         }
+    }
+
+    @Transactional
+    public ResponseEntity<?> saveReceivedInvitation(SaveInvitationReq saveInvitationReq, UserPrincipal userPrincipal) {
+        // 현재 사용자 정보 가져오기
+        User receiver = userRepository.findById(userPrincipal.getId())
+                .orElseThrow(() -> new DefaultException(ErrorCode.NOT_FOUND, "사용자를 찾을 수 없습니다."));
+
+        // 초대장 정보 가져오기
+        Invitation invitation = invitationRepository.findById(saveInvitationReq.getInvitationId())
+                .orElseThrow(() -> new DefaultException(ErrorCode.NOT_FOUND, "해당 초대장이 존재하지 않습니다."));
+
+        // 작성자 본인 확인
+        if(invitation.getSender().getId().equals(receiver.getId())){
+            ErrorResponse errorResponse = ErrorResponse.of(ErrorCode.INVALID_PARAMETER, "본인이 작성한 초대장은 저장할 수 없습니다.");
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
+
+        // 중복 확인 (초대장이 이미 저장된 경우)
+        boolean alreadyExists = receivedInvitationRepository.existsByReceiverAndInvitation(receiver, invitation);
+        if (alreadyExists) {
+            ErrorResponse errorResponse = ErrorResponse.of(ErrorCode.DUPLICATE_ERROR, "이미 내 목록에 저장된 초대장입니다.");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+        }
+
+        // 초대장 저장
+        ReceivedInvitation receivedInvitation = ReceivedInvitation.builder()
+                .receiver(receiver)
+                .invitation(invitation)
+                .build();
+        receivedInvitationRepository.save(receivedInvitation);
+
+        return ResponseEntity.noContent().build();
+    }
+
+
+
+    public ResponseEntity<?> getCompletedInvitation(Long invitationId, UserPrincipal userPrincipal) {
+        // 초대장 조회
+        Invitation invitation = invitationRepository.findById(invitationId)
+                .orElseThrow(() -> new DefaultException(ErrorCode.NOT_FOUND, "해당 초대장이 존재하지 않습니다."));
+
+        // 초대장의 모든 블록 조회
+        List<Block> allBlocks = blockRepository.findByInvitationId(invitation.getId());
+
+        List<BlockRes> blockResList = allBlocks.stream()
+                .map(block -> {
+                    if (block instanceof Photo photoBlock) {
+                        return PhotoBlockRes.builder()
+                                .sequence(photoBlock.getSequence())
+                                .image(photoBlock.getImage())
+                                .build();
+                    } else if (block instanceof Text textBlock) {
+                        return TextBlockRes.builder()
+                                .sequence(textBlock.getSequence())
+                                .content(textBlock.getContent())
+                                .build();
+                    } else if (block instanceof Box boxBlock) {
+                        return BoxBlockRes.builder()
+                                .sequence(boxBlock.getSequence())
+                                .title(boxBlock.getTitle())
+                                .content(boxBlock.getContent())
+                                .color(boxBlock.getColor())
+                                .build();
+                    } else if (block instanceof TimeTable timeTableBlock) {
+                        return TimeTableBlockRes.builder()
+                                .sequence(timeTableBlock.getSequence())
+                                .content(timeTableBlock.getContent())
+                                .build();
+                    } else {
+                        throw new DefaultException(ErrorCode.INVALID_PARAMETER, "지원되지 않는 블록 타입입니다.");
+                    }
+                }).toList();
+
+        // 일정 투표 리스트 조회
+        List<ScheduleVote> scheduleVotes = voteRepository.findByInvitationId(invitation.getId());
+
+        List<ScheduleVoteRes> scheduleVoteResList = scheduleVotes.stream()
+                .map(vote -> ScheduleVoteRes.builder()
+                        .startDate(vote.getStartDate())
+                        .startTime(vote.getStartTime())
+                        .endDate(vote.getEndDate())
+                        .endTime(vote.getEndTime())
+                        .build())
+                .toList();
+
+        // 응답 DTO 생성
+        CompletedInvitationRes response = CompletedInvitationRes.builder()
+                .invitationId(invitation.getId())
+                .cardImage(invitation.getCardImage())
+                .title(invitation.getTitle())
+                .startDate(invitation.getStartDate())
+                .startTime(invitation.getStartTime())
+                .endDate(invitation.getEndDate())
+                .endTime(invitation.getEndTime())
+                .voteDeadline(invitation.getVoteDeadline())
+                .scheduleVoteMultiple(invitation.isScheduleVoteMultiple())
+                .scheduleVotes(scheduleVoteResList)
+                .scheduleVoteClosed(invitation.isScheduleVoteClosed())
+                .mapViewType(invitation.getMapViewType())
+                .location(invitation.getLocation())
+                .address(invitation.getAddress())
+                .mapLink(invitation.getMapLink())
+                .blocks(blockResList)
+                .build();
+
+        return ResponseEntity.ok(response);
+    }
+
+    public ResponseEntity<?> getMyInvitations(UserPrincipal userPrincipal) {
+        User user = userRepository.findById(userPrincipal.getId())
+                .orElseThrow(() -> new DefaultException(ErrorCode.NOT_FOUND,"사용자를 찾을 수 없습니다"));
+
+        // 작성 중인 초대장 조회
+        List<MyInvitationOverViewRes.InvitationRes> draftingInvitations = convertToInvitationRes(
+                invitationRepository.findBySenderAndTempSavedTrue(user)
+        );
+
+        int draftCount = draftingInvitations.size(); //작성중인 초대장 개수
+
+        // 보낸 초대장 최신순 3개 조회
+         List<MyInvitationOverViewRes.InvitationRes> sentInvitations = convertToInvitationRes(
+                 invitationRepository.findTop3BySenderAndTempSavedFalseOrderByModifiedDateDesc(user)
+         );
+
+        // 받은 초대장 최신순 3개
+        List<MyInvitationOverViewRes.InvitationRes> receivedInvitations = convertToInvitationRes(
+                receivedInvitationRepository.findTop3ByReceiverOrderByCreatedDateDesc(user)
+                        .stream()
+                        .map(receivedInvitation -> receivedInvitation.getInvitation())
+                        .toList()
+        );
+
+        MyInvitationOverViewRes myInvitationOverViewRes = MyInvitationOverViewRes.builder()
+                .draftCount(draftCount)
+                .draftingInvitations(draftingInvitations)
+                .sentInvitations(sentInvitations)
+                .receivedInvitations(receivedInvitations)
+                .build();
+
+        return ResponseEntity.ok(myInvitationOverViewRes);
+    }
+
+    public ResponseEntity<?> getSentInvitationByYear(UserPrincipal userPrincipal, int year) {
+        User user = userRepository.findById(userPrincipal.getId())
+                .orElseThrow(() -> new DefaultException(ErrorCode.NOT_FOUND, "사용자를 찾을 수 없습니다"));
+
+        List<MyInvitationOverViewRes.InvitationRes> sentInvitations = convertToInvitationRes(
+                invitationRepository.findBySenderAndYearAndTempSavedFalse(user, year)
+        );
+
+        // 전체 보낸 초대장 개수
+        int totalSentInvitations = sentInvitations.size();
+
+        return createInvitationListResponse(sentInvitations, totalSentInvitations);
+    }
+
+    public ResponseEntity<?> getReceivedInvitationsByYear(UserPrincipal userPrincipal, int year) {
+        User user = userRepository.findById(userPrincipal.getId())
+                .orElseThrow(() -> new DefaultException(ErrorCode.NOT_FOUND, "사용자를 찾을 수 없습니다"));
+
+        List<MyInvitationOverViewRes.InvitationRes> receivedInvitations = convertToInvitationRes(
+                receivedInvitationRepository.findByReceiverAndYear(user, year)
+                        .stream()
+                        .map(receivedInvitation -> receivedInvitation.getInvitation())
+                        .toList()
+        );
+
+        // 전체 받은 초대장 총 개수
+        int totalReceivedCount = receivedInvitations.size();
+
+        return createInvitationListResponse(receivedInvitations, totalReceivedCount);
+
+    }
+
+    // 초대장 리스트 반환 메서드
+    private List<MyInvitationOverViewRes.InvitationRes> convertToInvitationRes(List<Invitation> invitations) {
+        return invitations.stream()
+                .map(invitation -> MyInvitationOverViewRes.InvitationRes.builder()
+                        .invitationId(invitation.getId())
+                        .title(invitation.getTitle())
+                        .cardImage(invitation.getCardImage())
+                        .date(invitation.getCreatedDate())
+                        .build())
+                .toList();
+    }
+
+    // InvitationListRes 응답 생성 메서드
+    private ResponseEntity<InvitationListRes> createInvitationListResponse(List<MyInvitationOverViewRes.InvitationRes> invitations, int totalCount) {
+        InvitationListRes response = InvitationListRes.builder()
+                .totalInvitations(totalCount)
+                .invitations(invitations)
+                .build();
+        return ResponseEntity.ok(response);
     }
 }
 
