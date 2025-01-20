@@ -27,7 +27,7 @@ public class MapController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "검색 성공",
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = MapLocationRes.class)))),
-            @ApiResponse(responseCode = "400", description = "잘못된 요청",
+            @ApiResponse(responseCode = "400", description = "잘못된 요청 (검색어 검증 실패)",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "500", description = "서버 오류",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
