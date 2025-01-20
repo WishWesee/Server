@@ -41,57 +41,72 @@ public class MapService {
 
             List<MapLocationRes> places = new ArrayList<>();
             String encodedQuery = java.net.URLEncoder.encode(name, "UTF-8");
-            String apiUrlWithParams = localApiUrl + "?query=" + encodedQuery + "&display=5&start=1";
+            int start = 1; // 페이징 시작
+            int display = 5; // 한 번에 가져올 최대 결과 수
+            int totalResults = 20; // 원하는 최대 결과 수
 
-            // API 요청
-            URL url = new URL(apiUrlWithParams);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("GET");
-            connection.setRequestProperty("X-Naver-Client-Id", localClientId);
-            connection.setRequestProperty("X-Naver-Client-Secret", localClientSecret);
 
-            int responseCode = connection.getResponseCode();
-            if (responseCode != HttpURLConnection.HTTP_OK) {
-                throw new RuntimeException("Local API 호출 실패 - 응답 코드: " + responseCode);
-            }
+            // 페이징 처리: 최대 15개의 결과를 가져옴
+            while (places.size() < totalResults) {
+                String apiUrlWithParams = localApiUrl + "?query=" + encodedQuery + "&display=" + display + "&start=" + start;
 
-            BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-            StringBuilder response = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                response.append(line);
-            }
-            reader.close();
+                // API 요청
+                URL url = new URL(apiUrlWithParams);
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection.setRequestMethod("GET");
+                connection.setRequestProperty("X-Naver-Client-Id", localClientId);
+                connection.setRequestProperty("X-Naver-Client-Secret", localClientSecret);
 
-            JSONObject jsonResponse = new JSONObject(response.toString());
-            JSONArray itemsArray = jsonResponse.getJSONArray("items");
+                int responseCode = connection.getResponseCode();
+                if (responseCode != HttpURLConnection.HTTP_OK) {
+                    throw new RuntimeException("Local API 호출 실패 - 응답 코드: " + responseCode);
+                }
 
-            if (itemsArray.length() == 0) {
-                return ResponseEntity.status(404).body("검색 결과가 없습니다.");
-            }
+                BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                StringBuilder response = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    response.append(line);
+                }
+                reader.close();
 
-            for (int i = 0; i < itemsArray.length(); i++) {
-                JSONObject place = itemsArray.getJSONObject(i);
+                JSONObject jsonResponse = new JSONObject(response.toString());
+                JSONArray itemsArray = jsonResponse.getJSONArray("items");
 
-                // HTML 태그 제거
-                String location = place.getString("title").replaceAll("<.*?>", "");
-                String address = place.getString("roadAddress");
+                if (itemsArray.length() == 0) {
+                    break; // 더 이상 결과가 없으면 반복 종료
+                }
 
-                // 위도와 경도 변환
-                double latitude = Double.parseDouble(place.getString("mapy")) / 1e6;
-                double longitude = Double.parseDouble(place.getString("mapx")) / 1e6;
+                for (int i = 0; i < itemsArray.length(); i++) {
+                    if (places.size() >= totalResults) {
+                        break; // 최대 결과 수 도달 시 종료
+                    }
 
-                // 주소 기반 네이버 지도 링크 생성
-                String encodedAddress = java.net.URLEncoder.encode(address, "UTF-8");
-                String mapLink = "https://map.naver.com/v5/search/" + encodedAddress;
+                    JSONObject place = itemsArray.getJSONObject(i);
 
-                places.add(MapLocationRes.builder()
-                        .location(location)
-                        .address(address)
-                        .mapLink(mapLink)
-                        .latitude(latitude)
-                        .longitude(longitude)
-                        .build());
+                    // HTML 태그 제거
+                    String location = place.getString("title").replaceAll("<.*?>", "");
+                    String address = place.getString("roadAddress");
+
+                    // 위도와 경도 변환
+                    double latitude = Double.parseDouble(place.getString("mapy")) / 1e6;
+                    double longitude = Double.parseDouble(place.getString("mapx")) / 1e6;
+
+                    // 주소 기반 네이버 지도 링크 생성
+                    String encodedAddress = java.net.URLEncoder.encode(address, "UTF-8");
+                    String mapLink = "https://map.naver.com/v5/search/" + encodedAddress;
+
+                    places.add(MapLocationRes.builder()
+                            .location(location)
+                            .address(address)
+                            .mapLink(mapLink)
+                            .latitude(latitude)
+                            .longitude(longitude)
+                            .build());
+                }
+
+                // 다음 페이지로 이동
+                start += display;
             }
 
             // 검색 결과 정렬 (가나다순)
