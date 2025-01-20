@@ -1,5 +1,0 @@
-naver:
-  local:
-    client-id: V60jlSMPR__nCmnBf3KC   # 네이버 개발자 센터에서 발급받은 Client ID
-    client-secret: Uw1mxKH0ze  # 네이버 개발자 센터에서 발급받은 Client Secret
-    api-url: https://openapi.naver.com/v1/search/local.json  # 네이버 지도 Place API URL
