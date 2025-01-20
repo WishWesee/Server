@@ -14,6 +14,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.Collator;
 import java.util.*;
 
 @Service
@@ -89,6 +90,10 @@ public class MapService {
                         .longitude(longitude)
                         .build());
             }
+
+            // 검색 결과 정렬 (가나다순)
+            Collator collator = Collator.getInstance(Locale.KOREA);
+            places.sort((a, b) -> collator.compare(a.getLocation(), b.getLocation()));
 
             return ResponseEntity.ok(places);
         } catch (Exception e) {
