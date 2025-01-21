@@ -101,6 +101,8 @@ public class SecurityConfig {
                                 .permitAll()
                                 .requestMatchers("/api/v1/invitation/{invitationId}/attendance/check", "/api/v1/invitation/{invitationId}/attendance/guest", "/api/v1/invitation/{invitationId}/attendance")
                                 .permitAll()
+                                .requestMatchers("/api/v1/map/search")
+                                .permitAll()
                                 .anyRequest().authenticated()
                 )
                 .addFilterBefore(customOncePerRequestFilter(), UsernamePasswordAuthenticationFilter.class)
