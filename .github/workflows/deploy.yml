@@ -40,7 +40,7 @@ jobs:
           echo "${{ secrets.APPLICATION_DATABASE_YML }}" | base64 --decode > src/main/resources/application-database.yml
           echo "${{ secrets.APPLICATION_S3_YML }}" | base64 --decode > src/main/resources/application-s3.yml
           echo "${{ secrets.APPLICATION_OAUTH2_YML }}" | base64 --decode > src/main/resources/application-oauth2.yml
-
+          echo "${{ secrets.APPLICATION_MAP_YML }}" | base64 --decode > src/main/resources/application-map.yml
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
       
