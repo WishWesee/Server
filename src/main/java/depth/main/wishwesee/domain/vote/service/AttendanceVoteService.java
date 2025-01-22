@@ -31,7 +31,7 @@ public class AttendanceVoteService {
     public ResponseEntity<ApiResponse> checkDuplicateNickname(Long invitationId, String nickname) {
         Invitation invitation = validateInvitationById(invitationId);
         CheckNicknameRes checkNicknameRes = CheckNicknameRes.builder()
-                .isDuplicated(checkDuplicateAttendanceNickname(invitation, nickname))
+                .duplicated(checkDuplicateAttendanceNickname(invitation, nickname))
                 .build();
         return ResponseEntity.ok(ApiResponse.builder()
                 .check(true)
@@ -73,10 +73,10 @@ public class AttendanceVoteService {
                 : null;
         boolean isSender = invitation.getSender().equals(user);
         AttendanceVoteStatusRes attendanceVoteStatusRes = AttendanceVoteStatusRes.builder()
-                .attending(attendanceRepository.countByInvitationAndAttending(invitation, true))
-                .notAttending(attendanceRepository.countByInvitationAndAttending(invitation, false))
-                .myAttending(myAttendance)
-                .isSender(isSender)
+                .attendingCount(attendanceRepository.countByInvitationAndAttending(invitation, true))
+                .notAttendingCount(attendanceRepository.countByInvitationAndAttending(invitation, false))
+                .isAttending(myAttendance)
+                .sender(isSender)
                 .build();
         return ResponseEntity.ok(ApiResponse.builder()
                 .check(true)
