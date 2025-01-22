@@ -291,6 +291,9 @@ public class InvitationService {
         Invitation invitation = invitationRepository.findById(invitationId)
                 .orElseThrow(() -> new DefaultException(ErrorCode.NOT_FOUND, "해당 초대장이 존재하지 않습니다."));
 
+        // 작성자 본인 여부 확인
+        boolean isOwner = invitation.getSender().getId().equals(userPrincipal.getId());
+
         // 초대장의 모든 블록 조회
         List<Block> allBlocks = blockRepository.findByInvitationId(invitation.getId());
 
@@ -338,6 +341,7 @@ public class InvitationService {
         // 응답 DTO 생성
         CompletedInvitationRes response = CompletedInvitationRes.builder()
                 .invitationId(invitation.getId())
+                .isOwner(isOwner)
                 .cardImage(invitation.getCardImage())
                 .title(invitation.getTitle())
                 .startDate(invitation.getStartDate())

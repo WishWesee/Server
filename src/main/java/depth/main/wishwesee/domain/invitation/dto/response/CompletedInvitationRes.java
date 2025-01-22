@@ -16,6 +16,9 @@ public class CompletedInvitationRes {
     @Schema(description = "초대장ID", example = "1", type = "Long")
     private Long invitationId;
 
+    @Schema(description = "작성자 본인 여부", example = "true", type = "boolean")
+    private boolean isOwner;
+
     @Schema(description = "카드 이미지 URL", example = "https://wishwesee-s3-image-bucket.s3.amazonaws.com/3f78b60d-c3b5-46db-aab2-9f8245ad7b35.jpg", type = "String")
     private String cardImage;
 
@@ -67,10 +70,10 @@ public class CompletedInvitationRes {
     private List<BlockRes> blocks; // 블록 리스트
 
     @Builder
-    public CompletedInvitationRes(Long invitationId, String title, String cardImage, LocalDate startDate,
-                                  LocalTime startTime, LocalDate endDate, LocalTime endTime, String location, String address,
-                                  String mapLink, int mapViewType, LocalDate voteDeadline, boolean scheduleVoteMultiple, boolean scheduleVoteClosed,
-                                  List<BlockRes> blocks, List<ScheduleVoteRes> scheduleVotes) {
+    public CompletedInvitationRes(Long invitationId, boolean isOwner, String cardImage, String title, LocalDate startDate,
+                                  LocalTime startTime, LocalDate endDate, LocalTime endTime, LocalDate voteDeadline, boolean scheduleVoteMultiple,
+                                  List<ScheduleVoteRes> scheduleVotes, boolean scheduleVoteClosed, int mapViewType, String location, String address,
+                                  String mapLink, List<BlockRes> blocks) {
 
         this.invitationId = invitationId;
         this.title = title;
@@ -88,6 +91,7 @@ public class CompletedInvitationRes {
         this.scheduleVoteClosed = scheduleVoteClosed;
         this.blocks = blocks;
         this.scheduleVotes = scheduleVotes;
+        this.isOwner = isOwner;
     }
 
 }
