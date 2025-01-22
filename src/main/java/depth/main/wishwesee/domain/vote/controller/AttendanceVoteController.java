@@ -38,7 +38,7 @@ public class AttendanceVoteController {
         return attendanceVoteService.getAttendanceVoteStatus(userPrincipal, invitationId);
     }
 
-    @Operation(summary = "(비회원) 특정 닉네임의 참석 조사 결과 조회", description = "비회원일 경우, 이름 입력 후 (중복된 이름이 존재한다면) 해당 이름의 참석 조사 투표 결과를 조회합니다.")
+    @Operation(summary = "(비회원) 특정 닉네임의 참석 조사 결과 조회", description = "비회원일 경우, 이름 입력 후 해당 이름의 참석 조사 투표 결과를 조회합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "조회 성공", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = MyVoteRes.class))}),
             @ApiResponse(responseCode = "400", description = "조회 실패", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))}),

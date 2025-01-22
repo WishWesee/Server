@@ -39,7 +39,7 @@ public class AttendanceVoteService {
                 .build());
     }
 
-    // (비회원) 이름 입력 후 중복된 닉네임이 있다면 투표 현황 조회
+    // (비회원) 이름 입력 후 투표 현황 조회
     public ResponseEntity<ApiResponse> getAttendanceVoteByNickname(Long invitationId, String nickname) {
         Invitation invitation = validateInvitationById(invitationId);
         // User user = userPrincipal.map(principal -> validateUserById(principal.getId())).orElse(null);
@@ -47,10 +47,11 @@ public class AttendanceVoteService {
         // if (userPrincipal.isPresent()) {
         //     attendance = validateAttendanceByInvitationAndUser(invitation, user);
         // } else {
-            attendance = validateAttendanceByInvitationAndNicknameAndUserNull(invitation,nickname);
+        Optional<Attendance> attendanceOp = attendanceRepository.findByInvitationAndNicknameAndUser(invitation, nickname, null);
+        Boolean isAttending = attendanceOp.map(Attendance::getAttending).orElse(null);
         // }
         MyVoteRes myVoteRes = MyVoteRes.builder()
-                .attending(attendance.getAttending())
+                .attending(isAttending)
                 .build();
         return ResponseEntity.ok(ApiResponse.builder()
                 .check(true)
@@ -148,12 +149,6 @@ public class AttendanceVoteService {
 
     private boolean checkDuplicateAttendanceNickname(Invitation invitation, String nickname) {
         return attendanceRepository.existsByInvitationAndNicknameAndUser(invitation, nickname, null);
-    }
-
-    private Attendance validateAttendanceByInvitationAndNicknameAndUserNull(Invitation invitation, String nickname) {
-        Optional<Attendance> attendanceOptional = attendanceRepository.findByInvitationAndNicknameAndUser(invitation, nickname, null);
-        DefaultAssert.isOptionalPresent(attendanceOptional, "해당 닉네임의 투표자가 존재하지 않습니다.");
-        return attendanceOptional.get();
     }
 
     private User validateUserById(Long userId) {
