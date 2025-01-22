@@ -12,6 +12,10 @@ import java.time.LocalTime;
 @NoArgsConstructor
 @Schema(description = "일정 투표 응답 객체")
 public class ScheduleVoteRes {
+
+    @Schema(description = "각 투표 항목별 id", example = "1", type = "Long")
+    private Long scheduleVoteId;
+
     @Schema(description = "일정 시작 날짜", example = "2025-01-01", type = "String")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate startDate;
@@ -32,7 +36,8 @@ public class ScheduleVoteRes {
     private int voterCount;
 
     @Builder
-    public ScheduleVoteRes(LocalDate startDate, LocalTime startTime, LocalDate endDate, LocalTime endTime, int voterCount){
+    public ScheduleVoteRes(Long scheduleVoteId, LocalDate startDate, LocalTime startTime, LocalDate endDate, LocalTime endTime, int voterCount){
+        this.scheduleVoteId = scheduleVoteId;
         this.startDate = startDate;
         this.startTime = startTime;
         this.endDate = endDate;

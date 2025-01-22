@@ -350,6 +350,7 @@ public class InvitationService {
         List<ScheduleVote> scheduleVotes = scheduleVoteRepository.findByInvitationId(invitation.getId());
         return scheduleVotes.stream()
                 .map(vote -> ScheduleVoteRes.builder()
+                        .scheduleVoteId(vote.getId())
                         .startDate(vote.getStartDate())
                         .startTime(vote.getStartTime())
                         .endDate(vote.getEndDate())
