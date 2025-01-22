@@ -18,7 +18,7 @@ import depth.main.wishwesee.domain.user.domain.User;
 import depth.main.wishwesee.domain.user.domain.repository.UserRepository;
 import depth.main.wishwesee.domain.vote.domain.ScheduleVote;
 import depth.main.wishwesee.domain.vote.domain.repository.AttendanceRepository;
-import depth.main.wishwesee.domain.vote.domain.repository.VoteRepository;
+import depth.main.wishwesee.domain.vote.domain.repository.ScheduleVoteRepository;
 import depth.main.wishwesee.domain.vote.dto.request.ScheduleVoteReq;
 import depth.main.wishwesee.domain.vote.dto.response.ScheduleVoteRes;
 import depth.main.wishwesee.global.config.security.token.UserPrincipal;
@@ -41,7 +41,7 @@ public class InvitationService {
     private final S3Uploader s3Uploader;
     private final InvitationRepository invitationRepository;
     private final BlockRepository blockRepository;
-    private final VoteRepository voteRepository;
+    private final ScheduleVoteRepository scheduleVoteRepository;
     private  final UserRepository userRepository;
     private final ReceivedInvitationRepository receivedInvitationRepository;
     private  final AttendanceRepository attendanceRepository;
@@ -153,7 +153,7 @@ public class InvitationService {
 
         // 기존 블록 및 일정 투표 삭제 후 다시 추가
         blockRepository.deleteAllByInvitation(invitation);
-        voteRepository.deleteAllByInvitation(invitation);
+        scheduleVoteRepository.deleteAllByInvitation(invitation);
 
         // 블럭 데이터 저장
         if (invitationReq.getBlocks() != null && !invitationReq.getBlocks().isEmpty()) {
@@ -176,7 +176,7 @@ public class InvitationService {
                     .endTime(voteReq.getEndTime())
                     .invitation(savedInvitation)
                     .build();
-            voteRepository.save(scheduleVote);
+            scheduleVoteRepository.save(scheduleVote);
         }
     }
 
@@ -320,7 +320,7 @@ public class InvitationService {
                 }).toList();
 
         // 일정 투표 리스트 조회
-        List<ScheduleVote> scheduleVotes = voteRepository.findByInvitationId(invitation.getId());
+        List<ScheduleVote> scheduleVotes = scheduleVoteRepository.findByInvitationId(invitation.getId());
 
         List<ScheduleVoteRes> scheduleVoteResList = scheduleVotes.stream()
                 .map(vote -> ScheduleVoteRes.builder()

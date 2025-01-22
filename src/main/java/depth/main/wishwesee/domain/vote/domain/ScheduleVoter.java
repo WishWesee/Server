@@ -1,17 +1,16 @@
 package depth.main.wishwesee.domain.vote.domain;
 
 import depth.main.wishwesee.domain.user.domain.User;
-import depth.main.wishwesee.domain.vote.domain.ScheduleVote;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class VoterNickname {
+public class ScheduleVoter {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "voter_nickname_id")
+    @Column(name = "schedule_voter_id")
     private Long id;
 
     private String nickname;

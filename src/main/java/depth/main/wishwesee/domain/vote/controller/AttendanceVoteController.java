@@ -2,7 +2,7 @@ package depth.main.wishwesee.domain.vote.controller;
 
 import depth.main.wishwesee.domain.vote.dto.request.AttendanceVoteReq;
 import depth.main.wishwesee.domain.vote.dto.response.*;
-import depth.main.wishwesee.domain.vote.service.VoteService;
+import depth.main.wishwesee.domain.vote.service.AttendanceVoteService;
 import depth.main.wishwesee.global.config.security.token.CurrentUser;
 import depth.main.wishwesee.global.config.security.token.UserPrincipal;
 import depth.main.wishwesee.global.payload.ErrorResponse;
@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/invitation/{invitationId}/attendance")
 public class AttendanceVoteController {
 
-    private final VoteService voteService;
+    private final AttendanceVoteService attendanceVoteService;
 
     @Operation(summary = "참석 조사 조회", description = "참석 조사 현황을 조회합니다.")
     @ApiResponses(value = {
@@ -35,7 +35,7 @@ public class AttendanceVoteController {
             @Parameter(description = "Accesstoken을 입력해주세요.") @CurrentUser UserPrincipal userPrincipal,
             @Parameter(description = "초대장의 id를 입력해주세요.", required = true) @PathVariable Long invitationId
     ) {
-        return voteService.getAttendanceVoteStatus(userPrincipal, invitationId);
+        return attendanceVoteService.getAttendanceVoteStatus(userPrincipal, invitationId);
     }
 
     @Operation(summary = "(비회원) 특정 닉네임의 참석 조사 결과 조회", description = "비회원일 경우, 이름 입력 후 (중복된 이름이 존재한다면) 해당 이름의 참석 조사 투표 결과를 조회합니다.")
@@ -48,7 +48,7 @@ public class AttendanceVoteController {
             @Parameter(description = "초대장의 id를 입력해주세요.", required = true) @PathVariable Long invitationId,
             @Parameter(description = "닉네임을 입력해주세요.") @RequestParam String nickname
     ) {
-        return voteService.getAttendanceVoteByNickname(invitationId, nickname);
+        return attendanceVoteService.getAttendanceVoteByNickname(invitationId, nickname);
     }
 
     @Operation(summary = "투표자 목록 조회", description = "투표자 목록을 조회합니다. 작성자만 가능합니다.")
@@ -62,7 +62,7 @@ public class AttendanceVoteController {
             @Parameter(description = "초대장의 id를 입력해주세요.", required = true) @PathVariable Long invitationId,
             @Parameter(description = "확인하고자 하는 참석 여부를 입력해주세요. true: 참석(기본), false: 불참", required = true) @RequestParam(defaultValue = "true") boolean isAttend
     ) {
-        return voteService.getVoterList(userPrincipal, invitationId, isAttend);
+        return attendanceVoteService.getVoterList(userPrincipal, invitationId, isAttend);
     }
 
     @Operation(summary = "참석 여부 투표", description = "참석 여부 투표 및 투표를 수정합니다. 비회원의 경우 이미 존재하는 닉네임 입력 시 해당 닉네임의 투표 수정이 가능합니다.")
@@ -76,7 +76,7 @@ public class AttendanceVoteController {
             @Parameter(description = "초대장의 id를 입력해주세요.", required = true) @PathVariable Long invitationId,
             @Parameter(description = "Schemas의 AttendanceVoteReq를 확인해주세요. 참석 여부와 닉네임(비회원)입니다.") @RequestBody AttendanceVoteReq attendanceVoteReq
     ) {
-        return voteService.voteAttendance(userPrincipal, invitationId, attendanceVoteReq);
+        return attendanceVoteService.voteAttendance(userPrincipal, invitationId, attendanceVoteReq);
     }
 
     @Operation(summary = "참석 조사 마감 여부 수정", description = "참석 조사의 마감 여부를 수정합니다. 작성자만 가능합니다.")
@@ -89,7 +89,7 @@ public class AttendanceVoteController {
             @Parameter(description = "Accesstoken을 입력해주세요.") @CurrentUser UserPrincipal userPrincipal,
             @Parameter(description = "초대장의 id를 입력해주세요.", required = true) @PathVariable Long invitationId
     ) {
-        return voteService.updateAttendanceSurvey(userPrincipal, invitationId);
+        return attendanceVoteService.updateAttendanceSurvey(userPrincipal, invitationId);
     }
 
     @Operation(summary = "닉네임 중복여부 확인", description = "투표 전, 닉네임 중복여부를 확인합니다.")
@@ -102,7 +102,7 @@ public class AttendanceVoteController {
             @Parameter(description = "초대장의 id를 입력해주세요.", required = true) @PathVariable Long invitationId,
             @Parameter(description = "중복을 확인할 닉네임을 입력해주세요.") @RequestParam String nickname
     ) {
-        return voteService.checkDuplicateNickname(invitationId, nickname);
+        return attendanceVoteService.checkDuplicateNickname(invitationId, nickname);
     }
 
 }

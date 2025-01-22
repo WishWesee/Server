@@ -22,7 +22,7 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class VoteService {
+public class AttendanceVoteService {
 
     private final UserRepository userRepository;
     private final InvitationRepository invitationRepository;
