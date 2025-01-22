@@ -4,10 +4,12 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 @Getter
+@NoArgsConstructor
 @Schema(description = "일정 투표 응답 객체")
 public class ScheduleVoteRes {
     @Schema(description = "일정 시작 날짜", example = "2025-01-01", type = "String")
@@ -26,11 +28,15 @@ public class ScheduleVoteRes {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm")
     private LocalTime endTime;
 
+    @Schema(description = "투표자 수", example = "12:00", type = "String")
+    private int voterCount;
+
     @Builder
-    public ScheduleVoteRes(LocalDate startDate, LocalTime startTime, LocalDate endDate, LocalTime endTime){
+    public ScheduleVoteRes(LocalDate startDate, LocalTime startTime, LocalDate endDate, LocalTime endTime, int voterCount){
         this.startDate = startDate;
         this.startTime = startTime;
         this.endDate = endDate;
         this.endTime = endTime;
+        this.voterCount = voterCount;
     }
 }

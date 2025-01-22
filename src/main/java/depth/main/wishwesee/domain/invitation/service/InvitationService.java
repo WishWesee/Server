@@ -19,6 +19,7 @@ import depth.main.wishwesee.domain.user.domain.repository.UserRepository;
 import depth.main.wishwesee.domain.vote.domain.ScheduleVote;
 import depth.main.wishwesee.domain.vote.domain.repository.AttendanceRepository;
 import depth.main.wishwesee.domain.vote.domain.repository.ScheduleVoteRepository;
+import depth.main.wishwesee.domain.vote.domain.repository.ScheduleVoterRepository;
 import depth.main.wishwesee.domain.vote.dto.request.ScheduleVoteReq;
 import depth.main.wishwesee.domain.vote.dto.response.ScheduleVoteRes;
 import depth.main.wishwesee.global.config.security.token.UserPrincipal;
@@ -42,9 +43,10 @@ public class InvitationService {
     private final InvitationRepository invitationRepository;
     private final BlockRepository blockRepository;
     private final ScheduleVoteRepository scheduleVoteRepository;
-    private  final UserRepository userRepository;
+    private final ScheduleVoterRepository scheduleVoterRepository;
+    private final UserRepository userRepository;
     private final ReceivedInvitationRepository receivedInvitationRepository;
-    private  final AttendanceRepository attendanceRepository;
+
     @Transactional
     public ResponseEntity<?> saveTemporaryInvitation(InvitationReq invitationReq, MultipartFile cardImage, List<MultipartFile> photoImages, UserPrincipal userPrincipal){
         // 사용자 인증 여부 확인
@@ -319,18 +321,8 @@ public class InvitationService {
                     }
                 }).toList();
 
-        // 일정 투표 리스트 조회
-        List<ScheduleVote> scheduleVotes = scheduleVoteRepository.findByInvitationId(invitation.getId());
-
-        List<ScheduleVoteRes> scheduleVoteResList = scheduleVotes.stream()
-                .map(vote -> ScheduleVoteRes.builder()
-                        .startDate(vote.getStartDate())
-                        .startTime(vote.getStartTime())
-                        .endDate(vote.getEndDate())
-                        .endTime(vote.getEndTime())
-                        .build())
-                .toList();
-
+        // TODO: user의 투표 여부?
+        List<ScheduleVoteRes> scheduleVoteResList = getInvitationScheduleVote(invitation);
         // 응답 DTO 생성
         CompletedInvitationRes response = CompletedInvitationRes.builder()
                 .invitationId(invitation.getId())
@@ -352,6 +344,19 @@ public class InvitationService {
                 .build();
 
         return ResponseEntity.ok(response);
+    }
+
+    private List<ScheduleVoteRes> getInvitationScheduleVote(Invitation invitation) {
+        List<ScheduleVote> scheduleVotes = scheduleVoteRepository.findByInvitationId(invitation.getId());
+        return scheduleVotes.stream()
+                .map(vote -> ScheduleVoteRes.builder()
+                        .startDate(vote.getStartDate())
+                        .startTime(vote.getStartTime())
+                        .endDate(vote.getEndDate())
+                        .endTime(vote.getEndTime())
+                        .voterCount(scheduleVoterRepository.countByScheduleVoteId(vote.getId()))
+                        .build())
+                .toList();
     }
 
     public ResponseEntity<?> getMyInvitations(UserPrincipal userPrincipal) {
