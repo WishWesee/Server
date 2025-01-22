@@ -50,12 +50,12 @@ public class AttendanceVoteService {
         Optional<Attendance> attendanceOp = attendanceRepository.findByInvitationAndNicknameAndUser(invitation, nickname, null);
         Boolean isAttending = attendanceOp.map(Attendance::getAttending).orElse(null);
         // }
-        MyVoteRes myVoteRes = MyVoteRes.builder()
+        MyAttendanceVoteRes myAttendanceVoteRes = MyAttendanceVoteRes.builder()
                 .attending(isAttending)
                 .build();
         return ResponseEntity.ok(ApiResponse.builder()
                 .check(true)
-                .information(myVoteRes)
+                .information(myAttendanceVoteRes)
                 .build());
     }
 

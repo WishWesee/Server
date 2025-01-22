@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class MyVoteRes {
+public class MyAttendanceVoteRes {
 
     @Schema(type = "Boolean", example = "true", description = "투표자의 참석 여부입니다. true: 참석, false: 불참, null: 투표 전적 없음")
     private Boolean attending;
