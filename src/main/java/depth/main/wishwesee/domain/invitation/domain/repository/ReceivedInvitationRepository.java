@@ -13,7 +13,7 @@ import java.util.Optional;
 
 public interface ReceivedInvitationRepository extends JpaRepository<ReceivedInvitation, Long> {
     Optional<ReceivedInvitation> findByInvitation(Invitation invitation);
-
+    Optional<ReceivedInvitation> findByReceiverAndInvitationId(User receiver, Long invitationId);
     boolean existsByInvitationAndReceiver(Invitation invitation, User user);
     boolean existsByReceiverAndInvitation(User receiver, Invitation invitation);
 
@@ -22,4 +22,6 @@ public interface ReceivedInvitationRepository extends JpaRepository<ReceivedInvi
     @Query("SELECT ri FROM ReceivedInvitation ri WHERE ri.receiver = :user AND YEAR(ri.createdDate) = :year ORDER BY ri.createdDate DESC")
     List<ReceivedInvitation> findByReceiverAndYear(@Param("user") User user, @Param("year") int year); // 연도별 받은 초대장
 
+
+    void deleteByInvitation(Invitation invitation);
 }

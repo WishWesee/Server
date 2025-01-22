@@ -5,6 +5,8 @@ import depth.main.wishwesee.domain.vote.domain.ScheduleVote;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -22,6 +24,7 @@ public class VoterNickname {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "schedule_vote_id")
+    //@OnDelete(action = OnDeleteAction.CASCADE)
     private ScheduleVote scheduleVote;
 
 }

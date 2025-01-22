@@ -6,6 +6,7 @@ import depth.main.wishwesee.domain.content.dto.request.*;
 import depth.main.wishwesee.domain.content.dto.response.*;
 import depth.main.wishwesee.domain.invitation.domain.Invitation;
 import depth.main.wishwesee.domain.invitation.domain.ReceivedInvitation;
+import depth.main.wishwesee.domain.invitation.domain.repository.FeedbackRepository;
 import depth.main.wishwesee.domain.invitation.domain.repository.InvitationRepository;
 import depth.main.wishwesee.domain.invitation.domain.repository.ReceivedInvitationRepository;
 import depth.main.wishwesee.domain.invitation.dto.request.InvitationReq;
@@ -19,6 +20,7 @@ import depth.main.wishwesee.domain.user.domain.repository.UserRepository;
 import depth.main.wishwesee.domain.vote.domain.ScheduleVote;
 import depth.main.wishwesee.domain.vote.domain.repository.AttendanceRepository;
 import depth.main.wishwesee.domain.vote.domain.repository.VoteRepository;
+import depth.main.wishwesee.domain.vote.domain.repository.VoterNicknameRepository;
 import depth.main.wishwesee.domain.vote.dto.request.ScheduleVoteReq;
 import depth.main.wishwesee.domain.vote.dto.response.ScheduleVoteRes;
 import depth.main.wishwesee.global.config.security.token.UserPrincipal;
@@ -45,6 +47,8 @@ public class InvitationService {
     private  final UserRepository userRepository;
     private final ReceivedInvitationRepository receivedInvitationRepository;
     private  final AttendanceRepository attendanceRepository;
+    private final FeedbackRepository feedbackRepository;
+    private final VoterNicknameRepository voterNicknameRepository;
     @Transactional
     public ResponseEntity<?> saveTemporaryInvitation(InvitationReq invitationReq, MultipartFile cardImage, List<MultipartFile> photoImages, UserPrincipal userPrincipal){
         // 사용자 인증 여부 확인
@@ -439,6 +443,60 @@ public class InvitationService {
                 .invitations(invitations)
                 .build();
         return ResponseEntity.ok(response);
+    }
+    @Transactional
+    public ResponseEntity<?> deleteSentInvitation(Long invitationId, UserPrincipal userPrincipal) {
+        // 초대장 조회
+        Invitation invitation = invitationRepository.findById(invitationId)
+                .orElseThrow(() -> new DefaultException(ErrorCode.NOT_FOUND, "해당 초대장이 존재하지 않습니다."));
+
+        // 보낸 사람 확인
+        if (!invitation.getSender().getId().equals(userPrincipal.getId())) {
+            throw new DefaultException(ErrorCode.INVALID_AUTHENTICATION, "본인이 보낸 초대장만 삭제할 수 있습니다.");
+        }
+
+        // 관련 데이터 삭제
+        // 1. Feedback 삭제
+        feedbackRepository.deleteByInvitation(invitation);
+
+        // 2. Attendance 삭제
+        attendanceRepository.deleteByInvitation(invitation);
+
+        // 3. ScheduleVote와 연관된 VoterNickname삭제
+        List<ScheduleVote> scheduleVotes = voteRepository.findByInvitation(invitation);
+        for(ScheduleVote scheduleVote : scheduleVotes){
+            voterNicknameRepository.deleteByScheduleVote(scheduleVote);
+        }
+
+        voteRepository.deleteByInvitation(invitation);
+
+        // 4. ReceivedInvitation삭제
+        receivedInvitationRepository.deleteByInvitation(invitation);
+
+        // 5. Block 삭제(상속된엔티티포함)
+        blockRepository.deleteByInvitation(invitation);
+
+        // 6. 초대장 삭제
+        invitationRepository.delete(invitation);
+
+        return ResponseEntity.noContent().build();
+
+    }
+    @Transactional
+    public ResponseEntity<?> deleteReceivedInvitation(Long invitationId, UserPrincipal userPrincipal) {
+        // 현재 사용자 조회
+        User receiver = userRepository.findById(userPrincipal.getId())
+                .orElseThrow(() -> new DefaultException(ErrorCode.NOT_FOUND, "사용자를 찾을 수 없습니다."));
+
+        // 받은 초대장 데이터 조회
+        ReceivedInvitation receivedInvitation = receivedInvitationRepository.findByReceiverAndInvitationId(receiver, invitationId)
+                .orElseThrow(() -> new DefaultException(ErrorCode.NOT_FOUND, "해당 초대장이 존재하지 않거나 수신하지 않았습니다."));
+
+        // 받은 초대장에서만 삭제
+        receivedInvitationRepository.delete(receivedInvitation);
+
+        return ResponseEntity.noContent().build();
+
     }
 }
 
