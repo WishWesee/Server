@@ -23,4 +23,5 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
 
     boolean existsByInvitationAndNicknameAndUser(Invitation invitation, String nickname, User user);
 
+    void deleteByInvitation(Invitation invitation);
 }
