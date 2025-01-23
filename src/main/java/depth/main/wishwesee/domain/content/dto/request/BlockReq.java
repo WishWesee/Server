@@ -7,7 +7,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 
 @Getter
-@Schema(description = "블록 요청 객체")
+@Schema(title = "BlockReq: 블록 요청 객체", description = "POST: /api/v1/invitation에서 사용합니다.")
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME,
         include = JsonTypeInfo.As.PROPERTY,
         property = "type")

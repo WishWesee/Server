@@ -11,7 +11,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 @Getter
-@Schema(description = "완성된 초대장 응답 객체")
+@Schema(title = "CompletedInvitationRes: 완성된 초대장 조회 응답 객체", description = "GET: /api/v1/invitation/{invitationId}에서 사용합니다.")
 public class CompletedInvitationRes {
     @Schema(description = "초대장ID", example = "1", type = "Long")
     private Long invitationId;

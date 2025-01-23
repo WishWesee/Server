@@ -8,7 +8,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 @Getter
-@Schema(description = "초대장 요청 객체")
+@Schema(title = "InvitationReq: 초대장 요청 객체", description = "POST:/api/v1/invitation에서 사용합니다.")
 public class InvitationReq {
     @Schema(description = "초대장 ID(임시저장 확인용)", example = "1", type = "integer")
     private Long invitationId; // 초대장 ID (임시저장확인용)
