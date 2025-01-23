@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Schema(title = "AttendanceVoteStatusRes: 참석 조사 조회 응답 객체", description = "GET: /api/v1/invitation/{invitationId}/attendance에서 사용합니다.")
 public class AttendanceVoteStatusRes {
 
     @Schema(type = "int", example = "4", description = "참석에 투표한 투표자들의 수입니다.")

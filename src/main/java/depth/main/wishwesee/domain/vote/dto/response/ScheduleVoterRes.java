@@ -15,6 +15,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Schema(title = "ScheduleVoterRes: 특정 일정의 투표자 목록 응답 객체", description = "GET: /api/v1/invitation/{invitationId}/schedule/{scheduleVoteId}/voter에서 사용합니다.")
 public class ScheduleVoterRes {
 
     @Schema(description = "일정 시작 날짜", example = "2025-01-01", type = "String")
