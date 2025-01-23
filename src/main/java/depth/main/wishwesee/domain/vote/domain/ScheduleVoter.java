@@ -1,19 +1,21 @@
 package depth.main.wishwesee.domain.vote.domain;
 
 import depth.main.wishwesee.domain.user.domain.User;
-import depth.main.wishwesee.domain.vote.domain.ScheduleVote;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
+@Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class VoterNickname {
+public class ScheduleVoter {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "voter_nickname_id")
+    @Column(name = "schedule_voter_id")
     private Long id;
 
     private String nickname;
@@ -26,6 +28,13 @@ public class VoterNickname {
     @JoinColumn(name = "schedule_vote_id")
     //@OnDelete(action = OnDeleteAction.CASCADE)
     private ScheduleVote scheduleVote;
+
+    @Builder
+    public ScheduleVoter(String nickname, User user, ScheduleVote scheduleVote) {
+        this.nickname = nickname;
+        this.user = user;
+        this.scheduleVote = scheduleVote;
+    }
 
 }
 

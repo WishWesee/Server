@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Schema(title = "FeedbackRes: 후기 조회 응답 객체", description = "GET: /api/v1/invitation/{invitationId}/feedback에서 사용합니다.")
 public class FeedbackRes {
 
     @Schema(type = "Long", example = "1", description = "후기의 id입니다.")
