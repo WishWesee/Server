@@ -6,7 +6,7 @@ import depth.main.wishwesee.domain.user.domain.User;
 import depth.main.wishwesee.domain.user.domain.repository.UserRepository;
 import depth.main.wishwesee.domain.vote.domain.Attendance;
 import depth.main.wishwesee.domain.vote.domain.repository.AttendanceRepository;
-import depth.main.wishwesee.domain.vote.dto.request.AttendanceVoteReq;
+import depth.main.wishwesee.domain.vote.dto.request.VoteAttendanceReq;
 import depth.main.wishwesee.domain.vote.dto.response.*;
 import depth.main.wishwesee.global.DefaultAssert;
 import depth.main.wishwesee.global.config.security.token.UserPrincipal;
@@ -89,34 +89,34 @@ public class AttendanceVoteService {
         User user = validateUserById(userPrincipal.getId());
         DefaultAssert.isTrue(invitation.getSender() == user, "초대장 작성자가 아닙니다.");
         List<String> voterNames = attendanceRepository.findVoterNamesByInvitationAndAttendanceOrderByNicknameAsc(invitation, isAttend);
-        VoterRes voterRes = VoterRes.builder()
-                .voterNum(attendanceRepository.countByInvitationAndAttending(invitation, isAttend))
+        AttendanceVoterRes attendanceVoterRes = AttendanceVoterRes.builder()
+                .voterCount(attendanceRepository.countByInvitationAndAttending(invitation, isAttend))
                 .voterNames(voterNames)
                 .build();
         return ResponseEntity.ok(ApiResponse.builder()
                 .check(true)
-                .information(voterRes)
+                .information(attendanceVoterRes)
                 .build());
     }
 
     @Transactional
-    public ResponseEntity<?> voteAttendance(UserPrincipal userPrincipal, Long invitationId, AttendanceVoteReq attendanceVoteReq) {
+    public ResponseEntity<?> voteAttendance(UserPrincipal userPrincipal, Long invitationId, VoteAttendanceReq voteAttendanceReq) {
         Invitation invitation = validateInvitationById(invitationId);
         checkVoteClosed(invitation);
         User user = Optional.ofNullable(userPrincipal)
                 .map(principal -> validateUserById(principal.getId()))
                 .orElse(null);
-        String nickname = user != null ? user.getName() : attendanceVoteReq.getNickname();
+        String nickname = user != null ? user.getName() : voteAttendanceReq.getNickname();
         DefaultAssert.isTrue(nickname != null && !nickname.isEmpty(), "닉네임이 존재하지 않습니다.");
         Attendance attendance = (user != null)
                 ? attendanceRepository.findByInvitationAndUser(invitation, user).orElse(null)
                 : attendanceRepository.findByInvitationAndNicknameAndUser(invitation, nickname, null).orElse(null);
         if (attendance != null) {
-            attendance.updateAttending(attendanceVoteReq.isAttending());
+            attendance.updateAttending(voteAttendanceReq.isAttending());
         } else {
             Attendance newAttendance = Attendance.builder()
                     .nickname(nickname)
-                    .attending(attendanceVoteReq.isAttending())
+                    .attending(voteAttendanceReq.isAttending())
                     .user(user)
                     .invitation(invitation)
                     .build();
