@@ -21,10 +21,9 @@ import depth.main.wishwesee.domain.vote.domain.ScheduleVote;
 import depth.main.wishwesee.domain.vote.domain.repository.AttendanceRepository;
 import depth.main.wishwesee.domain.vote.domain.repository.ScheduleVoteRepository;
 import depth.main.wishwesee.domain.vote.domain.repository.ScheduleVoterRepository;
-import depth.main.wishwesee.domain.vote.domain.repository.VoteRepository;
-import depth.main.wishwesee.domain.vote.domain.repository.VoterNicknameRepository;
 import depth.main.wishwesee.domain.vote.dto.request.ScheduleVoteReq;
 import depth.main.wishwesee.domain.vote.dto.response.ScheduleVoteRes;
+import depth.main.wishwesee.global.DefaultAssert;
 import depth.main.wishwesee.global.config.security.token.UserPrincipal;
 import depth.main.wishwesee.global.exception.DefaultException;
 import depth.main.wishwesee.global.payload.ErrorCode;
@@ -37,6 +36,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -293,8 +294,12 @@ public class InvitationService {
         Invitation invitation = invitationRepository.findById(invitationId)
                 .orElseThrow(() -> new DefaultException(ErrorCode.NOT_FOUND, "해당 초대장이 존재하지 않습니다."));
 
+        User user = Optional.ofNullable(userPrincipal)
+                .map(principal -> validateUserById(principal.getId()))
+                .orElse(null);
+
         // 작성자 본인 여부 확인
-        boolean isOwner = invitation.getSender().getId().equals(userPrincipal.getId());
+        boolean isOwner = user == invitation.getSender();
 
         // 초대장의 모든 블록 조회
         List<Block> allBlocks = blockRepository.findByInvitationId(invitation.getId());
@@ -328,8 +333,7 @@ public class InvitationService {
                     }
                 }).toList();
 
-        // TODO: user의 투표 여부?
-        List<ScheduleVoteRes> scheduleVoteResList = getInvitationScheduleVote(invitation);
+        List<ScheduleVoteRes> scheduleVoteResList = getInvitationScheduleVote(user, invitation);
         // 응답 DTO 생성
         CompletedInvitationRes response = CompletedInvitationRes.builder()
                 .invitationId(invitation.getId())
@@ -354,19 +358,24 @@ public class InvitationService {
         return ResponseEntity.ok(response);
     }
 
-    private List<ScheduleVoteRes> getInvitationScheduleVote(Invitation invitation) {
+    private List<ScheduleVoteRes> getInvitationScheduleVote(User user, Invitation invitation) {
         List<ScheduleVote> scheduleVotes = scheduleVoteRepository.findByInvitationId(invitation.getId());
         return scheduleVotes.stream()
-                .map(vote -> ScheduleVoteRes.builder()
-                        .scheduleVoteId(vote.getId())
-                        .startDate(vote.getStartDate())
-                        .startTime(vote.getStartTime())
-                        .endDate(vote.getEndDate())
-                        .endTime(vote.getEndTime())
-                        .voterCount(scheduleVoterRepository.countByScheduleVoteId(vote.getId()))
-                        .build())
-                .toList();
+                .map(vote -> {
+                    boolean isVoted = user != null && scheduleVoterRepository.existsByScheduleVoteAndUser(vote, user);
+                    return ScheduleVoteRes.builder()
+                            .scheduleVoteId(vote.getId())
+                            .startDate(vote.getStartDate())
+                            .startTime(vote.getStartTime())
+                            .endDate(vote.getEndDate())
+                            .endTime(vote.getEndTime())
+                            .voterCount(scheduleVoterRepository.countByScheduleVoteId(vote.getId()))
+                            .voted(isVoted)
+                            .build();
+                })
+                .collect(Collectors.toList());
     }
+
 
     public ResponseEntity<?> getMyInvitations(UserPrincipal userPrincipal) {
         User user = userRepository.findById(userPrincipal.getId())
@@ -473,7 +482,7 @@ public class InvitationService {
         attendanceRepository.deleteByInvitation(invitation);
 
         // 3. ScheduleVote와 연관된 VoterNickname삭제
-        List<ScheduleVote> scheduleVotes = voteRepository.findByInvitation(invitation);
+        List<ScheduleVote> scheduleVotes = scheduleVoteRepository.findByInvitation(invitation);
         for(ScheduleVote scheduleVote : scheduleVotes){
             scheduleVoterRepository.deleteByScheduleVote(scheduleVote);
         }
@@ -507,6 +516,12 @@ public class InvitationService {
 
         return ResponseEntity.noContent().build();
 
+    }
+
+    private User validateUserById(Long userId) {
+        Optional<User> userOptional = userRepository.findById(userId);
+        DefaultAssert.isOptionalPresent(userOptional, "사용자가 존재하지 않습니다.");
+        return userOptional.get();
     }
 }
 
