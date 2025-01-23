@@ -5,7 +5,7 @@ import lombok.Getter;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-@Schema(description = "일정 투표 요청 객체")
+@Schema(title = "ScheduleVoteReq: 일정 투표 요청 객체", description = "POST:/api/v1/invitation에서 사용합니다.")
 @Getter
 public class ScheduleVoteReq {
     @Schema(description = "일정 시작 날짜", example = "2024-12-24", type = "string", format = "date")

@@ -7,7 +7,8 @@ import lombok.Getter;
 import java.util.List;
 
 @Getter
-@Schema(description = "해당 연도의 보낸 혹은 받은 초대장 목록 응답 객체")
+@Schema(title = "InvitationListRes: 해당 연도의 보낸 혹은 받은 초대장 목록 조회 응답 객체",
+description = "GET: /api/v1/invitation/sent/{year} 혹은 /api/v1/invitation/sent/{year}에서 사용합니다.")
 public class InvitationListRes {
     @Schema(description = "전체 보낸 혹은 받은 초대장 개수", example = "10", type = "int")
     private int totalInvitations;

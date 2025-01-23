@@ -8,7 +8,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
-@Schema(description = "내 초대장 목록 응답 객체")
+@Schema(title = "MyInvitationOverViewRes: 내 초대장 목록 응답 객체",
+description = "GET: /api/v1/invitation/my-invitations에서 사용합니다.")
 public class MyInvitationOverViewRes {
     @Schema(description = "작성중인 초대장 개수", example = "3", type = "int")
     private int draftCount;
@@ -32,7 +33,8 @@ public class MyInvitationOverViewRes {
     }
 
     @Getter
-    @Schema(description = "초대장 응답 객체")
+    @Schema(title = "MyInvitationOverViewRes: '나의 초대장'목록에서 초대장 조회 응답 객체",
+            description = "GET: /api/v1/invitation/my-invitations에서 사용합니다.")
     public static class InvitationRes{
         @Schema(description = "초대장ID", example = "5", type = "Long")
         private Long invitationId;
