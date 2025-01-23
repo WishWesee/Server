@@ -41,4 +41,7 @@ public interface ScheduleVoterRepository extends JpaRepository<ScheduleVoter, Lo
             "ORDER BY svr.nickname ASC")
     List<String> findNicknamesByScheduleVoteIdOrderByNicknameAsc(@Param("scheduleVoteId") Long scheduleVoteId);
 
+    void deleteByScheduleVote(ScheduleVote scheduleVote);
+
+    boolean existsByScheduleVoteAndUser(ScheduleVote vote, User user);
 }
