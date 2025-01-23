@@ -13,4 +13,8 @@ public interface ScheduleVoteRepository extends JpaRepository<ScheduleVote, Long
 
     @Query("SELECT v FROM ScheduleVote v WHERE v.invitation.id = :invitationId")
     List<ScheduleVote> findByInvitationId(@Param("invitationId") Long invitationId);
+
+    List<ScheduleVote> findByInvitation(Invitation invitation);
+
+    void deleteByInvitation(Invitation invitation);
 }
