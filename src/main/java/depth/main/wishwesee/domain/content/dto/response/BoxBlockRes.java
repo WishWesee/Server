@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 @Getter
-@Schema(description = "박스 블록 응답")
+@Schema(title = "BoxBlockRes: 박스 블록 조회 응답 객체", description = "GET: /api/v1/invitation에서 사용합니다.")
 public class BoxBlockRes extends BlockRes{
     @Schema(description = "박스 제목", example = "Dress Code", type = "String")
     private String title;

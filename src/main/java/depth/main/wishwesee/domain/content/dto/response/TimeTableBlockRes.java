@@ -8,7 +8,7 @@ import lombok.Getter;
 
 import java.util.List;
 @Getter
-@Schema(description = "시간표 블록 응답")
+@Schema(title = "TimeTableBlockRes: 시간표 블록 조회 응답 객체", description = "GET: /api/v1/invitation에서 사용합니다.")
 public class TimeTableBlockRes extends BlockRes{
     @Schema(description = "시간표 내용 목록", type = "List<TimeTable.TimeTableEntry>")
     private List<TimeTable.TimeTableEntry> content;

@@ -11,7 +11,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 @Getter
 @NoArgsConstructor
-@Schema(description = "일정 투표 응답 객체")
+@Schema(title = "ScheduleVoteRes: 일정 투표 조회 응답 객체", description = "/api/v1/invitation/{invitationId}에서 사용합니다.")
 public class ScheduleVoteRes {
 
     @Schema(description = "각 투표 항목별 id", example = "1", type = "Long")
