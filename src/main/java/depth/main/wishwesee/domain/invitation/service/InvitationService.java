@@ -6,6 +6,7 @@ import depth.main.wishwesee.domain.content.dto.request.*;
 import depth.main.wishwesee.domain.content.dto.response.*;
 import depth.main.wishwesee.domain.invitation.domain.Invitation;
 import depth.main.wishwesee.domain.invitation.domain.ReceivedInvitation;
+import depth.main.wishwesee.domain.invitation.domain.repository.FeedbackRepository;
 import depth.main.wishwesee.domain.invitation.domain.repository.InvitationRepository;
 import depth.main.wishwesee.domain.invitation.domain.repository.ReceivedInvitationRepository;
 import depth.main.wishwesee.domain.invitation.dto.request.InvitationReq;
@@ -18,9 +19,11 @@ import depth.main.wishwesee.domain.user.domain.User;
 import depth.main.wishwesee.domain.user.domain.repository.UserRepository;
 import depth.main.wishwesee.domain.vote.domain.ScheduleVote;
 import depth.main.wishwesee.domain.vote.domain.repository.AttendanceRepository;
-import depth.main.wishwesee.domain.vote.domain.repository.VoteRepository;
+import depth.main.wishwesee.domain.vote.domain.repository.ScheduleVoteRepository;
+import depth.main.wishwesee.domain.vote.domain.repository.ScheduleVoterRepository;
 import depth.main.wishwesee.domain.vote.dto.request.ScheduleVoteReq;
 import depth.main.wishwesee.domain.vote.dto.response.ScheduleVoteRes;
+import depth.main.wishwesee.global.DefaultAssert;
 import depth.main.wishwesee.global.config.security.token.UserPrincipal;
 import depth.main.wishwesee.global.exception.DefaultException;
 import depth.main.wishwesee.global.payload.ErrorCode;
@@ -33,6 +36,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -41,10 +46,12 @@ public class InvitationService {
     private final S3Uploader s3Uploader;
     private final InvitationRepository invitationRepository;
     private final BlockRepository blockRepository;
-    private final VoteRepository voteRepository;
-    private  final UserRepository userRepository;
+    private final ScheduleVoteRepository scheduleVoteRepository;
+    private final ScheduleVoterRepository scheduleVoterRepository;
+    private final UserRepository userRepository;
     private final ReceivedInvitationRepository receivedInvitationRepository;
     private  final AttendanceRepository attendanceRepository;
+    private final FeedbackRepository feedbackRepository;
     @Transactional
     public ResponseEntity<?> saveTemporaryInvitation(InvitationReq invitationReq, MultipartFile cardImage, List<MultipartFile> photoImages, UserPrincipal userPrincipal){
         // 사용자 인증 여부 확인
@@ -153,7 +160,7 @@ public class InvitationService {
 
         // 기존 블록 및 일정 투표 삭제 후 다시 추가
         blockRepository.deleteAllByInvitation(invitation);
-        voteRepository.deleteAllByInvitation(invitation);
+        scheduleVoteRepository.deleteAllByInvitation(invitation);
 
         // 블럭 데이터 저장
         if (invitationReq.getBlocks() != null && !invitationReq.getBlocks().isEmpty()) {
@@ -176,7 +183,7 @@ public class InvitationService {
                     .endTime(voteReq.getEndTime())
                     .invitation(savedInvitation)
                     .build();
-            voteRepository.save(scheduleVote);
+            scheduleVoteRepository.save(scheduleVote);
         }
     }
 
@@ -287,6 +294,13 @@ public class InvitationService {
         Invitation invitation = invitationRepository.findById(invitationId)
                 .orElseThrow(() -> new DefaultException(ErrorCode.NOT_FOUND, "해당 초대장이 존재하지 않습니다."));
 
+        User user = Optional.ofNullable(userPrincipal)
+                .map(principal -> validateUserById(principal.getId()))
+                .orElse(null);
+
+        // 작성자 본인 여부 확인
+        boolean isOwner = user == invitation.getSender();
+
         // 초대장의 모든 블록 조회
         List<Block> allBlocks = blockRepository.findByInvitationId(invitation.getId());
 
@@ -319,21 +333,11 @@ public class InvitationService {
                     }
                 }).toList();
 
-        // 일정 투표 리스트 조회
-        List<ScheduleVote> scheduleVotes = voteRepository.findByInvitationId(invitation.getId());
-
-        List<ScheduleVoteRes> scheduleVoteResList = scheduleVotes.stream()
-                .map(vote -> ScheduleVoteRes.builder()
-                        .startDate(vote.getStartDate())
-                        .startTime(vote.getStartTime())
-                        .endDate(vote.getEndDate())
-                        .endTime(vote.getEndTime())
-                        .build())
-                .toList();
-
+        List<ScheduleVoteRes> scheduleVoteResList = getInvitationScheduleVote(user, invitation);
         // 응답 DTO 생성
         CompletedInvitationRes response = CompletedInvitationRes.builder()
                 .invitationId(invitation.getId())
+                .isOwner(isOwner)
                 .cardImage(invitation.getCardImage())
                 .title(invitation.getTitle())
                 .startDate(invitation.getStartDate())
@@ -353,6 +357,25 @@ public class InvitationService {
 
         return ResponseEntity.ok(response);
     }
+
+    private List<ScheduleVoteRes> getInvitationScheduleVote(User user, Invitation invitation) {
+        List<ScheduleVote> scheduleVotes = scheduleVoteRepository.findByInvitationId(invitation.getId());
+        return scheduleVotes.stream()
+                .map(vote -> {
+                    boolean isVoted = user != null && scheduleVoterRepository.existsByScheduleVoteAndUser(vote, user);
+                    return ScheduleVoteRes.builder()
+                            .scheduleVoteId(vote.getId())
+                            .startDate(vote.getStartDate())
+                            .startTime(vote.getStartTime())
+                            .endDate(vote.getEndDate())
+                            .endTime(vote.getEndTime())
+                            .voterCount(scheduleVoterRepository.countByScheduleVoteId(vote.getId()))
+                            .voted(isVoted)
+                            .build();
+                })
+                .collect(Collectors.toList());
+    }
+
 
     public ResponseEntity<?> getMyInvitations(UserPrincipal userPrincipal) {
         User user = userRepository.findById(userPrincipal.getId())
@@ -439,6 +462,66 @@ public class InvitationService {
                 .invitations(invitations)
                 .build();
         return ResponseEntity.ok(response);
+    }
+    @Transactional
+    public ResponseEntity<?> deleteSentInvitation(Long invitationId, UserPrincipal userPrincipal) {
+        // 초대장 조회
+        Invitation invitation = invitationRepository.findById(invitationId)
+                .orElseThrow(() -> new DefaultException(ErrorCode.NOT_FOUND, "해당 초대장이 존재하지 않습니다."));
+
+        // 보낸 사람 확인
+        if (!invitation.getSender().getId().equals(userPrincipal.getId())) {
+            throw new DefaultException(ErrorCode.INVALID_AUTHENTICATION, "본인이 보낸 초대장만 삭제할 수 있습니다.");
+        }
+
+        // 관련 데이터 삭제
+        // 1. Feedback 삭제
+        feedbackRepository.deleteByInvitation(invitation);
+
+        // 2. Attendance 삭제
+        attendanceRepository.deleteByInvitation(invitation);
+
+        // 3. ScheduleVote와 연관된 VoterNickname삭제
+        List<ScheduleVote> scheduleVotes = scheduleVoteRepository.findByInvitation(invitation);
+        for(ScheduleVote scheduleVote : scheduleVotes){
+            scheduleVoterRepository.deleteByScheduleVote(scheduleVote);
+        }
+
+        scheduleVoteRepository.deleteByInvitation(invitation);
+
+        // 4. ReceivedInvitation삭제
+        receivedInvitationRepository.deleteByInvitation(invitation);
+
+        // 5. Block 삭제(상속된엔티티포함)
+        blockRepository.deleteByInvitation(invitation);
+
+        // 6. 초대장 삭제
+        invitationRepository.delete(invitation);
+
+        return ResponseEntity.noContent().build();
+
+    }
+    @Transactional
+    public ResponseEntity<?> deleteReceivedInvitation(Long invitationId, UserPrincipal userPrincipal) {
+        // 현재 사용자 조회
+        User receiver = userRepository.findById(userPrincipal.getId())
+                .orElseThrow(() -> new DefaultException(ErrorCode.NOT_FOUND, "사용자를 찾을 수 없습니다."));
+
+        // 받은 초대장 데이터 조회
+        ReceivedInvitation receivedInvitation = receivedInvitationRepository.findByReceiverAndInvitationId(receiver, invitationId)
+                .orElseThrow(() -> new DefaultException(ErrorCode.NOT_FOUND, "해당 초대장이 존재하지 않거나 수신하지 않았습니다."));
+
+        // 받은 초대장에서만 삭제
+        receivedInvitationRepository.delete(receivedInvitation);
+
+        return ResponseEntity.noContent().build();
+
+    }
+
+    private User validateUserById(Long userId) {
+        Optional<User> userOptional = userRepository.findById(userId);
+        DefaultAssert.isOptionalPresent(userOptional, "사용자가 존재하지 않습니다.");
+        return userOptional.get();
     }
 }
 

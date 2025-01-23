@@ -18,4 +18,6 @@ public interface BlockRepository extends JpaRepository<Block, Long> {
 
     @Query("SELECT b FROM Block b WHERE b.invitation.id = :invitationId")
     List<Block> findByInvitationId(@Param("invitationId") Long invitationId);
+
+    void deleteByInvitation(Invitation invitation);
 }

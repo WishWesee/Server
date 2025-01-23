@@ -12,4 +12,6 @@ public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
     List<Feedback> findByInvitationOrderByCreatedDateDesc(Invitation invitation);
 
     int countByInvitation(Invitation invitation);
+
+    void deleteByInvitation(Invitation invitation);
 }
