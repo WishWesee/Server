@@ -2,11 +2,8 @@ package depth.main.wishwesee.domain.invitation.controller;
 
 import depth.main.wishwesee.domain.invitation.dto.request.CreateFeedbackReq;
 import depth.main.wishwesee.domain.invitation.dto.request.InvitationReq;
-import depth.main.wishwesee.domain.invitation.dto.response.FeedbackListRes;
+import depth.main.wishwesee.domain.invitation.dto.response.*;
 import depth.main.wishwesee.domain.invitation.dto.request.SaveInvitationReq;
-import depth.main.wishwesee.domain.invitation.dto.response.CompletedInvitationRes;
-import depth.main.wishwesee.domain.invitation.dto.response.InvitationListRes;
-import depth.main.wishwesee.domain.invitation.dto.response.MyInvitationOverViewRes;
 import depth.main.wishwesee.domain.invitation.service.FeedbackService;
 import depth.main.wishwesee.global.config.security.token.CurrentUser;
 import depth.main.wishwesee.global.config.security.token.UserPrincipal;
@@ -87,6 +84,18 @@ public class InvitationController {
             @Parameter(description = "초대장의 id를 입력해주세요.", required = true) @PathVariable Long invitationId
     ) {
         return feedbackService.getFeedbacks(userPrincipal, invitationId);
+    }
+
+    @Operation(summary = "후기 알림이 가능한 초대장 목록 조회", description = "내가 받은 초대장 중 후기 알림이 가능한 초대장 목록을 조회합니다. 이미 후기를 작성한 경우 보내지 않습니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "목록 조회 성공", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = NotificationFeedbackRes.class))}),
+            @ApiResponse(responseCode = "400", description = "목록 조회 실패", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))}),
+    })
+    @GetMapping("/my-invitations/feedback")
+    public ResponseEntity<depth.main.wishwesee.global.payload.ApiResponse> getWritableFeedbackNotification(
+            @Parameter(description = "Accesstoken을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal
+    ) {
+        return feedbackService.notificationWritableFeedback(userPrincipal);
     }
 
     @Operation(summary = "후기 삭제", description = "내가 받은/보낸 초대장의 후기를 삭제합니다.")

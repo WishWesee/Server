@@ -2,12 +2,14 @@ package depth.main.wishwesee.domain.invitation.service;
 
 import depth.main.wishwesee.domain.invitation.domain.Feedback;
 import depth.main.wishwesee.domain.invitation.domain.Invitation;
+import depth.main.wishwesee.domain.invitation.domain.ReceivedInvitation;
 import depth.main.wishwesee.domain.invitation.domain.repository.FeedbackRepository;
 import depth.main.wishwesee.domain.invitation.domain.repository.InvitationRepository;
 import depth.main.wishwesee.domain.invitation.domain.repository.ReceivedInvitationRepository;
 import depth.main.wishwesee.domain.invitation.dto.request.CreateFeedbackReq;
 import depth.main.wishwesee.domain.invitation.dto.response.FeedbackListRes;
 import depth.main.wishwesee.domain.invitation.dto.response.FeedbackRes;
+import depth.main.wishwesee.domain.invitation.dto.response.NotificationFeedbackRes;
 import depth.main.wishwesee.domain.s3.service.S3Uploader;
 import depth.main.wishwesee.domain.user.domain.User;
 import depth.main.wishwesee.domain.user.domain.repository.UserRepository;
@@ -25,6 +27,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -130,30 +133,59 @@ public class FeedbackService {
         );
     }
 
-    private boolean checkWritableFeedback(Invitation invitation) {
+    private LocalDateTime formatInvitationDate(Invitation invitation) {
         LocalDateTime dateTime;
         if (invitation.getEndDate() == null) {
             dateTime = combineDateAndTime(invitation.getStartDate(), invitation.getStartTime());
         } else {
             dateTime = combineDateAndTime(invitation.getEndDate(), invitation.getEndTime());
         }
-        LocalDateTime now = LocalDateTime.now();
-        return isAfterInvitationDate(dateTime, now);
+        return dateTime;
     }
 
-    public LocalDateTime combineDateAndTime(LocalDate date, LocalTime time) {
+    private LocalDateTime combineDateAndTime(LocalDate date, LocalTime time) {
         LocalTime defaultTime = LocalTime.MIDNIGHT; // 00:00:00
         return LocalDateTime.of(date, time != null ? time : defaultTime);
     }
 
-    public boolean isAfterInvitationDate(LocalDateTime dateTime, LocalDateTime now) {
+    private boolean checkWritableFeedback(Invitation invitation) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime endDate = formatInvitationDate(invitation);
+        return isAfterInvitationDate(endDate, now);
+    }
+
+    private boolean checkNotificationFeedback(Invitation invitation) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime oneDayAfterEndDate = formatInvitationDate(invitation).plusDays(1);
+        return isAfterInvitationDate(oneDayAfterEndDate, now);
+    }
+
+    private boolean isAfterInvitationDate(LocalDateTime dateTime, LocalDateTime now) {
         // 요청 날짜가 비교 날짜 이후인지 확인
         return now.isAfter(dateTime);
     }
 
-    public boolean isOneDayAfterInvitationDate(LocalDateTime dateTime, LocalDateTime now) {
-        LocalDateTime oneDayAfterDate = dateTime.plusDays(1);
-        return now.isAfter(oneDayAfterDate);
+    public ResponseEntity<ApiResponse> notificationWritableFeedback(UserPrincipal userPrincipal) {
+        User user = validateUserById(userPrincipal.getId());
+        LocalDateTime twoWeeksAgo = LocalDateTime.now().minusWeeks(2);
+        List<ReceivedInvitation> receivedInvitations = receivedInvitationRepository.findByReceiverAndCreatedDateAfter(user, twoWeeksAgo);
+        List<NotificationFeedbackRes> notificationFeedbackRes = receivedInvitations.stream()
+                .map(receivedInvitation -> {
+                    Invitation invitation = receivedInvitation.getInvitation();
+                    if (checkNotificationFeedback(invitation) && !feedbackRepository.existsByInvitationAndUser(invitation, user)) {
+                        return NotificationFeedbackRes.builder()
+                                .invitationId(invitation.getId())
+                                .title(invitation.getTitle())
+                                .build();
+                    }
+                    return null;
+                })
+                .filter(Objects::nonNull)
+                .toList();
+        return ResponseEntity.ok(ApiResponse.builder()
+                .check(true)
+                .information(notificationFeedbackRes)
+                .build());
     }
 
 
