@@ -23,6 +23,14 @@ public interface ScheduleVoterRepository extends JpaRepository<ScheduleVoter, Lo
             "AND svr.user IS NULL")
     boolean existsByInvitationIdAndNickname(@Param("invitationId") Long invitationId, @Param("nickname") String nickname);
 
+    @Query("SELECT CASE WHEN COUNT(svr) > 0 THEN TRUE ELSE FALSE END " +
+            "FROM ScheduleVoter svr " +
+            "JOIN svr.scheduleVote sv " +
+            "WHERE sv.invitation.id = :invitationId " +
+            "AND svr.user = :user")
+    boolean existsByInvitationIdAndUser(@Param("invitationId") Long invitationId, User user);
+
+
     @Query("SELECT sv.id " +
             "FROM ScheduleVote sv " +
             "WHERE sv.invitation.id = :invitationId " +
