@@ -289,11 +289,27 @@ public class InvitationService {
 
 
 
-    public ResponseEntity<?> getCompletedInvitation(Long invitationId, UserPrincipal userPrincipal) {
+    public ResponseEntity<?> getInvitation(Long invitationId, UserPrincipal userPrincipal, boolean isTemporary) {
+        // 임시 저장된 초대장은 회원만 접근 가능
+        if(isTemporary && userPrincipal == null){
+            throw new DefaultException(ErrorCode.INVALID_AUTHENTICATION, "회원만 접근 가능합니다.");
+        }
+
         // 초대장 조회
         Invitation invitation = invitationRepository.findById(invitationId)
                 .orElseThrow(() -> new DefaultException(ErrorCode.NOT_FOUND, "해당 초대장이 존재하지 않습니다."));
 
+        // 임시 저장된 초대장 여부 확인
+        if(isTemporary && !invitation.isTempSaved()){
+            throw new DefaultException(ErrorCode.NOT_FOUND, "해당 초대장은 임시 저장되지 않았습니다.");
+        }
+
+        // 완성된 초대장은 임시 저장된 상태가 아니어야 함
+        if (!isTemporary && invitation.isTempSaved()) {
+            throw new DefaultException(ErrorCode.NOT_FOUND, "완성된 초대장이 아닙니다.");
+        }
+
+        // 사용자 확인
         User user = Optional.ofNullable(userPrincipal)
                 .map(principal -> validateUserById(principal.getId()))
                 .orElse(null);
