@@ -40,23 +40,33 @@ public class InvitationController {
     private final InvitationService invitationService;
     private final FeedbackService feedbackService;
 
-    @Operation(summary = "초대장 작성 완료", description = "임시저장된 초대장 혹은 새로운 초대장 작성을 완료합니다.")
+    @Operation(summary = "초대장 작성 완료", description = "임시저장된 초대장 혹은 새로운 초대장 작성을 완료합니다.(임시저장된 초대장이 있을 경우에만 invitationId가 존재합니다.)")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "초대장이 성공적으로 작성되었습니다.", content = {@Content(mediaType = "application/json", schema = @Schema(example = "{\"invitationId\": 5, \"message\": \"초대장 작성을 완료하였습니다.\"}"))}),
+            @ApiResponse(responseCode = "404", description = "임시저장된 초대장이 유효하지 않습니다.", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))}),
+    })
     @PostMapping
     public ResponseEntity<?> createInvitation(
             @Parameter(description = "초대장에 들어갈 데이터를 넣어주세요. Schemas의 InvitationReq를 참고해주세요.", required = true) @RequestPart("invitation")@Valid InvitationReq invitationReq,
             @Parameter(description = "초대장 카드 이미지를 넣어주세요.", required = true ) @RequestPart(value = "cardImage", required = true) MultipartFile cardImage,
             @Parameter(description = "초대장에 들어갈 사진 목록을 넣어주세요.", required = false) @RequestPart(value = "photoImages", required = false) List<MultipartFile> photoImages,
-            @Parameter(description = "Accesstoken을 입력해주세요.", required = false) @CurrentUser UserPrincipal userPrincipal){
+            @Parameter(description = "Accesstoken을 입력해주세요.", required = false) @CurrentUser UserPrincipal userPrincipal
+    ){
 
         return invitationService.publishInvitation(invitationReq, cardImage, photoImages, userPrincipal);
     }
     @Operation(summary = "초대장 임시 저장", description = "임시저장된 초대장 혹은 새로운 초대장을 임시저장합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "초대장이 성공적으로 임시 저장되었습니다.", content = {@Content(mediaType = "application/json", schema = @Schema(example = "{\"invitationId\": 5, \"message\": \"초대장이 임시 저장되었습니다.\"}"))}),
+            @ApiResponse(responseCode = "404", description = "임시저장된 초대장이 유효하지 않습니다.", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))}),
+    })
     @PostMapping(value = "/save-temporary")
     public ResponseEntity<?> saveTemporaryInvitation(
             @Parameter(description = "초대장에 들어갈 데이터를 넣어주세요. Schemas의 InvitationReq를 참고해주세요.", required = true) @RequestPart("invitation") @Valid InvitationReq invitationReq,
             @Parameter(description = "초대장 카드 이미지를 넣어주세요.", required = false ) @RequestPart(value = "cardImage", required = false) MultipartFile cardImage,
             @Parameter(description = "초대장에 들어갈 사진 목록을 넣어주세요.", required = false) @RequestPart(value = "photoImages", required = false) List<MultipartFile> photoImages,
-            @Parameter(description = "Accesstoken을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal) {
+            @Parameter(description = "Accesstoken을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal
+    ) {
 
         return invitationService.saveTemporaryInvitation(invitationReq, cardImage, photoImages, userPrincipal);
     }
