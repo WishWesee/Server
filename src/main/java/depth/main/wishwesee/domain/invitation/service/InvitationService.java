@@ -334,6 +334,7 @@ public class InvitationService {
                 }).toList();
 
         List<ScheduleVoteRes> scheduleVoteResList = getInvitationScheduleVote(user, invitation);
+        boolean hasVoted = user != null && scheduleVoterRepository.existsByInvitationIdAndUser(invitationId, user);
         // 응답 DTO 생성
         CompletedInvitationRes response = CompletedInvitationRes.builder()
                 .invitationId(invitation.getId())
@@ -346,6 +347,7 @@ public class InvitationService {
                 .endTime(invitation.getEndTime())
                 .voteDeadline(invitation.getVoteDeadline())
                 .scheduleVoteMultiple(invitation.isScheduleVoteMultiple())
+                .hasScheduleVote(hasVoted)
                 .scheduleVotes(scheduleVoteResList)
                 .scheduleVoteClosed(invitation.isScheduleVoteClosed())
                 .mapViewType(invitation.getMapViewType())
