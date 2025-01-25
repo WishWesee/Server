@@ -48,6 +48,9 @@ public class CompletedInvitationRes {
     @Schema(description = "일정 투표 복수 선택 가능 여부", example = "false", type = "boolean")
     private boolean scheduleVoteMultiple;
 
+    @Schema(description = "사용자의 일정 투표 전적 여부", example = "false", type = "boolean")
+    private boolean hasScheduleVote;
+
     @Schema(description = "일정 투표 리스트", type = "List<ScheduleVoteRes>")
     private List<ScheduleVoteRes> scheduleVotes; // 일정 투표 리스트
 
@@ -71,7 +74,7 @@ public class CompletedInvitationRes {
 
     @Builder
     public CompletedInvitationRes(Long invitationId, boolean isOwner, String cardImage, String title, LocalDate startDate,
-                                  LocalTime startTime, LocalDate endDate, LocalTime endTime, LocalDate voteDeadline, boolean scheduleVoteMultiple,
+                                  LocalTime startTime, LocalDate endDate, LocalTime endTime, LocalDate voteDeadline, boolean hasScheduleVote, boolean scheduleVoteMultiple,
                                   List<ScheduleVoteRes> scheduleVotes, boolean scheduleVoteClosed, int mapViewType, String location, String address,
                                   String mapLink, List<BlockRes> blocks) {
 
@@ -88,6 +91,7 @@ public class CompletedInvitationRes {
         this.mapViewType = mapViewType;
         this.voteDeadline = voteDeadline;
         this.scheduleVoteMultiple = scheduleVoteMultiple;
+        this.hasScheduleVote = hasScheduleVote;
         this.scheduleVoteClosed = scheduleVoteClosed;
         this.blocks = blocks;
         this.scheduleVotes = scheduleVotes;
