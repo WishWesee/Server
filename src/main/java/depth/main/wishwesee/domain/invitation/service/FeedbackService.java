@@ -2,12 +2,14 @@ package depth.main.wishwesee.domain.invitation.service;
 
 import depth.main.wishwesee.domain.invitation.domain.Feedback;
 import depth.main.wishwesee.domain.invitation.domain.Invitation;
+import depth.main.wishwesee.domain.invitation.domain.ReceivedInvitation;
 import depth.main.wishwesee.domain.invitation.domain.repository.FeedbackRepository;
 import depth.main.wishwesee.domain.invitation.domain.repository.InvitationRepository;
 import depth.main.wishwesee.domain.invitation.domain.repository.ReceivedInvitationRepository;
 import depth.main.wishwesee.domain.invitation.dto.request.CreateFeedbackReq;
 import depth.main.wishwesee.domain.invitation.dto.response.FeedbackListRes;
 import depth.main.wishwesee.domain.invitation.dto.response.FeedbackRes;
+import depth.main.wishwesee.domain.invitation.dto.response.NotificationFeedbackRes;
 import depth.main.wishwesee.domain.s3.service.S3Uploader;
 import depth.main.wishwesee.domain.user.domain.User;
 import depth.main.wishwesee.domain.user.domain.repository.UserRepository;
@@ -21,7 +23,11 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.security.InvalidParameterException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -44,6 +50,7 @@ public class FeedbackService {
         if (invitation.getSender() != user) {
             DefaultAssert.isTrue(receivedInvitationRepository.existsByInvitationAndReceiver(invitation, user), "내가 받은 초대장이 아닙니다.");
         }
+        DefaultAssert.isTrue(checkWritableFeedback(invitation), "후기 작성 가능 기간이 아닙니다.");
         String imageUrl = uploadImageIfPresent(image);
         String content = validateContentIfPresent(createFeedbackReq);
         Feedback feedback = Feedback.builder()
@@ -115,6 +122,7 @@ public class FeedbackService {
         int feedbackCount = feedbackRepository.countByInvitation(invitation);
         FeedbackListRes feedbackListRes = FeedbackListRes.builder()
                 .count(feedbackCount)
+                .writable(checkWritableFeedback(invitation))
                 .feedbackResList(feedbackResList)
                 .build();
         return ResponseEntity.ok(
@@ -124,6 +132,62 @@ public class FeedbackService {
                 .build()
         );
     }
+
+    private LocalDateTime formatInvitationDate(Invitation invitation) {
+        LocalDateTime dateTime;
+        if (invitation.getEndDate() == null) {
+            dateTime = combineDateAndTime(invitation.getStartDate(), invitation.getStartTime());
+        } else {
+            dateTime = combineDateAndTime(invitation.getEndDate(), invitation.getEndTime());
+        }
+        return dateTime;
+    }
+
+    private LocalDateTime combineDateAndTime(LocalDate date, LocalTime time) {
+        LocalTime defaultTime = LocalTime.MIDNIGHT; // 00:00:00
+        return LocalDateTime.of(date, time != null ? time : defaultTime);
+    }
+
+    private boolean checkWritableFeedback(Invitation invitation) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime endDate = formatInvitationDate(invitation);
+        return isAfterInvitationDate(endDate, now);
+    }
+
+    private boolean checkNotificationFeedback(Invitation invitation) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime oneDayAfterEndDate = formatInvitationDate(invitation).plusDays(1);
+        return isAfterInvitationDate(oneDayAfterEndDate, now);
+    }
+
+    private boolean isAfterInvitationDate(LocalDateTime dateTime, LocalDateTime now) {
+        // 요청 날짜가 비교 날짜 이후인지 확인
+        return now.isAfter(dateTime);
+    }
+
+    public ResponseEntity<ApiResponse> notificationWritableFeedback(UserPrincipal userPrincipal) {
+        User user = validateUserById(userPrincipal.getId());
+        LocalDateTime twoWeeksAgo = LocalDateTime.now().minusWeeks(2);
+        List<ReceivedInvitation> receivedInvitations = receivedInvitationRepository.findByReceiverAndCreatedDateAfter(user, twoWeeksAgo);
+        List<NotificationFeedbackRes> notificationFeedbackRes = receivedInvitations.stream()
+                .map(receivedInvitation -> {
+                    Invitation invitation = receivedInvitation.getInvitation();
+                    if (checkNotificationFeedback(invitation) && !feedbackRepository.existsByInvitationAndUser(invitation, user)) {
+                        return NotificationFeedbackRes.builder()
+                                .invitationId(invitation.getId())
+                                .title(invitation.getTitle())
+                                .build();
+                    }
+                    return null;
+                })
+                .filter(Objects::nonNull)
+                .toList();
+        return ResponseEntity.ok(ApiResponse.builder()
+                .check(true)
+                .information(notificationFeedbackRes)
+                .build());
+    }
+
 
     private User validateUserById(Long userId) {
         Optional<User> userOptional = userRepository.findById(userId);

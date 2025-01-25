@@ -31,5 +31,11 @@ public class User extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private Role role;
 
+    public void updateUserInfo(String email, String password, String profile, String providerId) {
+        this.email = email;
+        this.password = password;
+        this.profile = profile;
+        this.providerId = providerId;
+    }
 }
 
