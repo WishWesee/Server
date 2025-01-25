@@ -21,6 +21,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.security.InvalidParameterException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -44,6 +47,7 @@ public class FeedbackService {
         if (invitation.getSender() != user) {
             DefaultAssert.isTrue(receivedInvitationRepository.existsByInvitationAndReceiver(invitation, user), "내가 받은 초대장이 아닙니다.");
         }
+        DefaultAssert.isTrue(checkWritableFeedback(invitation), "후기 작성 가능 기간이 아닙니다.");
         String imageUrl = uploadImageIfPresent(image);
         String content = validateContentIfPresent(createFeedbackReq);
         Feedback feedback = Feedback.builder()
@@ -115,6 +119,7 @@ public class FeedbackService {
         int feedbackCount = feedbackRepository.countByInvitation(invitation);
         FeedbackListRes feedbackListRes = FeedbackListRes.builder()
                 .count(feedbackCount)
+                .writable(checkWritableFeedback(invitation))
                 .feedbackResList(feedbackResList)
                 .build();
         return ResponseEntity.ok(
@@ -124,6 +129,33 @@ public class FeedbackService {
                 .build()
         );
     }
+
+    private boolean checkWritableFeedback(Invitation invitation) {
+        LocalDateTime dateTime;
+        if (invitation.getEndDate() == null) {
+            dateTime = combineDateAndTime(invitation.getStartDate(), invitation.getStartTime());
+        } else {
+            dateTime = combineDateAndTime(invitation.getEndDate(), invitation.getEndTime());
+        }
+        LocalDateTime now = LocalDateTime.now();
+        return isAfterInvitationDate(dateTime, now);
+    }
+
+    public LocalDateTime combineDateAndTime(LocalDate date, LocalTime time) {
+        LocalTime defaultTime = LocalTime.MIDNIGHT; // 00:00:00
+        return LocalDateTime.of(date, time != null ? time : defaultTime);
+    }
+
+    public boolean isAfterInvitationDate(LocalDateTime dateTime, LocalDateTime now) {
+        // 요청 날짜가 비교 날짜 이후인지 확인
+        return now.isAfter(dateTime);
+    }
+
+    public boolean isOneDayAfterInvitationDate(LocalDateTime dateTime, LocalDateTime now) {
+        LocalDateTime oneDayAfterDate = dateTime.plusDays(1);
+        return now.isAfter(oneDayAfterDate);
+    }
+
 
     private User validateUserById(Long userId) {
         Optional<User> userOptional = userRepository.findById(userId);
