@@ -138,8 +138,16 @@ public class ScheduleVoteService {
         checkVoteClosed(invitation);
         ScheduleVote scheduleVote = validateScheduleVoteById(scheduleVoteId);
         invitation.updateSchedule(scheduleVote.getStartDate(), scheduleVote.getStartTime(), scheduleVote.getEndDate(), scheduleVote.getEndTime());
+        deleteScheduleVoteAndVoters(invitation);
         return ResponseEntity.noContent().build();
     }
+
+    private void deleteScheduleVoteAndVoters(Invitation invitation) {
+        List<ScheduleVote> scheduleVotes = scheduleVoteRepository.findByInvitationId(invitation.getId());
+        scheduleVotes.forEach(scheduleVote -> scheduleVoterRepository.deleteByScheduleVote(scheduleVote));
+        scheduleVoteRepository.deleteAllByInvitation(invitation);
+    }
+
 
     private boolean checkDuplicateScheduleNickname(Invitation invitation, String nickname) {
         return scheduleVoterRepository.existsByInvitationIdAndNickname(invitation.getId(), nickname);
