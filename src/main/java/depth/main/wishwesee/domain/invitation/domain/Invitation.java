@@ -136,5 +136,12 @@ public class Invitation extends BaseEntity{
         this.attendanceSurveyClosed = attendanceSurveyClosed;
     }
 
+    public void updateSchedule(LocalDate startDate, LocalTime startTime, LocalDate endDate, LocalTime endTime) {
+        this.startDate = startDate;
+        this.startTime = startTime;
+        this.endDate = endDate;
+        this.endTime = endTime;
+    }
+
 
 }

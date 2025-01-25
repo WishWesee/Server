@@ -3,6 +3,7 @@ package depth.main.wishwesee.domain.content.domain;
 import depth.main.wishwesee.domain.common.TimeTableEntryListConverter;
 
 import depth.main.wishwesee.domain.invitation.domain.Invitation;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import lombok.AccessLevel;
@@ -25,8 +26,12 @@ public class TimeTable extends Block {
     }
 
     @Getter
+    @Schema(description = "시간표 내용")
     public static class TimeTableEntry {
+        @Schema(description = "시간", example = "10:00", type = "String")
         private String time;
+
+        @Schema(description = "내용", example = "회의", type = "String")
         private String content;
 
         @Builder

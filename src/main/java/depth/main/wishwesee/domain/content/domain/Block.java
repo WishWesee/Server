@@ -5,6 +5,9 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 @Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -19,6 +22,7 @@ public class Block {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "invitation_id")
+    //@OnDelete(action = OnDeleteAction.CASCADE)
     private Invitation invitation;
 
     protected Block(int sequence, Invitation invitation) {

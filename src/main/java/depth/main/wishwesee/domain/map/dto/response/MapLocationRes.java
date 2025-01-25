@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 @Getter
-@Schema(description = "지도 검색 응답 DTO")
+@Schema(title = "MapLocationRes: 장소 검색 응답 객체", description = "GET: /api/v1/map/search에서 사용합니다.")
 public class MapLocationRes {
     @Schema(description = "장소명", example = "명지대학교", type = "string")
     private String location;

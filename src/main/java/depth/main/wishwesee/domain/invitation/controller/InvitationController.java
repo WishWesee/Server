@@ -175,5 +175,32 @@ public class InvitationController {
     ) {
         return invitationService.getReceivedInvitationsByYear(userPrincipal, year);
     }
+    @Operation(summary = "보낸 초대장 삭제", description = "사용자가 보낸 초대장을 삭제합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "성공적으로 삭제됨"),
+            @ApiResponse(responseCode = "404", description = "초대장 또는 사용자를 찾을 수 없음"),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터 (삭제 권한 없음)")
+    })
+    @DeleteMapping("/sent/{invitationId}")
+    public ResponseEntity<?> deleteSentInvitation(
+            @Parameter(description = "삭제할 초대장의 ID", required = true) @PathVariable Long invitationId,
+            @Parameter(description = "Accesstoken을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal) {
+
+        return invitationService.deleteSentInvitation(invitationId, userPrincipal);
+    }
+
+    @Operation(summary = "받은 초대장 삭제", description = "사용자가 받은 초대장을 삭제합니다. 삭제 시 초대장 자체는 삭제되지 않고 사용자의 수신 목록에서만 삭제됩니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "성공적으로 삭제됨"),
+            @ApiResponse(responseCode = "404", description = "해당 초대장이 존재하지 않거나 수신하지 않음")
+    })
+    @DeleteMapping("/received/{invitationId}")
+    public ResponseEntity<?> deleteReceivedInvitation(
+            @Parameter(description = "삭제할 초대장의 ID", required = true)  @PathVariable Long invitationId,
+            @Parameter(description = "Accesstoken을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal) {
+
+        return invitationService.deleteReceivedInvitation(invitationId, userPrincipal);
+    }
+
 
 }

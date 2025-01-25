@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Schema(title = "UserProfileRes: 회원 프로필 조회 응답 객체", description = "GET: /api/v1/user에서 사용합니다.")
 public class UserProfileRes {
 
     @Schema(type = "Long", example = "1", description = "사용자의 userId입니다.")

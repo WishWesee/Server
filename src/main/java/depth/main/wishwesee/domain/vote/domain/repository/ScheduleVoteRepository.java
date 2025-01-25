@@ -8,9 +8,13 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
-public interface VoteRepository extends JpaRepository<ScheduleVote, Long> {
+public interface ScheduleVoteRepository extends JpaRepository<ScheduleVote, Long> {
     void deleteAllByInvitation(Invitation invitation);
 
     @Query("SELECT v FROM ScheduleVote v WHERE v.invitation.id = :invitationId")
     List<ScheduleVote> findByInvitationId(@Param("invitationId") Long invitationId);
+
+    List<ScheduleVote> findByInvitation(Invitation invitation);
+
+    void deleteByInvitation(Invitation invitation);
 }
