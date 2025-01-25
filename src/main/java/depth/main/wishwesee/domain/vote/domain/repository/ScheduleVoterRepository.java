@@ -6,10 +6,12 @@ import depth.main.wishwesee.domain.vote.domain.ScheduleVoter;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
 
+@Repository
 public interface ScheduleVoterRepository extends JpaRepository<ScheduleVoter, Long> {
     int countByScheduleVoteId(Long id);
 
@@ -20,6 +22,14 @@ public interface ScheduleVoterRepository extends JpaRepository<ScheduleVoter, Lo
             "AND svr.nickname = :nickname " +
             "AND svr.user IS NULL")
     boolean existsByInvitationIdAndNickname(@Param("invitationId") Long invitationId, @Param("nickname") String nickname);
+
+    @Query("SELECT CASE WHEN COUNT(svr) > 0 THEN TRUE ELSE FALSE END " +
+            "FROM ScheduleVoter svr " +
+            "JOIN svr.scheduleVote sv " +
+            "WHERE sv.invitation.id = :invitationId " +
+            "AND svr.user = :user")
+    boolean existsByInvitationIdAndUser(@Param("invitationId") Long invitationId, User user);
+
 
     @Query("SELECT sv.id " +
             "FROM ScheduleVote sv " +
