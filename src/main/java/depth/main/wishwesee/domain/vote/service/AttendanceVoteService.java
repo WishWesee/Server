@@ -73,6 +73,7 @@ public class AttendanceVoteService {
                 : null;
         boolean isSender = invitation.getSender().equals(user);
         AttendanceVoteStatusRes attendanceVoteStatusRes = AttendanceVoteStatusRes.builder()
+                .attendanceSurveyClosed(invitation.isAttendanceSurveyClosed())
                 .attendingCount(attendanceRepository.countByInvitationAndAttending(invitation, true))
                 .notAttendingCount(attendanceRepository.countByInvitationAndAttending(invitation, false))
                 .isAttending(myAttendance)

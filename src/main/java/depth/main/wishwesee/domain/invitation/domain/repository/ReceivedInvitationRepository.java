@@ -2,13 +2,13 @@ package depth.main.wishwesee.domain.invitation.domain.repository;
 
 import depth.main.wishwesee.domain.invitation.domain.Invitation;
 import depth.main.wishwesee.domain.invitation.domain.ReceivedInvitation;
-import depth.main.wishwesee.domain.invitation.dto.response.MyInvitationOverViewRes;
 import depth.main.wishwesee.domain.user.domain.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,4 +25,9 @@ public interface ReceivedInvitationRepository extends JpaRepository<ReceivedInvi
 
 
     void deleteByInvitation(Invitation invitation);
+
+    List<ReceivedInvitation> findByReceiverAndCreatedDateAfter(User user, LocalDateTime dateTime);
+
+
+
 }

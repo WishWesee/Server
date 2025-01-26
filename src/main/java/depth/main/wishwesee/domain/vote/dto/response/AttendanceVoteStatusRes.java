@@ -14,6 +14,9 @@ import lombok.NoArgsConstructor;
 @Schema(title = "AttendanceVoteStatusRes: 참석 조사 조회 응답 객체", description = "GET: /api/v1/invitation/{invitationId}/attendance에서 사용합니다.")
 public class AttendanceVoteStatusRes {
 
+    @Schema(type = "boolean", example = "true", description = "참석 조사 마감 여부입니다. true: 조사 마감, false: 조사 진행 중")
+    private boolean attendanceSurveyClosed;
+
     @Schema(type = "int", example = "4", description = "참석에 투표한 투표자들의 수입니다.")
     private int attendingCount;
 
