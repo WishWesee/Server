@@ -141,7 +141,7 @@ public class InvitationController {
     }
     @Operation(summary = "임시저장된 초대장 조회", description = "임시저장된 초대장의 id를 통해 초대장의 상세 정보를 조회합니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "임시 저장된 초대장 조회 성공", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = CompletedInvitationRes.class))}),
+            @ApiResponse(responseCode = "200", description = "임시 저장된 초대장 조회 성공", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = InvitationDetailRes.class))}),
             @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))}),
             @ApiResponse(responseCode = "404", description = "임시 저장된 초대장을 찾을 수 없음", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))}),
             @ApiResponse(responseCode = "400", description = "잘못된 요청", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))})
@@ -156,7 +156,7 @@ public class InvitationController {
     }
     @Operation(summary = "완성된 초대장 조회", description = "완성된 초대장의 id를 통해 초대장의 상세 정보를 조회합니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "완성된 초대장 조회 성공", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = CompletedInvitationRes.class))}),
+            @ApiResponse(responseCode = "200", description = "완성된 초대장 조회 성공", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = InvitationDetailRes.class))}),
             @ApiResponse(responseCode = "404", description = "초대장을 찾을 수 없음", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))}),
             @ApiResponse(responseCode = "400", description = "잘못된 요청", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))})
     })

@@ -11,7 +11,7 @@ import depth.main.wishwesee.domain.invitation.domain.repository.InvitationReposi
 import depth.main.wishwesee.domain.invitation.domain.repository.ReceivedInvitationRepository;
 import depth.main.wishwesee.domain.invitation.dto.request.InvitationReq;
 import depth.main.wishwesee.domain.invitation.dto.request.SaveInvitationReq;
-import depth.main.wishwesee.domain.invitation.dto.response.CompletedInvitationRes;
+import depth.main.wishwesee.domain.invitation.dto.response.InvitationDetailRes;
 import depth.main.wishwesee.domain.invitation.dto.response.MyInvitationOverViewRes;
 import depth.main.wishwesee.domain.invitation.dto.response.InvitationListRes;
 import depth.main.wishwesee.domain.s3.service.S3Uploader;
@@ -310,6 +310,9 @@ public class InvitationService {
             throw new DefaultException(ErrorCode.INVALID_AUTHENTICATION, "작성자 본인만 접근 가능합니다.");
         }
 
+        // 보관함에 저장 여부 확인(완성된 초대장에서 적용)
+        boolean alreadySaved = user != null && receivedInvitationRepository.existsByReceiverAndInvitation(user, invitation);
+
         // 초대장의 모든 블록 조회 및 변환
         List<BlockRes> blockResList = transformBlocks(blockRepository.findByInvitationId(invitation.getId()));
 
@@ -320,7 +323,7 @@ public class InvitationService {
         boolean hasVoted = user != null && scheduleVoterRepository.existsByInvitationIdAndUser(invitationId, user);
 
         // 응답 DTO 생성
-        CompletedInvitationRes response = CompletedInvitationRes.builder()
+        InvitationDetailRes response = InvitationDetailRes.builder()
                 .invitationId(invitation.getId())
                 .isOwner(isOwner)
                 .cardImage(invitation.getCardImage())
@@ -339,6 +342,7 @@ public class InvitationService {
                 .address(invitation.getAddress())
                 .mapLink(invitation.getMapLink())
                 .blocks(blockResList)
+                .alreadySaved(alreadySaved)
                 .build();
 
         return ResponseEntity.ok(response);

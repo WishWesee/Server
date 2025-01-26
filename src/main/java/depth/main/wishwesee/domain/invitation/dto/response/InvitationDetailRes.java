@@ -11,13 +11,17 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 @Getter
-@Schema(title = "CompletedInvitationRes: 완성된 초대장 조회 응답 객체", description = "GET: /api/v1/invitation/{invitationId}에서 사용합니다.")
-public class CompletedInvitationRes {
+@Schema(title = "InvitationDetailRes: 완성된 / 임시저장된 초대장 조회 응답 객체",
+        description = "GET: /api/v1/invitation/{invitationId} 혹은 /api/v1/invitation/temporary/{invitationId}에서 사용합니다.")
+public class InvitationDetailRes {
     @Schema(description = "초대장ID", example = "1", type = "Long")
     private Long invitationId;
 
     @Schema(description = "작성자 본인 여부", example = "true", type = "boolean")
     private boolean isOwner;
+
+    @Schema(description = "보관함 저장 여부", example = "false", type = "boolean")
+    private boolean alreadySaved;
 
     @Schema(description = "카드 이미지 URL", example = "https://wishwesee-s3-image-bucket.s3.amazonaws.com/3f78b60d-c3b5-46db-aab2-9f8245ad7b35.jpg", type = "String")
     private String cardImage;
@@ -73,10 +77,10 @@ public class CompletedInvitationRes {
     private List<BlockRes> blocks; // 블록 리스트
 
     @Builder
-    public CompletedInvitationRes(Long invitationId, boolean isOwner, String cardImage, String title, LocalDate startDate,
-                                  LocalTime startTime, LocalDate endDate, LocalTime endTime, LocalDate voteDeadline, boolean hasScheduleVote, boolean scheduleVoteMultiple,
-                                  List<ScheduleVoteRes> scheduleVotes, boolean scheduleVoteClosed, int mapViewType, String location, String address,
-                                  String mapLink, List<BlockRes> blocks) {
+    public InvitationDetailRes(Long invitationId, boolean isOwner, boolean alreadySaved, String cardImage, String title, LocalDate startDate,
+                               LocalTime startTime, LocalDate endDate, LocalTime endTime, LocalDate voteDeadline, boolean hasScheduleVote, boolean scheduleVoteMultiple,
+                               List<ScheduleVoteRes> scheduleVotes, boolean scheduleVoteClosed, int mapViewType, String location, String address,
+                               String mapLink, List<BlockRes> blocks) {
 
         this.invitationId = invitationId;
         this.title = title;
@@ -96,6 +100,7 @@ public class CompletedInvitationRes {
         this.blocks = blocks;
         this.scheduleVotes = scheduleVotes;
         this.isOwner = isOwner;
+        this.alreadySaved = alreadySaved;
     }
 
 }
