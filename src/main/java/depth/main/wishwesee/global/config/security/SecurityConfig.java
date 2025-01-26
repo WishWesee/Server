@@ -8,6 +8,7 @@ import depth.main.wishwesee.global.config.security.handler.CustomSimpleUrlAuthen
 import depth.main.wishwesee.global.config.security.token.CustomAuthenticationEntryPoint;
 import depth.main.wishwesee.global.config.security.token.CustomOncePerRequestFilter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -39,6 +40,9 @@ public class SecurityConfig {
     private final CustomSimpleUrlAuthenticationFailureHandler oAuth2AuthenticationFailureHandler;
     private final CustomAuthorizationRequestRepository customAuthorizationRequestRepository;
 
+    @Value("${app.cors.allowed-origins}")
+    private String[] allowedOrigins;
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -67,8 +71,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(List.of(
-                "http://localhost:3000"));
+        configuration.setAllowedOriginPatterns(List.of(allowedOrigins));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
