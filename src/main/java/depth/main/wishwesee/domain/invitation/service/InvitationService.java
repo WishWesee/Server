@@ -290,37 +290,62 @@ public class InvitationService {
 
 
     public ResponseEntity<?> getInvitation(Long invitationId, UserPrincipal userPrincipal, boolean isTemporary) {
-        // 임시 저장된 초대장은 회원만 접근 가능
-        if(isTemporary && userPrincipal == null){
-            throw new DefaultException(ErrorCode.INVALID_AUTHENTICATION, "회원만 접근 가능합니다.");
-        }
-
         // 초대장 조회
         Invitation invitation = invitationRepository.findById(invitationId)
                 .orElseThrow(() -> new DefaultException(ErrorCode.NOT_FOUND, "해당 초대장이 존재하지 않습니다."));
-
-        // 임시 저장된 초대장 여부 확인
-        if(isTemporary && !invitation.isTempSaved()){
-            throw new DefaultException(ErrorCode.NOT_FOUND, "해당 초대장은 임시 저장되지 않았습니다.");
-        }
-
-        // 완성된 초대장은 임시 저장된 상태가 아니어야 함
-        if (!isTemporary && invitation.isTempSaved()) {
-            throw new DefaultException(ErrorCode.NOT_FOUND, "완성된 초대장이 아닙니다.");
-        }
 
         // 사용자 확인
         User user = Optional.ofNullable(userPrincipal)
                 .map(principal -> validateUserById(principal.getId()))
                 .orElse(null);
 
+        // 초대장 상태 확인 (임시 저장 여부 및 완성 여부)
+        validateInvitationState(isTemporary, invitation);
+
         // 작성자 본인 여부 확인
         boolean isOwner = user == invitation.getSender();
 
-        // 초대장의 모든 블록 조회
-        List<Block> allBlocks = blockRepository.findByInvitationId(invitation.getId());
+        // 임시 저장된 초대장은 작성자 본인만 접근 가능
+        if(isTemporary && !isOwner){
+            throw new DefaultException(ErrorCode.INVALID_AUTHENTICATION, "작성자 본인만 접근 가능합니다.");
+        }
 
-        List<BlockRes> blockResList = allBlocks.stream()
+        // 초대장의 모든 블록 조회 및 변환
+        List<BlockRes> blockResList = transformBlocks(blockRepository.findByInvitationId(invitation.getId()));
+
+        // 초대장의 투표 정보 조회
+        List<ScheduleVoteRes> scheduleVoteResList = getInvitationScheduleVote(user, invitation);
+
+        // 사용자가 투표했는지 확인
+        boolean hasVoted = user != null && scheduleVoterRepository.existsByInvitationIdAndUser(invitationId, user);
+
+        // 응답 DTO 생성
+        CompletedInvitationRes response = CompletedInvitationRes.builder()
+                .invitationId(invitation.getId())
+                .isOwner(isOwner)
+                .cardImage(invitation.getCardImage())
+                .title(invitation.getTitle())
+                .startDate(invitation.getStartDate())
+                .startTime(invitation.getStartTime())
+                .endDate(invitation.getEndDate())
+                .endTime(invitation.getEndTime())
+                .voteDeadline(invitation.getVoteDeadline())
+                .scheduleVoteMultiple(invitation.isScheduleVoteMultiple())
+                .hasScheduleVote(hasVoted)
+                .scheduleVotes(scheduleVoteResList)
+                .scheduleVoteClosed(invitation.isScheduleVoteClosed())
+                .mapViewType(invitation.getMapViewType())
+                .location(invitation.getLocation())
+                .address(invitation.getAddress())
+                .mapLink(invitation.getMapLink())
+                .blocks(blockResList)
+                .build();
+
+        return ResponseEntity.ok(response);
+    }
+
+    private List<BlockRes> transformBlocks(List<Block> allBlocks) {
+        return allBlocks.stream()
                 .map(block -> {
                     if (block instanceof Photo photoBlock) {
                         return PhotoBlockRes.builder()
@@ -348,32 +373,12 @@ public class InvitationService {
                         throw new DefaultException(ErrorCode.INVALID_PARAMETER, "지원되지 않는 블록 타입입니다.");
                     }
                 }).toList();
+    }
 
-        List<ScheduleVoteRes> scheduleVoteResList = getInvitationScheduleVote(user, invitation);
-        boolean hasVoted = user != null && scheduleVoterRepository.existsByInvitationIdAndUser(invitationId, user);
-        // 응답 DTO 생성
-        CompletedInvitationRes response = CompletedInvitationRes.builder()
-                .invitationId(invitation.getId())
-                .isOwner(isOwner)
-                .cardImage(invitation.getCardImage())
-                .title(invitation.getTitle())
-                .startDate(invitation.getStartDate())
-                .startTime(invitation.getStartTime())
-                .endDate(invitation.getEndDate())
-                .endTime(invitation.getEndTime())
-                .voteDeadline(invitation.getVoteDeadline())
-                .scheduleVoteMultiple(invitation.isScheduleVoteMultiple())
-                .hasScheduleVote(hasVoted)
-                .scheduleVotes(scheduleVoteResList)
-                .scheduleVoteClosed(invitation.isScheduleVoteClosed())
-                .mapViewType(invitation.getMapViewType())
-                .location(invitation.getLocation())
-                .address(invitation.getAddress())
-                .mapLink(invitation.getMapLink())
-                .blocks(blockResList)
-                .build();
-
-        return ResponseEntity.ok(response);
+    private void validateInvitationState(boolean isTemporary, Invitation invitation) {
+        if(isTemporary != invitation.isTempSaved()){
+            throw new DefaultException(ErrorCode.NOT_FOUND, "요청한 초대장의 상태가 일치하지 않습니다.");
+        }
     }
 
     private List<ScheduleVoteRes> getInvitationScheduleVote(User user, Invitation invitation) {

@@ -57,7 +57,7 @@ public class InvitationController {
             @ApiResponse(responseCode = "201", description = "초대장이 성공적으로 임시 저장되었습니다.", content = {@Content(mediaType = "application/json", schema = @Schema(example = "{\"invitationId\": 5, \"message\": \"초대장이 임시 저장되었습니다.\"}"))}),
             @ApiResponse(responseCode = "404", description = "임시저장된 초대장이 유효하지 않습니다.", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))}),
     })
-    @PostMapping(value = "/save-temporary")
+    @PostMapping(value = "/temporary")
     public ResponseEntity<?> saveTemporaryInvitation(
             @Parameter(description = "초대장에 들어갈 데이터를 넣어주세요. Schemas의 InvitationReq를 참고해주세요.", required = true) @RequestPart("invitation") @Valid InvitationReq invitationReq,
             @Parameter(description = "초대장 카드 이미지를 넣어주세요.", required = false ) @RequestPart(value = "cardImage", required = false) MultipartFile cardImage,
@@ -146,7 +146,7 @@ public class InvitationController {
             @ApiResponse(responseCode = "404", description = "임시 저장된 초대장을 찾을 수 없음", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))}),
             @ApiResponse(responseCode = "400", description = "잘못된 요청", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))})
     })
-    @GetMapping("/temp/{invitationId}")
+    @GetMapping("/temporary/{invitationId}")
     public ResponseEntity<?> getTemporaryInvitation(
             @Parameter(description = "조회할 임시 저장된 초대장의 ID", required = true) @PathVariable Long invitationId,
             @Parameter(description = "Accesstoken을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal
