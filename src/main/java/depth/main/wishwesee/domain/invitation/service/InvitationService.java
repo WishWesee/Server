@@ -11,7 +11,7 @@ import depth.main.wishwesee.domain.invitation.domain.repository.InvitationReposi
 import depth.main.wishwesee.domain.invitation.domain.repository.ReceivedInvitationRepository;
 import depth.main.wishwesee.domain.invitation.dto.request.InvitationReq;
 import depth.main.wishwesee.domain.invitation.dto.request.SaveInvitationReq;
-import depth.main.wishwesee.domain.invitation.dto.response.CompletedInvitationRes;
+import depth.main.wishwesee.domain.invitation.dto.response.InvitationDetailRes;
 import depth.main.wishwesee.domain.invitation.dto.response.MyInvitationOverViewRes;
 import depth.main.wishwesee.domain.invitation.dto.response.InvitationListRes;
 import depth.main.wishwesee.domain.s3.service.S3Uploader;
@@ -323,7 +323,7 @@ public class InvitationService {
         boolean hasVoted = user != null && scheduleVoterRepository.existsByInvitationIdAndUser(invitationId, user);
 
         // 응답 DTO 생성
-        CompletedInvitationRes response = CompletedInvitationRes.builder()
+        InvitationDetailRes response = InvitationDetailRes.builder()
                 .invitationId(invitation.getId())
                 .isOwner(isOwner)
                 .cardImage(invitation.getCardImage())
