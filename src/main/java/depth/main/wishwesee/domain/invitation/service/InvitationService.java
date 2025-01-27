@@ -560,25 +560,6 @@ public class InvitationService {
         return userOptional.get();
     }
 
-    private boolean checkWritableFeedback(Invitation invitation, User user) {
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime endDateTime = formatInvitationDate(invitation);
-
-        // 후기 작성 가능 조건: 종료 날짜가 현재보다 이전이고, 후기가 없는 경우
-        return now.isAfter(endDateTime) && !feedbackRepository.existsByInvitationAndUser(invitation, user);
-    }
-
-    private LocalDateTime formatInvitationDate(Invitation invitation) {
-        if (invitation.getEndDate() == null) {
-            return combineDateAndTime(invitation.getStartDate(), invitation.getStartTime());
-        }
-        return combineDateAndTime(invitation.getEndDate(), invitation.getEndTime());
-    }
-
-    private LocalDateTime combineDateAndTime(LocalDate startDate, LocalTime startTime) {
-        LocalTime defaultTime = LocalTime.MIDNIGHT;
-        return LocalDateTime.of(startDate, startTime != null ? startTime : defaultTime);
-    }
 }
 
 
