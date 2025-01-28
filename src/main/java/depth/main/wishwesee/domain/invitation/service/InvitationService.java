@@ -205,6 +205,9 @@ public class InvitationService {
                 block = Text.builder()
                         .sequence(textBlockReq.getSequence())
                         .content(textBlockReq.getContent())
+                        .font(textBlockReq.getFont())
+                        .styles(textBlockReq.getStyles())
+                        .color(textBlockReq.getColor())
                         .invitation(invitation)
                         .build();
             } else if (blockReq instanceof BoxBlockReq) {
@@ -212,7 +215,7 @@ public class InvitationService {
                 block = Box.builder()
                         .sequence(boxBlockReq.getSequence())
                         .title(boxBlockReq.getTitle())
-                        .color(boxBlockReq.getColor())
+                        .colorCode(boxBlockReq.getColorCode())
                         .content(boxBlockReq.getContent())
                         .invitation(invitation)
                         .build();
@@ -370,13 +373,16 @@ public class InvitationService {
                         return TextBlockRes.builder()
                                 .sequence(textBlock.getSequence())
                                 .content(textBlock.getContent())
+                                .font(textBlock.getFont())
+                                .styles(textBlock.getStyles())
+                                .color(textBlock.getColor())
                                 .build();
                     } else if (block instanceof Box boxBlock) {
                         return BoxBlockRes.builder()
                                 .sequence(boxBlock.getSequence())
                                 .title(boxBlock.getTitle())
                                 .content(boxBlock.getContent())
-                                .color(boxBlock.getColor())
+                                .colorCode(boxBlock.getColorCode())
                                 .build();
                     } else if (block instanceof TimeTable timeTableBlock) {
                         return TimeTableBlockRes.builder()

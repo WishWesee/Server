@@ -14,13 +14,13 @@ import lombok.NoArgsConstructor;
 public class Box extends Block {
     private String title;
     private String content;
-    private String color;
+    private int colorCode;
 
     @Builder
-    public Box(int sequence, Invitation invitation, String title, String content, String color){
+    public Box(int sequence, Invitation invitation, String title, String content, int colorCode){
         super(sequence, invitation);
         this.title = title;
-        this.color = color;
+        this.colorCode = colorCode;
         this.content = content;
     }
 
