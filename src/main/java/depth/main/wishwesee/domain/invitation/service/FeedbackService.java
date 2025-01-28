@@ -148,7 +148,7 @@ public class FeedbackService {
         return LocalDateTime.of(date, time != null ? time : defaultTime);
     }
 
-    private boolean checkWritableFeedback(Invitation invitation) {
+    public boolean checkWritableFeedback(Invitation invitation) {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime endDate = formatInvitationDate(invitation);
         return isAfterInvitationDate(endDate, now);
