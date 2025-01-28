@@ -34,6 +34,8 @@ public class Invitation extends BaseEntity{
 
     private LocalTime endTime;
 
+    private  String userLocation;
+
     private String location;
 
     private String address;
@@ -64,7 +66,7 @@ public class Invitation extends BaseEntity{
 
     @Builder
     public Invitation(String title, String cardImage, boolean tempSaved, LocalDate startDate,
-                      LocalTime startTime, LocalDate endDate, LocalTime endTime, String location,
+                      LocalTime startTime, LocalDate endDate, LocalTime endTime, String userLocation, String location,
                       String address, String mapLink, int mapViewType, LocalDate voteDeadline, boolean attendanceSurveyEnabled,
                       boolean scheduleVoteMultiple, boolean scheduleVoteClosed, boolean attendanceSurveyClosed, User sender){
 
@@ -75,6 +77,7 @@ public class Invitation extends BaseEntity{
         this.startTime = startTime;
         this.endDate = endDate;
         this.endTime = endTime;
+        this.userLocation = userLocation;
         this.location = location;
         this.address = address;
         this.mapLink = mapLink;

@@ -8,8 +8,8 @@ public class BoxBlockReq extends BlockReq{
     @Schema(description = "박스 제목", example = "Dress Code", type = "String")
     private String title;  // 박스 제목
 
-    @Schema(description = "박스 색상", example = "#FF5733", type = "String")
-    private String color;  // 박스 색상
+    @Schema(description = "박스 색상 번호", example = "1", type = "int")
+    private int colorCode;  // 박스 색상
 
     @Schema(description = "박스 내용", example = "파랑색으로 입고오세용", type = "String")
     private String content; // 박스 내용

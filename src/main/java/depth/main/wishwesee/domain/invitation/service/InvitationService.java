@@ -135,6 +135,7 @@ public class InvitationService {
                 .startTime(invitationReq.getStartTime())
                 .endDate(invitationReq.getEndDate())
                 .endTime(invitationReq.getEndTime())
+                .userLocation(invitationReq.getUserLocation())
                 .location(invitationReq.getLocation())
                 .address(invitationReq.getAddress())
                 .mapLink(invitationReq.getMapLink())
@@ -205,6 +206,9 @@ public class InvitationService {
                 block = Text.builder()
                         .sequence(textBlockReq.getSequence())
                         .content(textBlockReq.getContent())
+                        .font(textBlockReq.getFont())
+                        .styles(textBlockReq.getStyles())
+                        .color(textBlockReq.getColor())
                         .invitation(invitation)
                         .build();
             } else if (blockReq instanceof BoxBlockReq) {
@@ -212,7 +216,7 @@ public class InvitationService {
                 block = Box.builder()
                         .sequence(boxBlockReq.getSequence())
                         .title(boxBlockReq.getTitle())
-                        .color(boxBlockReq.getColor())
+                        .colorCode(boxBlockReq.getColorCode())
                         .content(boxBlockReq.getContent())
                         .invitation(invitation)
                         .build();
@@ -236,6 +240,12 @@ public class InvitationService {
                 block = Photo.builder()
                         .sequence(blockReq.getSequence())
                         .image(newPhotoUrl != null ? newPhotoUrl : currentPhotoUrl)
+                        .invitation(invitation)
+                        .build();
+            } else if (blockReq instanceof DividerBlockReq) {
+                DividerBlockReq dividerBlockReq = (DividerBlockReq) blockReq;
+                block = Divider.builder()
+                        .sequence(dividerBlockReq.getSequence())
                         .invitation(invitation)
                         .build();
             } else {
@@ -346,6 +356,7 @@ public class InvitationService {
                 .scheduleVotes(scheduleVoteResList)
                 .scheduleVoteClosed(invitation.isScheduleVoteClosed())
                 .mapViewType(invitation.getMapViewType())
+                .userLocation(invitation.getUserLocation())
                 .location(invitation.getLocation())
                 .address(invitation.getAddress())
                 .mapLink(invitation.getMapLink())
@@ -370,18 +381,25 @@ public class InvitationService {
                         return TextBlockRes.builder()
                                 .sequence(textBlock.getSequence())
                                 .content(textBlock.getContent())
+                                .font(textBlock.getFont())
+                                .styles(textBlock.getStyles())
+                                .color(textBlock.getColor())
                                 .build();
                     } else if (block instanceof Box boxBlock) {
                         return BoxBlockRes.builder()
                                 .sequence(boxBlock.getSequence())
                                 .title(boxBlock.getTitle())
                                 .content(boxBlock.getContent())
-                                .color(boxBlock.getColor())
+                                .colorCode(boxBlock.getColorCode())
                                 .build();
                     } else if (block instanceof TimeTable timeTableBlock) {
                         return TimeTableBlockRes.builder()
                                 .sequence(timeTableBlock.getSequence())
                                 .content(timeTableBlock.getContent())
+                                .build();
+                    } else if (block instanceof Divider dividerBlock){
+                        return DividerBlockRes.builder()
+                                .sequence(dividerBlock.getSequence())
                                 .build();
                     } else {
                         throw new DefaultException(ErrorCode.INVALID_PARAMETER, "지원되지 않는 블록 타입입니다.");
