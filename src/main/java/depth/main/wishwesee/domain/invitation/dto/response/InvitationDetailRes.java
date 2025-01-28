@@ -70,6 +70,9 @@ public class InvitationDetailRes {
     @Schema(description = "지도 보기 타입 (0: 주소만 보기, 1: 지도 보기)", example = "1", type = "int")
     private int mapViewType;
 
+    @Schema(description = "사용자가 직접 입력한 장소명", example = "명지대학교 후문", type = "String")
+    private  String userLocation;
+
     @Schema(description = "장소명", example = "명지대학교", type = "String")
     private String location;
 
@@ -85,7 +88,7 @@ public class InvitationDetailRes {
     @Builder
     public InvitationDetailRes(Long invitationId, boolean isOwner, boolean alreadySaved, boolean canWriteFeedback,String cardImage, String title, LocalDate startDate,
                                LocalTime startTime, LocalDate endDate, LocalTime endTime, LocalDate voteDeadline, boolean hasScheduleVote, boolean scheduleVoteMultiple,
-                               List<ScheduleVoteRes> scheduleVotes, boolean scheduleVoteClosed, int mapViewType, String location, String address,
+                               List<ScheduleVoteRes> scheduleVotes, boolean scheduleVoteClosed, int mapViewType, String userLocation, String location, String address,
                                String mapLink, List<BlockRes> blocks, boolean attendanceSurveyEnabled) {
 
         this.invitationId = invitationId;
@@ -95,6 +98,7 @@ public class InvitationDetailRes {
         this.startTime = startTime;
         this.endDate = endDate;
         this.endTime = endTime;
+        this.userLocation = userLocation;
         this.location = location;
         this.address = address;
         this.mapLink = mapLink;
