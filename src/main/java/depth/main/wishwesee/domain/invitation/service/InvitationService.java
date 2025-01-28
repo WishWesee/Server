@@ -241,6 +241,12 @@ public class InvitationService {
                         .image(newPhotoUrl != null ? newPhotoUrl : currentPhotoUrl)
                         .invitation(invitation)
                         .build();
+            } else if (blockReq instanceof DividerBlockReq) {
+                DividerBlockReq dividerBlockReq = (DividerBlockReq) blockReq;
+                block = Divider.builder()
+                        .sequence(dividerBlockReq.getSequence())
+                        .invitation(invitation)
+                        .build();
             } else {
                 throw new DefaultException(ErrorCode.INVALID_PARAMETER, "지원되지 않는 블록 타입입니다.");
             }
@@ -388,6 +394,10 @@ public class InvitationService {
                         return TimeTableBlockRes.builder()
                                 .sequence(timeTableBlock.getSequence())
                                 .content(timeTableBlock.getContent())
+                                .build();
+                    } else if (block instanceof Divider dividerBlock){
+                        return DividerBlockRes.builder()
+                                .sequence(dividerBlock.getSequence())
                                 .build();
                     } else {
                         throw new DefaultException(ErrorCode.INVALID_PARAMETER, "지원되지 않는 블록 타입입니다.");

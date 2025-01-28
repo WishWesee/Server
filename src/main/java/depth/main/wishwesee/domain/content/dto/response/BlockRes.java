@@ -16,7 +16,8 @@ import lombok.Getter;
         @JsonSubTypes.Type(value = TextBlockRes.class, name = "text"),
         @JsonSubTypes.Type(value = PhotoBlockRes.class, name = "photo"),
         @JsonSubTypes.Type(value = BoxBlockRes.class, name = "box"),
-        @JsonSubTypes.Type(value = TimeTableBlockRes.class, name = "timeTable")
+        @JsonSubTypes.Type(value = TimeTableBlockRes.class, name = "timeTable"),
+        @JsonSubTypes.Type(value = DividerBlockRes.class, name = "divider")
 })
 public abstract class BlockRes {
     @Schema(description = "초대장에 위치할 블록 순서", example = "1", type = "int")
