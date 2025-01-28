@@ -34,6 +34,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -52,6 +56,7 @@ public class InvitationService {
     private final ReceivedInvitationRepository receivedInvitationRepository;
     private  final AttendanceRepository attendanceRepository;
     private final FeedbackRepository feedbackRepository;
+    private final FeedbackService feedbackService;
     @Transactional
     public ResponseEntity<?> saveTemporaryInvitation(InvitationReq invitationReq, MultipartFile cardImage, List<MultipartFile> photoImages, UserPrincipal userPrincipal){
         // 사용자 인증 여부 확인
@@ -322,6 +327,9 @@ public class InvitationService {
         // 사용자가 투표했는지 확인
         boolean hasVoted = user != null && scheduleVoterRepository.existsByInvitationIdAndUser(invitationId, user);
 
+        // 후기 작성 가능 여부
+        boolean canWriteFeedback = feedbackService.checkWritableFeedback(invitation);
+
         // 응답 DTO 생성
         InvitationDetailRes response = InvitationDetailRes.builder()
                 .invitationId(invitation.getId())
@@ -343,6 +351,8 @@ public class InvitationService {
                 .mapLink(invitation.getMapLink())
                 .blocks(blockResList)
                 .alreadySaved(alreadySaved)
+                .canWriteFeedback(canWriteFeedback)
+                .attendanceSurveyEnabled(invitation.isAttendanceSurveyEnabled())
                 .build();
 
         return ResponseEntity.ok(response);
@@ -550,6 +560,7 @@ public class InvitationService {
         DefaultAssert.isOptionalPresent(userOptional, "사용자가 존재하지 않습니다.");
         return userOptional.get();
     }
+
 }
 
 
