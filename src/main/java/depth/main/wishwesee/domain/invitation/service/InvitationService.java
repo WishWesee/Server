@@ -352,6 +352,7 @@ public class InvitationService {
                 .blocks(blockResList)
                 .alreadySaved(alreadySaved)
                 .canWriteFeedback(canWriteFeedback)
+                .attendanceSurveyEnabled(invitation.isAttendanceSurveyEnabled())
                 .build();
 
         return ResponseEntity.ok(response);
