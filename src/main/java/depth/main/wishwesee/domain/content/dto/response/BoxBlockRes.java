@@ -10,17 +10,17 @@ public class BoxBlockRes extends BlockRes{
     @Schema(description = "박스 제목", example = "Dress Code", type = "String")
     private String title;
 
-    @Schema(description = "박스 색상", example = "#FF5733", type = "String")
-    private String color;
+    @Schema(description = "박스 색상 번호", example = "1", type = "int")
+    private int colorCode;
 
     @Schema(description = "박스 내용", example = "파랑색으로 입고오세용", type = "String")
     private String content;
     @Builder
-    public BoxBlockRes(int sequence, String title, String content, String color) {
+    public BoxBlockRes(int sequence, String title, String content, int colorCode) {
         super(sequence);
         this.title = title;
         this.content = content;
-        this.color = color;
+        this.colorCode = colorCode;
     }
 
 }

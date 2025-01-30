@@ -7,22 +7,13 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-// Box Entity
 @Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Box extends Block {
-    private String title;
-    private String content;
-    private int colorCode;
+public class Divider extends Block{
 
     @Builder
-    public Box(int sequence, Invitation invitation, String title, String content, int colorCode){
+    public Divider(int sequence, Invitation invitation){
         super(sequence, invitation);
-        this.title = title;
-        this.colorCode = colorCode;
-        this.content = content;
     }
-
 }
-

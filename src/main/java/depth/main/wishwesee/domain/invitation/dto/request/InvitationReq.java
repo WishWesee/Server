@@ -31,6 +31,9 @@ public class InvitationReq {
     @Schema(description = "마지막 시간", type = "string", format = "time", example = "2024-12-31")
     private LocalTime endTime; // 마지막시간
 
+    @Schema(description = "사용자가 직접 입력한 장소명", example = "명지대학교 후문", type = "String")
+    private  String userLocation;
+
     @Schema(description = "장소명", example = "명지대학교", type = "String")
     private String location; // 장소명
 

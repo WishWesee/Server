@@ -11,10 +11,17 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Text extends Block {
     private String content;
+    private String font;
+    private String color;
+    private String styles;
     @Builder
-    public Text(int sequence, Invitation invitation, String content){
+    public Text(int sequence, Invitation invitation, String content, String font,
+                String color, String styles){
         super(sequence, invitation);
         this.content = content;
+        this.font = font;
+        this.color = color;
+        this.styles = styles;
     }
 
 }

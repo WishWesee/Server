@@ -11,7 +11,7 @@ import depth.main.wishwesee.domain.invitation.domain.repository.InvitationReposi
 import depth.main.wishwesee.domain.invitation.domain.repository.ReceivedInvitationRepository;
 import depth.main.wishwesee.domain.invitation.dto.request.InvitationReq;
 import depth.main.wishwesee.domain.invitation.dto.request.SaveInvitationReq;
-import depth.main.wishwesee.domain.invitation.dto.response.CompletedInvitationRes;
+import depth.main.wishwesee.domain.invitation.dto.response.InvitationDetailRes;
 import depth.main.wishwesee.domain.invitation.dto.response.MyInvitationOverViewRes;
 import depth.main.wishwesee.domain.invitation.dto.response.InvitationListRes;
 import depth.main.wishwesee.domain.s3.service.S3Uploader;
@@ -34,6 +34,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -52,6 +56,7 @@ public class InvitationService {
     private final ReceivedInvitationRepository receivedInvitationRepository;
     private  final AttendanceRepository attendanceRepository;
     private final FeedbackRepository feedbackRepository;
+    private final FeedbackService feedbackService;
     @Transactional
     public ResponseEntity<?> saveTemporaryInvitation(InvitationReq invitationReq, MultipartFile cardImage, List<MultipartFile> photoImages, UserPrincipal userPrincipal){
         // 사용자 인증 여부 확인
@@ -130,6 +135,7 @@ public class InvitationService {
                 .startTime(invitationReq.getStartTime())
                 .endDate(invitationReq.getEndDate())
                 .endTime(invitationReq.getEndTime())
+                .userLocation(invitationReq.getUserLocation())
                 .location(invitationReq.getLocation())
                 .address(invitationReq.getAddress())
                 .mapLink(invitationReq.getMapLink())
@@ -200,6 +206,9 @@ public class InvitationService {
                 block = Text.builder()
                         .sequence(textBlockReq.getSequence())
                         .content(textBlockReq.getContent())
+                        .font(textBlockReq.getFont())
+                        .styles(textBlockReq.getStyles())
+                        .color(textBlockReq.getColor())
                         .invitation(invitation)
                         .build();
             } else if (blockReq instanceof BoxBlockReq) {
@@ -207,7 +216,7 @@ public class InvitationService {
                 block = Box.builder()
                         .sequence(boxBlockReq.getSequence())
                         .title(boxBlockReq.getTitle())
-                        .color(boxBlockReq.getColor())
+                        .colorCode(boxBlockReq.getColorCode())
                         .content(boxBlockReq.getContent())
                         .invitation(invitation)
                         .build();
@@ -231,6 +240,12 @@ public class InvitationService {
                 block = Photo.builder()
                         .sequence(blockReq.getSequence())
                         .image(newPhotoUrl != null ? newPhotoUrl : currentPhotoUrl)
+                        .invitation(invitation)
+                        .build();
+            } else if (blockReq instanceof DividerBlockReq) {
+                DividerBlockReq dividerBlockReq = (DividerBlockReq) blockReq;
+                block = Divider.builder()
+                        .sequence(dividerBlockReq.getSequence())
                         .invitation(invitation)
                         .build();
             } else {
@@ -310,6 +325,9 @@ public class InvitationService {
             throw new DefaultException(ErrorCode.INVALID_AUTHENTICATION, "작성자 본인만 접근 가능합니다.");
         }
 
+        // 보관함에 저장 여부 확인(완성된 초대장에서 적용)
+        boolean alreadySaved = user != null && receivedInvitationRepository.existsByReceiverAndInvitation(user, invitation);
+
         // 초대장의 모든 블록 조회 및 변환
         List<BlockRes> blockResList = transformBlocks(blockRepository.findByInvitationId(invitation.getId()));
 
@@ -319,8 +337,11 @@ public class InvitationService {
         // 사용자가 투표했는지 확인
         boolean hasVoted = user != null && scheduleVoterRepository.existsByInvitationIdAndUser(invitationId, user);
 
+        // 후기 작성 가능 여부
+        boolean canWriteFeedback = feedbackService.checkWritableFeedback(invitation);
+
         // 응답 DTO 생성
-        CompletedInvitationRes response = CompletedInvitationRes.builder()
+        InvitationDetailRes response = InvitationDetailRes.builder()
                 .invitationId(invitation.getId())
                 .isOwner(isOwner)
                 .cardImage(invitation.getCardImage())
@@ -335,10 +356,14 @@ public class InvitationService {
                 .scheduleVotes(scheduleVoteResList)
                 .scheduleVoteClosed(invitation.isScheduleVoteClosed())
                 .mapViewType(invitation.getMapViewType())
+                .userLocation(invitation.getUserLocation())
                 .location(invitation.getLocation())
                 .address(invitation.getAddress())
                 .mapLink(invitation.getMapLink())
                 .blocks(blockResList)
+                .alreadySaved(alreadySaved)
+                .canWriteFeedback(canWriteFeedback)
+                .attendanceSurveyEnabled(invitation.isAttendanceSurveyEnabled())
                 .build();
 
         return ResponseEntity.ok(response);
@@ -356,18 +381,25 @@ public class InvitationService {
                         return TextBlockRes.builder()
                                 .sequence(textBlock.getSequence())
                                 .content(textBlock.getContent())
+                                .font(textBlock.getFont())
+                                .styles(textBlock.getStyles())
+                                .color(textBlock.getColor())
                                 .build();
                     } else if (block instanceof Box boxBlock) {
                         return BoxBlockRes.builder()
                                 .sequence(boxBlock.getSequence())
                                 .title(boxBlock.getTitle())
                                 .content(boxBlock.getContent())
-                                .color(boxBlock.getColor())
+                                .colorCode(boxBlock.getColorCode())
                                 .build();
                     } else if (block instanceof TimeTable timeTableBlock) {
                         return TimeTableBlockRes.builder()
                                 .sequence(timeTableBlock.getSequence())
                                 .content(timeTableBlock.getContent())
+                                .build();
+                    } else if (block instanceof Divider dividerBlock){
+                        return DividerBlockRes.builder()
+                                .sequence(dividerBlock.getSequence())
                                 .build();
                     } else {
                         throw new DefaultException(ErrorCode.INVALID_PARAMETER, "지원되지 않는 블록 타입입니다.");
@@ -546,6 +578,7 @@ public class InvitationService {
         DefaultAssert.isOptionalPresent(userOptional, "사용자가 존재하지 않습니다.");
         return userOptional.get();
     }
+
 }
 
 
