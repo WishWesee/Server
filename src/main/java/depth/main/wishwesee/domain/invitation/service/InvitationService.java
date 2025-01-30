@@ -154,7 +154,8 @@ public class InvitationService {
     private void updateInvitationDetails(Invitation invitation, InvitationReq invitationReq, MultipartFile cardImage, List<MultipartFile> photoImages) {
         invitation.updateTitle(invitationReq.getTitle());
         invitation.updateDateTime(invitationReq.getStartDate(), invitationReq.getStartTime(), invitationReq.getEndDate(), invitationReq.getEndTime());
-        invitation.updateLocationDetails(invitationReq.getUserLocation(), invitationReq.getLocation(), invitationReq.getAddress(), invitationReq.getMapLink());
+        invitation.updateLocationDetails(invitationReq.getUserLocation(), invitationReq.getLocation(), invitationReq.getAddress(), invitationReq.getMapLink(),
+                invitationReq.getLatitude(),invitationReq.getLongitude());
         invitation.updateMapViewType(invitationReq.getMapViewType());
         invitation.updateAttendanceSurvey(invitationReq.isAttendanceSurveyEnabled());
         invitation.updateVoteDeadline(invitationReq.getVoteDeadline());

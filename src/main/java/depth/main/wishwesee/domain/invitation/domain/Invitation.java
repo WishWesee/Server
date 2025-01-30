@@ -112,11 +112,14 @@ public class Invitation extends BaseEntity{
         this.endTime = endTime;
     }
 
-    public void updateLocationDetails(String userLocation ,String location, String address, String mapLink) {
+    public void updateLocationDetails(String userLocation ,String location, String address, String mapLink,
+                                      double latitude, double longitude) {
         this.userLocation = userLocation;
         this.location = location;
         this.address = address;
         this.mapLink = mapLink;
+        this.latitude = latitude;
+        this.longitude = longitude;
     }
 
     public void updateCardImage(String cardImageUrl) {
