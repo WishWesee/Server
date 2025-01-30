@@ -139,6 +139,8 @@ public class InvitationService {
                 .location(invitationReq.getLocation())
                 .address(invitationReq.getAddress())
                 .mapLink(invitationReq.getMapLink())
+                .latitude(invitationReq.getLatitude())
+                .longitude(invitationReq.getLongitude())
                 .mapViewType(invitationReq.getMapViewType())
                 .voteDeadline(invitationReq.getVoteDeadline())
                 .attendanceSurveyEnabled(invitationReq.isAttendanceSurveyEnabled())
@@ -152,7 +154,7 @@ public class InvitationService {
     private void updateInvitationDetails(Invitation invitation, InvitationReq invitationReq, MultipartFile cardImage, List<MultipartFile> photoImages) {
         invitation.updateTitle(invitationReq.getTitle());
         invitation.updateDateTime(invitationReq.getStartDate(), invitationReq.getStartTime(), invitationReq.getEndDate(), invitationReq.getEndTime());
-        invitation.updateLocationDetails(invitationReq.getLocation(), invitationReq.getAddress(), invitationReq.getMapLink());
+        invitation.updateLocationDetails(invitationReq.getUserLocation(), invitationReq.getLocation(), invitationReq.getAddress(), invitationReq.getMapLink());
         invitation.updateMapViewType(invitationReq.getMapViewType());
         invitation.updateAttendanceSurvey(invitationReq.isAttendanceSurveyEnabled());
         invitation.updateVoteDeadline(invitationReq.getVoteDeadline());
@@ -360,6 +362,8 @@ public class InvitationService {
                 .location(invitation.getLocation())
                 .address(invitation.getAddress())
                 .mapLink(invitation.getMapLink())
+                .latitude(invitation.getLatitude())
+                .longitude(invitation.getLongitude())
                 .blocks(blockResList)
                 .alreadySaved(alreadySaved)
                 .canWriteFeedback(canWriteFeedback)
