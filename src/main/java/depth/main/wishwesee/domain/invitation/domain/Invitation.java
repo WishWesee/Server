@@ -42,6 +42,10 @@ public class Invitation extends BaseEntity{
 
     private String mapLink;
 
+    private double latitude;
+
+    private double longitude;
+
     @Column(name = "map_view_type")
     private int mapViewType; // 0: 주소만보기, 1: 맵보기
 
@@ -67,7 +71,8 @@ public class Invitation extends BaseEntity{
     @Builder
     public Invitation(String title, String cardImage, boolean tempSaved, LocalDate startDate,
                       LocalTime startTime, LocalDate endDate, LocalTime endTime, String userLocation, String location,
-                      String address, String mapLink, int mapViewType, LocalDate voteDeadline, boolean attendanceSurveyEnabled,
+                      String address, String mapLink, double latitude, double longitude,
+                      int mapViewType, LocalDate voteDeadline, boolean attendanceSurveyEnabled,
                       boolean scheduleVoteMultiple, boolean scheduleVoteClosed, boolean attendanceSurveyClosed, User sender){
 
         this.title = title;
@@ -81,6 +86,8 @@ public class Invitation extends BaseEntity{
         this.location = location;
         this.address = address;
         this.mapLink = mapLink;
+        this.latitude = latitude;
+        this.longitude = longitude;
         this.mapViewType = mapViewType;
         this.voteDeadline = voteDeadline;
         this.attendanceSurveyEnabled = attendanceSurveyEnabled;
@@ -105,10 +112,14 @@ public class Invitation extends BaseEntity{
         this.endTime = endTime;
     }
 
-    public void updateLocationDetails(String location, String address, String mapLink) {
+    public void updateLocationDetails(String userLocation ,String location, String address, String mapLink,
+                                      double latitude, double longitude) {
+        this.userLocation = userLocation;
         this.location = location;
         this.address = address;
         this.mapLink = mapLink;
+        this.latitude = latitude;
+        this.longitude = longitude;
     }
 
     public void updateCardImage(String cardImageUrl) {

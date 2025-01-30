@@ -43,6 +43,12 @@ public class InvitationReq {
     @Schema(description = "지도 링크", example = "https://map.naver.com/v5/search/%EA%B2%BD%EA%B8%B0%EB%8F%84+%EC%9A%A9%EC%9D%B8%EC%8B%9C+%EC%B2%98%EC%9D%B8%EA%B5%AC+%EB%AA%85%EC%A7%80%EB%A1%9C+116+%EB%AA%85%EC%A7%80%EB%8C%80%ED%95%99%EA%B5%90", type = "String")
     private String mapLink; // 지도 링크
 
+    @Schema(description = "위도", example = "37.582218", type = "number")
+    private double latitude;
+
+    @Schema(description = "경도", example = "127.001739", type = "number")
+    private double longitude;
+
     @Schema(description = "지도 보기 타입 (0: 주소만 보기, 1: 지도 보기)", example = "1", type = "int")
     private int mapViewType; // 0: 주소만보기, 1: 맵보기
 
