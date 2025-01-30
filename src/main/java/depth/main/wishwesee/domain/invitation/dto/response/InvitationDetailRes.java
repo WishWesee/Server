@@ -82,6 +82,12 @@ public class InvitationDetailRes {
     @Schema(description = "지도 링크", example = "https://map.naver.com/v5/search/%EA%B2%BD%EA%B8%B0%EB%8F%84+%EC%9A%A9%EC%9D%B8%EC%8B%9C+%EC%B2%98%EC%9D%B8%EA%B5%AC+%EB%AA%85%EC%A7%80%EB%A1%9C+116+%EB%AA%85%EC%A7%80%EB%8C%80%ED%95%99%EA%B5%90", type = "String")
     private String mapLink;
 
+    @Schema(description = "위도", example = "37.582218", type = "number")
+    private double latitude;
+
+    @Schema(description = "경도", example = "127.001739", type = "number")
+    private double longitude;
+
     @Schema(description = "블록리스트", type = "List<BlockRes>")
     private List<BlockRes> blocks; // 블록 리스트
 
@@ -89,7 +95,7 @@ public class InvitationDetailRes {
     public InvitationDetailRes(Long invitationId, boolean isOwner, boolean alreadySaved, boolean canWriteFeedback,String cardImage, String title, LocalDate startDate,
                                LocalTime startTime, LocalDate endDate, LocalTime endTime, LocalDate voteDeadline, boolean hasScheduleVote, boolean scheduleVoteMultiple,
                                List<ScheduleVoteRes> scheduleVotes, boolean scheduleVoteClosed, int mapViewType, String userLocation, String location, String address,
-                               String mapLink, List<BlockRes> blocks, boolean attendanceSurveyEnabled) {
+                               String mapLink, double latitude, double longitude, List<BlockRes> blocks, boolean attendanceSurveyEnabled) {
 
         this.invitationId = invitationId;
         this.title = title;
@@ -103,6 +109,8 @@ public class InvitationDetailRes {
         this.address = address;
         this.mapLink = mapLink;
         this.mapViewType = mapViewType;
+        this.latitude = latitude;
+        this.longitude = longitude;
         this.voteDeadline = voteDeadline;
         this.scheduleVoteMultiple = scheduleVoteMultiple;
         this.hasScheduleVote = hasScheduleVote;
