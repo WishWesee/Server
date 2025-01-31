@@ -11,8 +11,8 @@ import depth.main.wishwesee.global.DefaultAssert;
 import depth.main.wishwesee.global.config.security.token.UserPrincipal;
 import depth.main.wishwesee.global.payload.ApiResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,10 +25,49 @@ import java.util.Optional;
 public class AuthService {
 
     private final CustomTokenProviderService customTokenProviderService;
-    private final AuthenticationManager authenticationManager;
 
     private final TokenRepository tokenRepository;
-    private final UserRepository userRepository;
+
+    @Transactional
+    public ResponseEntity<?> oauth2callback(String code, String state) {
+        try {
+            // 1️⃣ code로 Google Access Token 요청
+            String accessToken = customTokenProviderService.getAccessTokenFromCode(code);
+            // 2️⃣ Google Access Token으로 사용자 정보 요청
+            String email = customTokenProviderService.getUserInfo(accessToken);
+            // 3️⃣ JWT 토큰 생성
+            TokenMapping tokenMapping = customTokenProviderService.createToken(email);
+            Token token = Token.builder()
+                    .userEmail(tokenMapping.getEmail())
+                    .refreshToken(tokenMapping.getRefreshToken())
+                    .build();
+            tokenRepository.save(token);
+            AuthRes authRes = AuthRes.builder()
+                    .accessToken(tokenMapping.getAccessToken())
+                    .refreshToken(tokenMapping.getRefreshToken())
+                    .build();
+            return ResponseEntity.ok(ApiResponse.builder()
+                    .check(true)
+                    .information(authRes)
+                    .build());
+        } catch (IllegalArgumentException e) {
+            // 잘못된 인자 전달 예외 처리 (예: code가 잘못됨)
+            return ResponseEntity.badRequest().body(
+                    ApiResponse.builder()
+                            .check(false)
+                            .information("Invalid authorization code.")
+                            .build()
+            );
+        } catch (Exception e) {
+            // 기타 예외 처리 (예: Google 오류, 네트워크 문제)
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    ApiResponse.builder()
+                            .check(false)
+                            .information("Authentication failed. Please try again.")
+                            .build()
+            );
+        }
+    }
 
     @Transactional
     public ResponseEntity<ApiResponse> refresh(RefreshTokenReq tokenRefreshRequest){
@@ -45,7 +84,8 @@ public class AuthService {
         if(expirationTime > 0){
             tokenMapping = customTokenProviderService.refreshToken(authentication, token.getRefreshToken());
         }else{
-            tokenMapping = customTokenProviderService.createToken(authentication);
+            UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+            tokenMapping = customTokenProviderService.createToken(userPrincipal.getEmail());
         }
 
         Token updateToken = token.updateRefreshToken(tokenMapping.getRefreshToken());
