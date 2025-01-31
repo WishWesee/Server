@@ -92,7 +92,7 @@ public class SecurityConfig {
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(new CustomAuthenticationEntryPoint()))
                 .authorizeHttpRequests(
                         authorize -> authorize
-                                .requestMatchers("/auth/**", "/oauth2/**")
+                                .requestMatchers("/", "/auth/**", "/oauth2/**")
                                 .permitAll()
                                 .requestMatchers("/error", "/favicon.ico", "/**.png", "/**.gif", "/**.svg", "/**.jpg", "/**.html", "/**.css", "/**.js")
                                 .permitAll()
@@ -115,7 +115,7 @@ public class SecurityConfig {
                                 .baseUri("/oauth2/authorize")
                                 .authorizationRequestRepository(customAuthorizationRequestRepository))
                         .redirectionEndpoint(redirection -> redirection
-                                .baseUri("/oauth2/callback/**"))
+                                .baseUri("/login/oauth2/code/*"))
                         .userInfoEndpoint(userInfo -> userInfo
                                 .userService(customOAuth2UserService))
                         .successHandler(oAuth2AuthenticationSuccessHandler)
