@@ -7,6 +7,7 @@ import depth.main.wishwesee.domain.auth.dto.response.TokenMapping;
 import depth.main.wishwesee.domain.auth.service.CustomTokenProviderService;
 import depth.main.wishwesee.global.DefaultAssert;
 import depth.main.wishwesee.global.config.security.OAuth2Config;
+import depth.main.wishwesee.global.config.security.token.UserPrincipal;
 import depth.main.wishwesee.global.config.security.util.CustomCookie;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -39,7 +40,8 @@ public class CustomSimpleUrlAuthenticationSuccessHandler extends SimpleUrlAuthen
 
         String targetUrl = determineTargetUrl(request, response, authentication);
 
-        TokenMapping token = customTokenProviderService.createToken(authentication);
+        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+        TokenMapping token = customTokenProviderService.createToken(userPrincipal.getEmail());
         CustomCookie.addCookie(response, "Authorization", "Bearer_" + token.getAccessToken(), (int) oAuth2Config.getAuth().getAccessTokenExpirationMsec());
         CustomCookie.addCookie(response, "Refresh_Token", "Bearer_" + token.getRefreshToken(), (int) oAuth2Config.getAuth().getRefreshTokenExpirationMsec());
 
@@ -54,7 +56,8 @@ public class CustomSimpleUrlAuthenticationSuccessHandler extends SimpleUrlAuthen
 
         String targetUrl = redirectUri.orElse(getDefaultTargetUrl());
 
-        TokenMapping tokenMapping = customTokenProviderService.createToken(authentication);
+        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+        TokenMapping tokenMapping = customTokenProviderService.createToken(userPrincipal.getEmail());
         Token token = Token.builder()
                 .userEmail(tokenMapping.getEmail())
                 .refreshToken(tokenMapping.getRefreshToken())
