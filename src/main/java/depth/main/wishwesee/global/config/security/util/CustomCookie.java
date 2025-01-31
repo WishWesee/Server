@@ -28,7 +28,7 @@ public class CustomCookie {
         Cookie cookie = new Cookie(name, value);
 
         cookie.setPath("/");
-        cookie.setHttpOnly(true);
+        cookie.setHttpOnly(false);  // HttpOnly를 false로 설정하여 클라이언트에서 접근 가능하게 함 :프로덕션 환경에서는 true로 변경
         cookie.setMaxAge(maxAge);
         response.addCookie(cookie);
     }
