@@ -16,10 +16,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "Authorization", description = "Authorization API")
 @RequiredArgsConstructor
@@ -28,6 +25,19 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private final AuthService authService;
+
+    @Operation(summary = "토큰 발급", description = "구글 리다이렉트 후, 토큰 발급을 수행합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "토큰 발급 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = AuthRes.class) ) } ),
+            @ApiResponse(responseCode = "400", description = "토큰 발급 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
+    })
+    @GetMapping("/callback")
+    public ResponseEntity<?> handleOAuthCallback(
+            @Parameter(description = "URI의 state를 입력해주세요.", required = true) @RequestParam("state") String state,
+            @Parameter(description = "URI의 code를 입력해주세요.", required = true) @RequestParam("code") String code
+    ) {
+        return authService.oauth2callback(state, code);
+    }
 
     @Operation(summary = "토큰 갱신", description = "신규 토큰 갱신을 수행합니다.")
     @ApiResponses(value = {
