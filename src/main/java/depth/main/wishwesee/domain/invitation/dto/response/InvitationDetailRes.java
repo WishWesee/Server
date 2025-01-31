@@ -17,6 +17,9 @@ public class InvitationDetailRes {
     @Schema(description = "초대장ID", example = "1", type = "Long")
     private Long invitationId;
 
+    @Schema(description = "로그인한 사용자 여부", example = "true", type = "boolean")
+    private boolean isLoggedIn;
+
     @Schema(description = "작성자 본인 여부", example = "true", type = "boolean")
     private boolean isOwner;
 
@@ -92,7 +95,7 @@ public class InvitationDetailRes {
     private List<BlockRes> blocks; // 블록 리스트
 
     @Builder
-    public InvitationDetailRes(Long invitationId, boolean isOwner, boolean alreadySaved, boolean canWriteFeedback,String cardImage, String title, LocalDate startDate,
+    public InvitationDetailRes(Long invitationId, boolean isLoggedIn, boolean isOwner, boolean alreadySaved, boolean canWriteFeedback,String cardImage, String title, LocalDate startDate,
                                LocalTime startTime, LocalDate endDate, LocalTime endTime, LocalDate voteDeadline, boolean hasScheduleVote, boolean scheduleVoteMultiple,
                                List<ScheduleVoteRes> scheduleVotes, boolean scheduleVoteClosed, int mapViewType, String userLocation, String location, String address,
                                String mapLink, double latitude, double longitude, List<BlockRes> blocks, boolean attendanceSurveyEnabled) {
@@ -121,6 +124,7 @@ public class InvitationDetailRes {
         this.alreadySaved = alreadySaved;
         this.canWriteFeedback = canWriteFeedback;
         this.attendanceSurveyEnabled = attendanceSurveyEnabled;
+        this.isLoggedIn  = isLoggedIn;
     }
 
 }
