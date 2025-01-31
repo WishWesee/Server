@@ -347,6 +347,7 @@ public class InvitationService {
         InvitationDetailRes response = InvitationDetailRes.builder()
                 .invitationId(invitation.getId())
                 .isOwner(isOwner)
+                .isLoggedIn(user != null)
                 .cardImage(invitation.getCardImage())
                 .title(invitation.getTitle())
                 .startDate(invitation.getStartDate())
