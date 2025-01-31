@@ -92,7 +92,7 @@ public class SecurityConfig {
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(new CustomAuthenticationEntryPoint()))
                 .authorizeHttpRequests(
                         authorize -> authorize
-                                .requestMatchers("/auth/**", "/oauth2/**")
+                                .requestMatchers("/", "/auth/**", "/oauth2/**")
                                 .permitAll()
                                 .requestMatchers("/error", "/favicon.ico", "/**.png", "/**.gif", "/**.svg", "/**.jpg", "/**.html", "/**.css", "/**.js")
                                 .permitAll()
