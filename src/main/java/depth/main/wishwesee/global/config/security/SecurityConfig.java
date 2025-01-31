@@ -111,11 +111,12 @@ public class SecurityConfig {
                 )
                 .addFilterBefore(customOncePerRequestFilter(), UsernamePasswordAuthenticationFilter.class)
                 .oauth2Login(oauth2 -> oauth2
+                        .loginProcessingUrl("/oauth2/callback/**")
                         .authorizationEndpoint(authorization -> authorization
                                 .baseUri("/oauth2/authorize")
                                 .authorizationRequestRepository(customAuthorizationRequestRepository))
                         .redirectionEndpoint(redirection -> redirection
-                                .baseUri("/oauth2/callback/google"))
+                                .baseUri("/oauth2/callback/**"))
                         .userInfoEndpoint(userInfo -> userInfo
                                 .userService(customOAuth2UserService))
                         .successHandler(oAuth2AuthenticationSuccessHandler)
