@@ -18,6 +18,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.security.Key;
@@ -32,49 +33,6 @@ public class CustomTokenProviderService {
 
     private final OAuth2Config oAuth2Config;
     private final CustomUserDetailsService customUserDetailsService;
-
-    @Value("${spring.security.oauth2.client.registration.google.client-id}")
-    private String clientId;
-
-    @Value("${spring.security.oauth2.client.registration.google.client-secret}")
-    private String clientSecret;
-
-    @Value("${spring.security.oauth2.client.registration.google.redirect-uri}")
-    private String redirectUri;
-
-    private final RestTemplate restTemplate = new RestTemplate();
-    private final ObjectMapper objectMapper = new ObjectMapper();
-
-    public String getAccessTokenFromCode(String code) throws Exception {
-        String tokenUrl = "https://oauth2.googleapis.com/token";
-        Map<String, String> requestBody = new HashMap<>();
-        requestBody.put("code", code);
-        requestBody.put("client_id", clientId);
-        requestBody.put("client_secret", clientSecret);
-        requestBody.put("redirect_uri", redirectUri);
-        requestBody.put("grant_type", "authorization_code");
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<Map<String, String>> requestEntity = new HttpEntity<>(requestBody, headers);
-
-        ResponseEntity<String> response = restTemplate.exchange(tokenUrl, HttpMethod.POST, requestEntity, String.class);
-        JsonNode rootNode = objectMapper.readTree(response.getBody());
-
-        return rootNode.path("access_token").asText();
-    }
-
-    public String getUserInfo(String accessToken) throws Exception {
-        String userInfoUrl = "https://www.googleapis.com/oauth2/v3/userinfo";
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(accessToken);
-        HttpEntity<String> request = new HttpEntity<>(headers);
-
-        ResponseEntity<String> response = restTemplate.exchange(userInfoUrl, HttpMethod.GET, request, String.class);
-        JsonNode rootNode = objectMapper.readTree(response.getBody());
-
-        return rootNode.path("email").asText(); // 사용자의 이메일 반환
-    }
 
     public TokenMapping createToken(String email) {
         Date now = new Date();
