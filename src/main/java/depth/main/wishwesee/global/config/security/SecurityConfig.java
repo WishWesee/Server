@@ -115,7 +115,7 @@ public class SecurityConfig {
                                 .baseUri("/oauth2/authorize")
                                 .authorizationRequestRepository(customAuthorizationRequestRepository))
                         .redirectionEndpoint(redirection -> redirection
-                                .baseUri("/oauth2/callback/**"))
+                                .baseUri("/oauth2/callback/google"))
                         .userInfoEndpoint(userInfo -> userInfo
                                 .userService(customOAuth2UserService))
                         .successHandler(oAuth2AuthenticationSuccessHandler)
