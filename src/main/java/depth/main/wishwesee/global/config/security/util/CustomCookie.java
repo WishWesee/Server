@@ -3,6 +3,7 @@ package depth.main.wishwesee.global.config.security.util;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.ResponseCookie;
 import org.springframework.util.SerializationUtils;
 
 import java.util.Base64;
@@ -25,12 +26,16 @@ public class CustomCookie {
     }
 
     public static void addCookie(HttpServletResponse response, String name, String value, int maxAge) {
-        Cookie cookie = new Cookie(name, value);
+        ResponseCookie cookie = ResponseCookie.from(name, value)
+                .path("/")
+                .domain("wishwesee.netlify.app")
+                .httpOnly(false)
+                .secure(false)
+                // .sameSite("None")
+                .maxAge(maxAge)
+                .build();
 
-        cookie.setPath("/");
-        cookie.setHttpOnly(false);  // HttpOnly를 false로 설정하여 클라이언트에서 접근 가능하게 함
-        cookie.setMaxAge(maxAge);
-        response.addCookie(cookie);
+        response.addHeader("Set-Cookie", cookie.toString());
     }
 
     public static void deleteCookie(HttpServletRequest request, HttpServletResponse response, String name) {
