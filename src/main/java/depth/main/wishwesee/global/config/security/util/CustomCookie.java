@@ -28,13 +28,12 @@ public class CustomCookie {
     public static void addCookie(HttpServletResponse response, String name, String value, int maxAge) {
         ResponseCookie cookie = ResponseCookie.from(name, value)
                 .path("/")
-                .domain("wishwesee.netlify.app")
+                //.domain("")
                 .httpOnly(false)
                 .secure(false)
-                // .sameSite("None")
+                //.sameSite("None")
                 .maxAge(maxAge)
                 .build();
-
         response.addHeader("Set-Cookie", cookie.toString());
     }
 
