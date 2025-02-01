@@ -39,7 +39,6 @@ public class CustomSimpleUrlAuthenticationSuccessHandler extends SimpleUrlAuthen
         DefaultAssert.isAuthentication(!response.isCommitted());
 
         String targetUrl = determineTargetUrl(request, response, authentication);
-
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
         TokenMapping token = customTokenProviderService.createToken(userPrincipal.getEmail());
         CustomCookie.addCookie(response, "Authorization", "Bearer_" + token.getAccessToken(), (int) oAuth2Config.getAuth().getAccessTokenExpirationMsec());
@@ -52,7 +51,7 @@ public class CustomSimpleUrlAuthenticationSuccessHandler extends SimpleUrlAuthen
     protected String determineTargetUrl(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
         Optional<String> redirectUri = CustomCookie.getCookie(request, REDIRECT_URI_PARAM_COOKIE_NAME).map(Cookie::getValue);
 
-        DefaultAssert.isAuthentication( !(redirectUri.isPresent() && !isAuthorizedRedirectUri(redirectUri.get())) );
+        DefaultAssert.isAuthentication(!(redirectUri.isPresent() && !isAuthorizedRedirectUri(redirectUri.get())));
 
         String targetUrl = redirectUri.orElse(getDefaultTargetUrl());
 
@@ -64,12 +63,15 @@ public class CustomSimpleUrlAuthenticationSuccessHandler extends SimpleUrlAuthen
                 .build();
         tokenRepository.save(token);
 
-        return UriComponentsBuilder.fromUriString(targetUrl)
+        URI uri = URI.create(targetUrl);
+        return UriComponentsBuilder.fromUri(uri)
+                .host("localhost:3000")
                 .queryParam("token", tokenMapping.getAccessToken())
-                .build().toUriString();
+                .build()
+                .toUriString();
     }
 
-    protected void clearAuthenticationAttributes(HttpServletRequest request, HttpServletResponse response) {
+        protected void clearAuthenticationAttributes(HttpServletRequest request, HttpServletResponse response) {
         super.clearAuthenticationAttributes(request);
         customAuthorizationRequestRepository.removeAuthorizationRequestCookies(request, response);
     }
