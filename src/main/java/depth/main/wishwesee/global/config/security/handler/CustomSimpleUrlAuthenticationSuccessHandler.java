@@ -35,7 +35,7 @@ public class CustomSimpleUrlAuthenticationSuccessHandler extends SimpleUrlAuthen
     private final TokenRepository tokenRepository;
     private final CustomAuthorizationRequestRepository customAuthorizationRequestRepository;
 
-    @Value("${custom.success-handler.host}")
+    @Value("${custom.success-handler.redirect-uri}")
     private String HOST;
 
     @Override
@@ -68,8 +68,7 @@ public class CustomSimpleUrlAuthenticationSuccessHandler extends SimpleUrlAuthen
         tokenRepository.save(token);
 
         URI uri = URI.create(targetUrl);
-        return UriComponentsBuilder.fromUri(uri)
-                .host(HOST)
+        return UriComponentsBuilder.fromUriString(HOST)
                 .queryParam("token", tokenMapping.getAccessToken())
                 .build()
                 .toUriString();
