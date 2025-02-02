@@ -14,6 +14,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.Cookie;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
@@ -33,6 +34,9 @@ public class CustomSimpleUrlAuthenticationSuccessHandler extends SimpleUrlAuthen
     private final OAuth2Config oAuth2Config;
     private final TokenRepository tokenRepository;
     private final CustomAuthorizationRequestRepository customAuthorizationRequestRepository;
+
+    @Value("${custom.success-handler.host}")
+    private String HOST;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
@@ -65,7 +69,7 @@ public class CustomSimpleUrlAuthenticationSuccessHandler extends SimpleUrlAuthen
 
         URI uri = URI.create(targetUrl);
         return UriComponentsBuilder.fromUri(uri)
-                .host("localhost:3000")
+                .host(HOST)
                 .queryParam("token", tokenMapping.getAccessToken())
                 .build()
                 .toUriString();
