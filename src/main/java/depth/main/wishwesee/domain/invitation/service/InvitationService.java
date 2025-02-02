@@ -283,7 +283,7 @@ public class InvitationService {
                 .orElseThrow(() -> new DefaultException(ErrorCode.NOT_FOUND, "해당 초대장이 존재하지 않습니다."));
 
         // 작성자 본인 확인
-        if(invitation.getSender().getId().equals(receiver.getId())){
+        if(invitation.getSender() != null && invitation.getSender().getId().equals(receiver.getId())){
             ErrorResponse errorResponse = ErrorResponse.of(ErrorCode.INVALID_PARAMETER, "본인이 작성한 초대장은 저장할 수 없습니다.");
             return ResponseEntity.badRequest().body(errorResponse);
         }
