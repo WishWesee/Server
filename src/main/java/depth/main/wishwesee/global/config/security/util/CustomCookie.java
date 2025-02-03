@@ -28,10 +28,9 @@ public class CustomCookie {
     public static void addCookie(HttpServletResponse response, String name, String value, int maxAge) {
         ResponseCookie cookie = ResponseCookie.from(name, value)
                 .path("/")
-                //.domain("")
+                .domain(".wishwesee.n-e.kr")
                 .httpOnly(false)
                 .secure(false)
-                //.sameSite("None")
                 .maxAge(maxAge)
                 .build();
         response.addHeader("Set-Cookie", cookie.toString());
