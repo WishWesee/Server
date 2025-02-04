@@ -44,10 +44,19 @@ public class InvitationController {
     })
     @PostMapping
     public ResponseEntity<?> createInvitation(
-            @Parameter(description = "초대장에 들어갈 데이터를 넣어주세요. Schemas의 InvitationReq를 참고해주세요.", required = true) @RequestPart("invitation")@Valid InvitationReq invitationReq,
-            @Parameter(description = "초대장 카드 이미지를 넣어주세요.", required = true ) @RequestPart(value = "cardImage", required = true) MultipartFile cardImage,
-            @Parameter(description = "초대장에 들어갈 사진 목록을 넣어주세요.", required = false) @RequestPart(value = "photoImages", required = false) List<MultipartFile> photoImages,
-            @Parameter(description = "Accesstoken을 입력해주세요.", required = false) @CurrentUser UserPrincipal userPrincipal
+            @Parameter(description = "초대장에 들어갈 데이터를 넣어주세요. Schemas의 InvitationReq를 참고해주세요.", required = true)
+            @RequestPart("invitation")@Valid InvitationReq invitationReq,
+
+            @Parameter(description = "초대장 카드 이미지를 넣어주세요.", required = true)
+            @RequestPart(value = "cardImage", required = true)
+            @Schema(type = "string", example = "card_image.png") MultipartFile cardImage,
+
+            @Parameter(description = "초대장에 들어갈 사진 목록을 넣어주세요.", required = false)
+            @RequestPart(value = "photoImages", required = false)
+            @Schema(type = "array", example = "[\"photo1.jpg\", \"photo2.png\"]") List<MultipartFile> photoImages,
+
+            @Parameter(description = "Accesstoken을 입력해주세요.", required = false)
+            @CurrentUser UserPrincipal userPrincipal
     ){
 
         return invitationService.publishInvitation(invitationReq, cardImage, photoImages, userPrincipal);
@@ -59,10 +68,19 @@ public class InvitationController {
     })
     @PostMapping(value = "/temporary")
     public ResponseEntity<?> saveTemporaryInvitation(
-            @Parameter(description = "초대장에 들어갈 데이터를 넣어주세요. Schemas의 InvitationReq를 참고해주세요.", required = true) @RequestPart("invitation") @Valid InvitationReq invitationReq,
-            @Parameter(description = "초대장 카드 이미지를 넣어주세요.", required = false ) @RequestPart(value = "cardImage", required = false) MultipartFile cardImage,
-            @Parameter(description = "초대장에 들어갈 사진 목록을 넣어주세요.", required = false) @RequestPart(value = "photoImages", required = false) List<MultipartFile> photoImages,
-            @Parameter(description = "Accesstoken을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal
+            @Parameter(description = "초대장에 들어갈 데이터를 넣어주세요. Schemas의 InvitationReq를 참고해주세요.", required = true)
+            @RequestPart("invitation") @Valid InvitationReq invitationReq,
+
+            @Parameter(description = "초대장 카드 이미지를 넣어주세요.", required = false)
+            @RequestPart(value = "cardImage", required = false)
+            @Schema(type = "string", example = "card_image.png") MultipartFile cardImage,
+
+            @Parameter(description = "초대장에 들어갈 사진 목록을 넣어주세요.", required = false)
+            @RequestPart(value = "photoImages", required = false)
+            @Schema(type = "array", example = "[\"photo1.jpg\", \"photo2.png\"]") List<MultipartFile> photoImages,
+
+            @Parameter(description = "Accesstoken을 입력해주세요.", required = true)
+            @CurrentUser UserPrincipal userPrincipal
     ) {
 
         return invitationService.saveTemporaryInvitation(invitationReq, cardImage, photoImages, userPrincipal);
