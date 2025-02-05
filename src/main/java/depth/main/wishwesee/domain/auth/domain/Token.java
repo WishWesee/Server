@@ -5,10 +5,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Lob;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
@@ -16,16 +13,15 @@ import lombok.NoArgsConstructor;
 public class Token extends BaseEntity {
 
     @Id
-    @Column(name = "user_email" ,nullable = false)
+    @Column(name = "user_email" ,nullable = false, unique = true)
     private String userEmail;
 
     @Lob
     @Column(name = "refresh_token", nullable = false)
     private String refreshToken;
 
-    public Token updateRefreshToken(String refreshToken) {
+    public void updateRefreshToken(String refreshToken) {
         this.refreshToken = refreshToken;
-        return this;
     }
 
     @Builder
