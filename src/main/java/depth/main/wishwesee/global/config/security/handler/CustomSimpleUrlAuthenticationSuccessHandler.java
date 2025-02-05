@@ -32,21 +32,23 @@ public class CustomSimpleUrlAuthenticationSuccessHandler extends SimpleUrlAuthen
 
     private final CustomTokenProviderService customTokenProviderService;
     private final OAuth2Config oAuth2Config;
-    private final TokenRepository tokenRepository;
     private final CustomAuthorizationRequestRepository customAuthorizationRequestRepository;
 
     @Value("${custom.success-handler.redirect-uri}")
     private String HOST;
 
+    private static final String BEARER = "Bearer_";
+    private static final String AUTHORIZATION = "Authorization";
+    private static final String REFRESH_TOKEN = "Refresh_Token";
+
     @Override
-    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
+    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
         DefaultAssert.isAuthentication(!response.isCommitted());
 
         String targetUrl = determineTargetUrl(request, response, authentication);
-        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
-        TokenMapping token = customTokenProviderService.createToken(userPrincipal.getEmail());
-        CustomCookie.addCookie(response, "Authorization", "Bearer_" + token.getAccessToken(), (int) oAuth2Config.getAuth().getAccessTokenExpirationMsec());
-        CustomCookie.addCookie(response, "Refresh_Token", "Bearer_" + token.getRefreshToken(), (int) oAuth2Config.getAuth().getRefreshTokenExpirationMsec());
+        TokenMapping tokenMapping = customTokenProviderService.createToken(authentication);
+        CustomCookie.addCookie(response, AUTHORIZATION, BEARER + tokenMapping.getAccessToken(), (int) oAuth2Config.getAuth().getAccessTokenExpirationMsec());
+        CustomCookie.addCookie(response, REFRESH_TOKEN, BEARER + tokenMapping.getRefreshToken(), (int) oAuth2Config.getAuth().getRefreshTokenExpirationMsec());
 
         clearAuthenticationAttributes(request, response);
         getRedirectStrategy().sendRedirect(request, response, targetUrl);
@@ -54,27 +56,14 @@ public class CustomSimpleUrlAuthenticationSuccessHandler extends SimpleUrlAuthen
 
     protected String determineTargetUrl(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
         Optional<String> redirectUri = CustomCookie.getCookie(request, REDIRECT_URI_PARAM_COOKIE_NAME).map(Cookie::getValue);
-
         DefaultAssert.isAuthentication(!(redirectUri.isPresent() && !isAuthorizedRedirectUri(redirectUri.get())));
-
-        String targetUrl = redirectUri.orElse(getDefaultTargetUrl());
-
-        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
-        TokenMapping tokenMapping = customTokenProviderService.createToken(userPrincipal.getEmail());
-        Token token = Token.builder()
-                .userEmail(tokenMapping.getEmail())
-                .refreshToken(tokenMapping.getRefreshToken())
-                .build();
-        tokenRepository.save(token);
-
-        URI uri = URI.create(targetUrl);
+        //String targetUrl = redirectUri.orElse(getDefaultTargetUrl());
         return UriComponentsBuilder.fromUriString(HOST)
-                .queryParam("token", tokenMapping.getAccessToken())
                 .build()
                 .toUriString();
     }
 
-        protected void clearAuthenticationAttributes(HttpServletRequest request, HttpServletResponse response) {
+    protected void clearAuthenticationAttributes(HttpServletRequest request, HttpServletResponse response) {
         super.clearAuthenticationAttributes(request);
         customAuthorizationRequestRepository.removeAuthorizationRequestCookies(request, response);
     }

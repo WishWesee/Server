@@ -1,84 +1,77 @@
 package depth.main.wishwesee.domain.auth.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import depth.main.wishwesee.domain.auth.domain.Token;
+import depth.main.wishwesee.domain.auth.domain.repository.TokenRepository;
 import depth.main.wishwesee.domain.auth.dto.response.TokenMapping;
-import depth.main.wishwesee.global.config.security.OAuth2Config;
 import depth.main.wishwesee.global.config.security.token.UserPrincipal;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.security.InvalidParameterException;
 import java.security.Key;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 @Slf4j
 @RequiredArgsConstructor
 @Service
 public class CustomTokenProviderService {
 
-    private final OAuth2Config oAuth2Config;
     private final CustomUserDetailsService customUserDetailsService;
+    private final TokenRepository tokenRepository;
 
-    public TokenMapping createToken(String email) {
-        Date now = new Date();
-        Date accessTokenExpiresIn = new Date(now.getTime() + oAuth2Config.getAuth().getAccessTokenExpirationMsec());
-        Date refreshTokenExpiresIn = new Date(now.getTime() + oAuth2Config.getAuth().getRefreshTokenExpirationMsec());
+    private Key key;
 
-        String secretKey = oAuth2Config.getAuth().getTokenSecret();
-        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
-        Key key = Keys.hmacShaKeyFor(keyBytes);
+    @Value("${app.auth.token-secret}")
+    private String secret;
 
-        String accessToken = Jwts.builder()
-                .setSubject(email)
-                .setIssuedAt(now)
-                .setExpiration(accessTokenExpiresIn)
-                .signWith(key, SignatureAlgorithm.HS512)
-                .compact();
+    @Value("${app.auth.access-token-expiration-msec}")
+    private long accessTokenExpiration;
 
-        String refreshToken = Jwts.builder()
-                .setExpiration(refreshTokenExpiresIn)
-                .signWith(key, SignatureAlgorithm.HS512)
-                .compact();
+    @Value("${app.auth.refresh-token-expiration-msec}")
+    private long refreshTokenExpiration;
 
-        return TokenMapping.builder()
-                .email(email)
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .build();
+    @PostConstruct
+    protected void init() {
+        key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret));
     }
 
-    public TokenMapping refreshToken(Authentication authentication, String refreshToken) {
-        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
-        Date now = new Date();
-
-        Date accessTokenExpiresIn = new Date(now.getTime() + oAuth2Config.getAuth().getAccessTokenExpirationMsec());
-
-        String secretKey = oAuth2Config.getAuth().getTokenSecret();
-        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
-        Key key = Keys.hmacShaKeyFor(keyBytes);
-
-        String accessToken = Jwts.builder()
-                .setSubject(userPrincipal.getEmail())
-                .setIssuedAt(new Date())
-                .setExpiration(accessTokenExpiresIn)
-                .signWith(key, SignatureAlgorithm.HS512)
+    public String createAccessToken(String email) {
+        Claims claims = Jwts.claims().setSubject(email);
+        return Jwts.builder().setClaims(claims)
+                .setSubject(email)
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(convertKST(accessTokenExpiration))
+                .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
+    }
 
+    public String createRefreshToken(String email) {
+        return Jwts.builder()
+                .setSubject(email)
+                .setExpiration(convertKST(refreshTokenExpiration))
+                .signWith(key, SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    @Transactional
+    public TokenMapping createToken(Authentication authentication) {
+        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+        String accessToken = createAccessToken(userPrincipal.getEmail());
+        String refreshToken = createRefreshToken(userPrincipal.getEmail());
+        saveRefreshToken(userPrincipal.getEmail(), refreshToken);
         return TokenMapping.builder()
                 .email(userPrincipal.getEmail())
                 .accessToken(accessToken)
@@ -86,17 +79,54 @@ public class CustomTokenProviderService {
                 .build();
     }
 
-    public String getEmailFromToken(String token) {
-        log.debug("Extracting email from token: {}", token);
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(oAuth2Config.getAuth().getTokenSecret())
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
+    private Date convertKST(long expirationMsec) {
+        long expirationTime = System.currentTimeMillis() + expirationMsec;
+        Instant instant = Instant.ofEpochMilli(expirationTime);
+        ZonedDateTime kstDateTime = instant.atZone(ZoneId.of("Asia/Seoul"));
+        return Date.from(kstDateTime.toInstant());
+    }
 
-        String email = claims.getSubject();
-        log.debug("Email extracted: {}", email);
-        return email;
+    private void saveRefreshToken(String email, String refreshToken) {
+        Token token = Token.builder()
+                .userEmail(email)
+                .refreshToken(refreshToken)
+                .build();
+        tokenRepository.save(token);
+        log.info("새 토큰 저장됨: {}", token.getUserEmail());
+    }
+    //public TokenMapping refreshToken(Authentication authentication, String refreshToken) {
+    //    UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+    //    String accessToken = createAccessToken(userPrincipal.getEmail());
+    //    return TokenMapping.builder()
+    //            .email(userPrincipal.getEmail())
+    //            .accessToken(accessToken)
+    //            .refreshToken(refreshToken)
+    //            .build();
+    //}
+
+    @Transactional
+    public TokenMapping refreshToken(String email) {
+        Token token = tokenRepository.findByUserEmail(email).orElseThrow(InvalidParameterException::new);
+        String accessToken;
+        String refreshToken;
+        if (isNotExpiredRefreshToken(token.getRefreshToken())) {
+            accessToken = createAccessToken(email);
+            refreshToken = token.getRefreshToken();
+        } else {
+            accessToken = createAccessToken(email);
+            refreshToken = createRefreshToken(email);;
+            token.updateRefreshToken(refreshToken);
+        }
+        return TokenMapping.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .build();
+    }
+
+    public String getEmailFromToken(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build().parseClaimsJws(token).getBody().getSubject();
     }
 
     public UsernamePasswordAuthenticationToken getAuthenticationByEmail(String token) {
@@ -105,23 +135,9 @@ public class CustomTokenProviderService {
         return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
     }
 
-    public Long getExpiration(String token) {
-        // accessToken 남은 유효시간
-        Date expiration = Jwts.parserBuilder()
-                .setSigningKey(oAuth2Config.getAuth().getTokenSecret())
-                .build()
-                .parseClaimsJws(token)
-                .getBody()
-                .getExpiration();
-        // 현재 시간
-        Long now = new Date().getTime();
-        // 시간 계산
-        return (expiration.getTime() - now);
-    }
-
     public boolean validateToken(String token) {
         try {
-            Jwts.parserBuilder().setSigningKey(oAuth2Config.getAuth().getTokenSecret()).build().parseClaimsJws(token);
+            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
             return true;
         } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException ex) {
             log.error("잘못된 JWT 서명입니다.");
@@ -131,6 +147,16 @@ public class CustomTokenProviderService {
             log.error("지원되지 않는 JWT 토큰입니다.");
         } catch (IllegalArgumentException ex) {
             log.error("JWT 토큰이 잘못되었습니다.");
+        }
+        return false;
+    }
+
+    public boolean isNotExpiredRefreshToken(String token) {
+        try {
+            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
+            return true;
+        } catch (ExpiredJwtException ex) {
+            log.error("만료된 JWT 토큰입니다.");
         }
         return false;
     }

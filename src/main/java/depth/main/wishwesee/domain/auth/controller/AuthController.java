@@ -33,21 +33,22 @@ public class AuthController {
     })
     @PostMapping(value = "/refresh")
     public ResponseEntity<?> refresh(
-            @Parameter(description = "Schemas의 RefreshTokenRequest를 참고해주세요.", required = true) @Valid @RequestBody RefreshTokenReq tokenRefreshRequest
+            @Parameter(description = "Schemas의 RefreshTokenRequest를 참고해주세요.", required = true) @Valid @RequestBody RefreshTokenReq refreshTokenReq
     ) {
-        return authService.refresh(tokenRefreshRequest);
+        return authService.refresh(refreshTokenReq);
     }
 
     @Operation(summary = "로그아웃", description = "사용자가 로그아웃을 수행합니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "로그아웃 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = String.class) ) } ),
+            @ApiResponse(responseCode = "200", description = "로그아웃 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = Void.class) ) } ),
             @ApiResponse(responseCode = "400", description = "로그아웃 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
     })
     @PostMapping(value="/sign-out")
-    public ResponseEntity<?> signOut(
+    public ResponseEntity<Void> signOut(
             @Parameter(description = "Accesstoken을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal
     ) {
-        return authService.signOut(userPrincipal);
+        authService.signOut(userPrincipal);
+        return ResponseEntity.noContent().build();
     }
 
 }
