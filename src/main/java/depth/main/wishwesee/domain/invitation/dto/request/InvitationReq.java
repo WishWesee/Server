@@ -28,7 +28,7 @@ public class InvitationReq {
     @Schema(description = "마지막 날짜", type = "string", format = "date", example = "2024-12-31")
     private LocalDate endDate; // 마지막날짜
 
-    @Schema(description = "마지막 시간", type = "string", format = "time", example = "2024-12-31")
+    @Schema(description = "마지막 시간", type = "string", format = "time", example = "16:00")
     private LocalTime endTime; // 마지막시간
 
     @Schema(description = "사용자가 직접 입력한 장소명", example = "명지대학교 후문", type = "String")
