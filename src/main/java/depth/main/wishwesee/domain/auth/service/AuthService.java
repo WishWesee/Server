@@ -6,14 +6,13 @@ import depth.main.wishwesee.domain.auth.exception.InvalidTokenException;
 import depth.main.wishwesee.domain.auth.domain.repository.TokenRepository;
 import depth.main.wishwesee.domain.auth.dto.request.RefreshTokenReq;
 import depth.main.wishwesee.domain.auth.dto.response.TokenMapping;
+import depth.main.wishwesee.domain.user.domain.User;
 import depth.main.wishwesee.domain.user.domain.repository.UserRepository;
 import depth.main.wishwesee.global.DefaultAssert;
 import depth.main.wishwesee.global.config.security.token.UserPrincipal;
 import depth.main.wishwesee.global.payload.ApiResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,36 +28,18 @@ public class AuthService {
     private final TokenRepository tokenRepository;
 
     @Transactional
-    public ResponseEntity<ApiResponse> refresh(RefreshTokenReq tokenRefreshRequest){
-        boolean checkValid = valid(tokenRefreshRequest.getRefreshToken());
-        DefaultAssert.isAuthentication(checkValid);
-
-        Token token = tokenRepository.findByRefreshToken(tokenRefreshRequest.getRefreshToken())
-                .orElseThrow(InvalidTokenException::new);
-        Authentication authentication = customTokenProviderService.getAuthenticationByEmail(token.getUserEmail());
-
-        TokenMapping tokenMapping;
-
-        Long expirationTime = customTokenProviderService.getExpiration(tokenRefreshRequest.getRefreshToken());
-        if(expirationTime > 0){
-            tokenMapping = customTokenProviderService.refreshToken(authentication, token.getRefreshToken());
-        }else{
-            UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
-            tokenMapping = customTokenProviderService.createToken(userPrincipal.getEmail());
-        }
-
-        Token updateToken = token.updateRefreshToken(tokenMapping.getRefreshToken());
-
+    public ResponseEntity<ApiResponse> refresh(RefreshTokenReq refreshTokenReq){
+        String email = customTokenProviderService.getEmailFromToken(refreshTokenReq.getRefreshToken());
+        DefaultAssert.isTrue(valid(refreshTokenReq.getRefreshToken()), "토큰 검증에 실패했습니다.");
+        TokenMapping tokenMapping = customTokenProviderService.refreshToken(email);
         AuthRes authResponse = AuthRes.builder()
                 .accessToken(tokenMapping.getAccessToken())
-                .refreshToken(updateToken.getRefreshToken())
+                .refreshToken(tokenMapping.getRefreshToken())
                 .build();
-
         ApiResponse apiResponse = ApiResponse.builder()
                 .check(true)
                 .information(authResponse)
                 .build();
-
         return ResponseEntity.ok(apiResponse);
     }
 
@@ -83,8 +64,8 @@ public class AuthService {
         Optional<Token> token = tokenRepository.findByRefreshToken(refreshToken);
         DefaultAssert.isTrue(token.isPresent(), "탈퇴 처리된 회원입니다.");
 
-        Authentication authentication = customTokenProviderService.getAuthenticationByEmail(token.get().getUserEmail());
-        DefaultAssert.isTrue(token.get().getUserEmail().equals(authentication.getName()), "사용자 인증에 실패하였습니다.");
+        //Authentication authentication = customTokenProviderService.getAuthenticationByEmail(token.get().getUserEmail());
+        //DefaultAssert.isTrue(token.get().getUserEmail().equals(authentication.getName()), "사용자 인증에 실패하였습니다.");
 
         return true;
     }
