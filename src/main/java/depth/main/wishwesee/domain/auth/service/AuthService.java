@@ -6,12 +6,12 @@ import depth.main.wishwesee.domain.auth.exception.InvalidTokenException;
 import depth.main.wishwesee.domain.auth.domain.repository.TokenRepository;
 import depth.main.wishwesee.domain.auth.dto.request.RefreshTokenReq;
 import depth.main.wishwesee.domain.auth.dto.response.TokenMapping;
-import depth.main.wishwesee.domain.user.domain.User;
-import depth.main.wishwesee.domain.user.domain.repository.UserRepository;
 import depth.main.wishwesee.global.DefaultAssert;
 import depth.main.wishwesee.global.config.security.token.UserPrincipal;
 import depth.main.wishwesee.global.payload.ApiResponse;
+import io.jsonwebtoken.ExpiredJwtException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,18 +29,26 @@ public class AuthService {
 
     @Transactional
     public ResponseEntity<ApiResponse> refresh(RefreshTokenReq refreshTokenReq){
-        String email = customTokenProviderService.getEmailFromToken(refreshTokenReq.getRefreshToken());
-        DefaultAssert.isTrue(valid(refreshTokenReq.getRefreshToken()), "토큰 검증에 실패했습니다.");
-        TokenMapping tokenMapping = customTokenProviderService.refreshToken(email);
-        AuthRes authResponse = AuthRes.builder()
-                .accessToken(tokenMapping.getAccessToken())
-                .refreshToken(tokenMapping.getRefreshToken())
-                .build();
-        ApiResponse apiResponse = ApiResponse.builder()
-                .check(true)
-                .information(authResponse)
-                .build();
-        return ResponseEntity.ok(apiResponse);
+        try {
+            String email = customTokenProviderService.getEmailFromToken(refreshTokenReq.getRefreshToken());
+            DefaultAssert.isTrue(valid(refreshTokenReq.getRefreshToken()), "토큰 검증에 실패했습니다.");
+            TokenMapping tokenMapping = customTokenProviderService.refreshToken(email);
+            AuthRes authResponse = AuthRes.builder()
+                    .accessToken(tokenMapping.getAccessToken())
+                    .refreshToken(tokenMapping.getRefreshToken())
+                    .build();
+            ApiResponse apiResponse = ApiResponse.builder()
+                    .check(true)
+                    .information(authResponse)
+                    .build();
+            return ResponseEntity.ok(apiResponse);
+        } catch (ExpiredJwtException ex) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.builder()
+                            .check(false)
+                            .information("리프레시 토큰이 만료되었습니다. 다시 로그인해주세요.")
+                            .build());
+        }
     }
 
     @Transactional
