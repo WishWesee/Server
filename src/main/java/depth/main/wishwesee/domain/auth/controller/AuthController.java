@@ -29,6 +29,7 @@ public class AuthController {
     @Operation(summary = "토큰 갱신", description = "신규 토큰 갱신을 수행합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "토큰 갱신 성공", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = AuthRes.class) ) } ),
+            @ApiResponse(responseCode = "401", description = "토큰 만료", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = String.class) ) } ),
             @ApiResponse(responseCode = "400", description = "토큰 갱신 실패", content = { @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class) ) } ),
     })
     @PostMapping(value = "/refresh")
