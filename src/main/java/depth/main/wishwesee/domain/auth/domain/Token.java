@@ -20,10 +20,6 @@ public class Token extends BaseEntity {
     @Column(name = "refresh_token", nullable = false)
     private String refreshToken;
 
-    public void updateRefreshToken(String refreshToken) {
-        this.refreshToken = refreshToken;
-    }
-
     @Builder
     public Token(String userEmail, String refreshToken) {
         this.userEmail = userEmail;
