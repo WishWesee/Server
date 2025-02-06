@@ -3,6 +3,7 @@ package depth.main.wishwesee.domain.auth.service;
 import depth.main.wishwesee.domain.auth.domain.Token;
 import depth.main.wishwesee.domain.auth.domain.repository.TokenRepository;
 import depth.main.wishwesee.domain.auth.dto.response.TokenMapping;
+import depth.main.wishwesee.domain.auth.exception.ExpiredRefreshTokenException;
 import depth.main.wishwesee.global.config.security.token.UserPrincipal;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
@@ -92,31 +93,14 @@ public class CustomTokenProviderService {
                 .refreshToken(refreshToken)
                 .build();
         tokenRepository.save(token);
-        log.info("새 토큰 저장됨: {}", token.getUserEmail());
     }
-    //public TokenMapping refreshToken(Authentication authentication, String refreshToken) {
-    //    UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
-    //    String accessToken = createAccessToken(userPrincipal.getEmail());
-    //    return TokenMapping.builder()
-    //            .email(userPrincipal.getEmail())
-    //            .accessToken(accessToken)
-    //            .refreshToken(refreshToken)
-    //            .build();
-    //}
 
     @Transactional
     public TokenMapping refreshToken(String email) {
         Token token = tokenRepository.findByUserEmail(email).orElseThrow(InvalidParameterException::new);
-        String accessToken;
-        String refreshToken;
-        if (isNotExpiredRefreshToken(token.getRefreshToken())) {
-            accessToken = createAccessToken(email);
-            refreshToken = token.getRefreshToken();
-        } else {
-            accessToken = createAccessToken(email);
-            refreshToken = createRefreshToken(email);;
-            token.updateRefreshToken(refreshToken);
-        }
+        isNotExpiredRefreshToken(token.getRefreshToken());
+        String accessToken = createAccessToken(email);
+        String refreshToken = token.getRefreshToken();
         return TokenMapping.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
@@ -151,13 +135,12 @@ public class CustomTokenProviderService {
         return false;
     }
 
-    public boolean isNotExpiredRefreshToken(String token) {
+    public void isNotExpiredRefreshToken(String token) {
         try {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
-            return true;
         } catch (ExpiredJwtException ex) {
             log.error("만료된 JWT 토큰입니다.");
+            throw new ExpiredRefreshTokenException();
         }
-        return false;
     }
 }
