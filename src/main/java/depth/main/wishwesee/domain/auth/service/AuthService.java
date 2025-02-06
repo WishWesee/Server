@@ -52,17 +52,10 @@ public class AuthService {
     }
 
     @Transactional
-    public ResponseEntity<?> signOut(UserPrincipal userPrincipal){
+    public void signOut(UserPrincipal userPrincipal){
         Token token = tokenRepository.findByUserEmail(userPrincipal.getEmail())
                 .orElseThrow(InvalidTokenException::new);
-
         tokenRepository.delete(token);
-
-        ApiResponse apiResponse = ApiResponse.builder()
-                .check(true)
-                .information("유저가 로그아웃 되었습니다.")
-                .build();
-        return ResponseEntity.ok(apiResponse);
     }
 
     private boolean valid(String refreshToken){
