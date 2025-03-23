@@ -21,5 +21,5 @@ public interface InvitationRepository extends JpaRepository<Invitation, Long> {
     @Query("SELECT i FROM Invitation i WHERE i.sender = :user AND FUNCTION('YEAR', i.createdDate) = :year AND i.tempSaved = false ORDER BY i.modifiedDate DESC")
     List<Invitation> findBySenderAndYearAndTempSavedFalse(@Param("user") User user, @Param("year") int year); // 연도별 보낸 초대장
 
-    Optional<Invitation> findByInvitationToken(String invitationToken);
+    Optional<Invitation> findByToken(String invitationToken);
 }
