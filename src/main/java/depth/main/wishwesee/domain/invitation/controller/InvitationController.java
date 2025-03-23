@@ -157,34 +157,34 @@ public class InvitationController {
 
         return invitationService.saveReceivedInvitation(saveInvitationReq, userPrincipal);
     }
-    @Operation(summary = "임시저장된 초대장 조회", description = "임시저장된 초대장의 id를 통해 초대장의 상세 정보를 조회합니다.")
+    @Operation(summary = "임시저장된 초대장 조회", description = "임시저장된 초대장의 토큰을 통해 초대장의 상세 정보를 조회합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "임시 저장된 초대장 조회 성공", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = InvitationDetailRes.class))}),
             @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))}),
             @ApiResponse(responseCode = "404", description = "임시 저장된 초대장을 찾을 수 없음", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))}),
             @ApiResponse(responseCode = "400", description = "잘못된 요청", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))})
     })
-    @GetMapping("/temporary/{invitationId}")
+    @GetMapping("/temporary/{invitationToken}")
     public ResponseEntity<?> getTemporaryInvitation(
-            @Parameter(description = "조회할 임시 저장된 초대장의 ID", required = true) @PathVariable Long invitationId,
+            @Parameter(description = "조회할 임시 저장된 초대장의 토큰", required = true) @PathVariable String invitationToken,
             @Parameter(description = "Accesstoken을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal
     ) {
 
-        return invitationService.getInvitation(invitationId, userPrincipal, true);
+        return invitationService.getInvitation(invitationToken, userPrincipal, true);
     }
-    @Operation(summary = "완성된 초대장 조회", description = "완성된 초대장의 id를 통해 초대장의 상세 정보를 조회합니다.")
+    @Operation(summary = "완성된 초대장 조회", description = "완성된 초대장의 토큰을 통해 초대장의 상세 정보를 조회합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "완성된 초대장 조회 성공", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = InvitationDetailRes.class))}),
             @ApiResponse(responseCode = "404", description = "초대장을 찾을 수 없음", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))}),
             @ApiResponse(responseCode = "400", description = "잘못된 요청", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))})
     })
-    @GetMapping("/{invitationId}")
+    @GetMapping("/{invitationToken}")
     public ResponseEntity<?> getCompletedInvitation(
-            @Parameter(description = "조회할 완성된 초대장의ID", required = true) @PathVariable Long invitationId,
+            @Parameter(description = "조회할 완성된 초대장의 토큰", required = true) @PathVariable String invitationToken,
             @Parameter(description = "Accesstoken을 입력해주세요.", required = false) @CurrentUser UserPrincipal userPrincipal
     ) {
 
-        return invitationService.getInvitation(invitationId, userPrincipal, false);
+        return invitationService.getInvitation(invitationToken, userPrincipal, false);
     }
 
     @Operation(summary = "나의 초대장 목록 조회", description = "작성 중인 초대장, 보낸 초대장 3개, 받은 초대장 3개를 조회합니다.")
@@ -232,12 +232,12 @@ public class InvitationController {
             @ApiResponse(responseCode = "404", description = "초대장 또는 사용자를 찾을 수 없음"),
             @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터 (삭제 권한 없음)")
     })
-    @DeleteMapping("/sent/{invitationId}")
+    @DeleteMapping("/sent/{invitationToken}")
     public ResponseEntity<?> deleteSentInvitation(
-            @Parameter(description = "삭제할 초대장의 ID", required = true) @PathVariable Long invitationId,
+            @Parameter(description = "삭제할 초대장의 토큰", required = true) @PathVariable String invitationToken,
             @Parameter(description = "Accesstoken을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal) {
 
-        return invitationService.deleteSentInvitation(invitationId, userPrincipal);
+        return invitationService.deleteSentInvitation(invitationToken, userPrincipal);
     }
 
     @Operation(summary = "받은 초대장 삭제", description = "사용자가 받은 초대장을 삭제합니다. 삭제 시 초대장 자체는 삭제되지 않고 사용자의 수신 목록에서만 삭제됩니다.")
@@ -245,12 +245,12 @@ public class InvitationController {
             @ApiResponse(responseCode = "204", description = "성공적으로 삭제됨"),
             @ApiResponse(responseCode = "404", description = "해당 초대장이 존재하지 않거나 수신하지 않음")
     })
-    @DeleteMapping("/received/{invitationId}")
+    @DeleteMapping("/received/{invitationToken}")
     public ResponseEntity<?> deleteReceivedInvitation(
-            @Parameter(description = "삭제할 초대장의 ID", required = true)  @PathVariable Long invitationId,
+            @Parameter(description = "삭제할 초대장의 토큰", required = true)  @PathVariable String invitationToken,
             @Parameter(description = "Accesstoken을 입력해주세요.", required = true) @CurrentUser UserPrincipal userPrincipal) {
 
-        return invitationService.deleteReceivedInvitation(invitationId, userPrincipal);
+        return invitationService.deleteReceivedInvitation(invitationToken, userPrincipal);
     }
 
 

@@ -35,12 +35,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -70,7 +68,8 @@ public class InvitationService {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(Map.of(
                         "message", "초대장이 임시 저장되었습니다.",
-                        "invitationId", invitation.getId()
+                        "invitationId", invitation.getId(),
+                        "invitationToken", invitation.getInvitationToken()
                 ));
 
     }
@@ -83,7 +82,8 @@ public class InvitationService {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(Map.of(
                         "message", "초대장 작성을 완료하였습니다.",
-                        "invitationId", invitation.getId()
+                        "invitationId", invitation.getId(),
+                        "invitationToken", invitation.getInvitationToken()
                 ));
 
     }
@@ -128,6 +128,7 @@ public class InvitationService {
         }
 
         return Invitation.builder()
+                .invitationToken(UUID.randomUUID().toString()) // UUID 토큰 자동 생성
                 .title(invitationReq.getTitle())
                 .cardImage(cardImageUrl)
                 .tempSaved(isTemporary)
@@ -307,9 +308,9 @@ public class InvitationService {
 
 
 
-    public ResponseEntity<?> getInvitation(Long invitationId, UserPrincipal userPrincipal, boolean isTemporary) {
+    public ResponseEntity<?> getInvitation(String invitationToken, UserPrincipal userPrincipal, boolean isTemporary) {
         // 초대장 조회
-        Invitation invitation = invitationRepository.findById(invitationId)
+        Invitation invitation = invitationRepository.findByInvitationToken(invitationToken)
                 .orElseThrow(() -> new DefaultException(ErrorCode.NOT_FOUND, "해당 초대장이 존재하지 않습니다."));
 
         // 사용자 확인
@@ -338,7 +339,7 @@ public class InvitationService {
         List<ScheduleVoteRes> scheduleVoteResList = getInvitationScheduleVote(user, invitation);
 
         // 사용자가 투표했는지 확인
-        boolean hasVoted = user != null && scheduleVoterRepository.existsByInvitationIdAndUser(invitationId, user);
+        boolean hasVoted = user != null && scheduleVoterRepository.existsByInvitationIdAndUser(invitation.getId(), user);
 
         // 후기 작성 가능 여부
         boolean canWriteFeedback = feedbackService.checkWritableFeedback(invitation);
@@ -525,9 +526,9 @@ public class InvitationService {
         return ResponseEntity.ok(response);
     }
     @Transactional
-    public ResponseEntity<?> deleteSentInvitation(Long invitationId, UserPrincipal userPrincipal) {
+    public ResponseEntity<?> deleteSentInvitation(String invitationToken, UserPrincipal userPrincipal) {
         // 초대장 조회
-        Invitation invitation = invitationRepository.findById(invitationId)
+        Invitation invitation = invitationRepository.findByInvitationToken(invitationToken)
                 .orElseThrow(() -> new DefaultException(ErrorCode.NOT_FOUND, "해당 초대장이 존재하지 않습니다."));
 
         // 보낸 사람 확인
@@ -563,13 +564,17 @@ public class InvitationService {
 
     }
     @Transactional
-    public ResponseEntity<?> deleteReceivedInvitation(Long invitationId, UserPrincipal userPrincipal) {
+    public ResponseEntity<?> deleteReceivedInvitation(String invitationToken, UserPrincipal userPrincipal) {
         // 현재 사용자 조회
         User receiver = userRepository.findById(userPrincipal.getId())
                 .orElseThrow(() -> new DefaultException(ErrorCode.NOT_FOUND, "사용자를 찾을 수 없습니다."));
 
+        // 초대장 조회
+        Invitation invitation = invitationRepository.findByInvitationToken(invitationToken)
+                .orElseThrow(() -> new DefaultException(ErrorCode.NOT_FOUND, "해당 초대장이 존재하지 않습니다."));
+
         // 받은 초대장 데이터 조회
-        ReceivedInvitation receivedInvitation = receivedInvitationRepository.findByReceiverAndInvitationId(receiver, invitationId)
+        ReceivedInvitation receivedInvitation = receivedInvitationRepository.findByReceiverAndInvitationId(receiver, invitation.getId())
                 .orElseThrow(() -> new DefaultException(ErrorCode.NOT_FOUND, "해당 초대장이 존재하지 않거나 수신하지 않았습니다."));
 
         // 받은 초대장에서만 삭제
