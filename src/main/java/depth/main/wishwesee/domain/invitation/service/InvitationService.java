@@ -344,8 +344,11 @@ public class InvitationService {
             user = findUserByPrincipal(userPrincipal);
         }
 
+        // 초대장 토큰 생성
+        String invitationToken = generateInvitationToken();
+
         return Invitation.builder()
-                .invitationToken(UUID.randomUUID().toString()) // UUID 토큰 자동 생성
+                .invitationToken(invitationToken)
                 .title(invitationReq.getTitle())
                 .cardImage(cardImageUrl)
                 .tempSaved(isTemporary)
@@ -367,6 +370,11 @@ public class InvitationService {
                 .attendanceSurveyClosed(invitationReq.isAttendanceSurveyClosed())
                 .sender(user)
                 .build();
+    }
+
+    // UUID 기반 초대장 토큰 생성 메서드
+    private String generateInvitationToken() {
+        return UUID.randomUUID().toString();
     }
 
     private void updateInvitationDetails(Invitation invitation, InvitationReq invitationReq, MultipartFile cardImage, List<MultipartFile> photoImages) {
