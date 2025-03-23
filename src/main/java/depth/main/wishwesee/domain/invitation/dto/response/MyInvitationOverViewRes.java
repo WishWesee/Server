@@ -39,6 +39,9 @@ public class MyInvitationOverViewRes {
         @Schema(description = "초대장ID", example = "5", type = "Long")
         private Long invitationId;
 
+        @Schema(description = "초대장 토큰", example = "328d5c51-79b4-4ae3-860b-17cbe178f345", type = "String")
+        private String invitationToken;
+
         @Schema(description = "초대장 카드 이미지 URL", example = "https://wishwesee-s3-image-bucket.s3.amazonaws.com/3f78b60d-c3b5-46db-aab2-9f8245ad7b35.jpg", type = "String")
         private String cardImage;
 
@@ -50,8 +53,9 @@ public class MyInvitationOverViewRes {
         private LocalDateTime date;
 
         @Builder
-        InvitationRes(Long invitationId, String cardImage, String title, LocalDateTime date){
+        InvitationRes(Long invitationId, String invitationToken, String cardImage, String title, LocalDateTime date){
             this.invitationId = invitationId;
+            this.invitationToken = invitationToken;
             this.cardImage = cardImage;
             this.title = title;
             this.date = date;

@@ -17,6 +17,9 @@ public class InvitationDetailRes {
     @Schema(description = "초대장ID", example = "1", type = "Long")
     private Long invitationId;
 
+    @Schema(description = "초대장UUID(고유 식별자)", example = "abcd-1234-efgh-5678", type = "String")
+    private String invitationToken;
+
     @Schema(description = "로그인한 사용자 여부", example = "true", type = "boolean")
     private boolean isLoggedIn;
 
@@ -95,12 +98,13 @@ public class InvitationDetailRes {
     private List<BlockRes> blocks; // 블록 리스트
 
     @Builder
-    public InvitationDetailRes(Long invitationId, boolean isLoggedIn, boolean isOwner, boolean alreadySaved, boolean canWriteFeedback,String cardImage, String title, LocalDate startDate,
+    public InvitationDetailRes(Long invitationId, String invitationToken, boolean isLoggedIn, boolean isOwner, boolean alreadySaved, boolean canWriteFeedback,String cardImage, String title, LocalDate startDate,
                                LocalTime startTime, LocalDate endDate, LocalTime endTime, LocalDate voteDeadline, boolean hasScheduleVote, boolean scheduleVoteMultiple,
                                List<ScheduleVoteRes> scheduleVotes, boolean scheduleVoteClosed, int mapViewType, String userLocation, String location, String address,
                                String mapLink, double latitude, double longitude, List<BlockRes> blocks, boolean attendanceSurveyEnabled) {
 
         this.invitationId = invitationId;
+        this.invitationToken = invitationToken;
         this.title = title;
         this.cardImage = cardImage;
         this.startDate = startDate;
