@@ -597,7 +597,7 @@ public class InvitationService {
 
     // UUID 토큰으로 초대장 조회
     private Invitation findInvitationByToken(String token) {
-        return invitationRepository.findByInvitationToken(token)
+        return invitationRepository.findByToken(token)
                 .orElseThrow(() -> new DefaultException(ErrorCode.NOT_FOUND, "해당 초대장이 존재하지 않습니다."));
     }
 
