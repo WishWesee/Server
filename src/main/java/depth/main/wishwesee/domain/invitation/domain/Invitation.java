@@ -20,7 +20,7 @@ public class Invitation extends BaseEntity{
     private Long id;
 
     @Column(unique = true)
-    private String invitationToken; // 초대장 UUID
+    private String token; // 초대장 UUID
 
     private String title;
 
@@ -72,13 +72,13 @@ public class Invitation extends BaseEntity{
 
 
     @Builder
-    public Invitation(String invitationToken, String title, String cardImage, boolean tempSaved, LocalDate startDate,
+    public Invitation(String token, String title, String cardImage, boolean tempSaved, LocalDate startDate,
                       LocalTime startTime, LocalDate endDate, LocalTime endTime, String userLocation, String location,
                       String address, String mapLink, double latitude, double longitude,
                       int mapViewType, LocalDate voteDeadline, boolean attendanceSurveyEnabled,
                       boolean scheduleVoteMultiple, boolean scheduleVoteClosed, boolean attendanceSurveyClosed, User sender){
 
-        this.invitationToken = invitationToken;
+        this.token = token;
         this.title = title;
         this.cardImage = cardImage;
         this.tempSaved = tempSaved;

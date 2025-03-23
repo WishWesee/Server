@@ -69,7 +69,7 @@ public class InvitationService {
                 .body(Map.of(
                         "message", "초대장이 임시 저장되었습니다.",
                         "invitationId", invitation.getId(),
-                        "invitationToken", invitation.getInvitationToken()
+                        "invitationToken", invitation.getToken()
                 ));
 
     }
@@ -83,7 +83,7 @@ public class InvitationService {
                 .body(Map.of(
                         "message", "초대장 작성을 완료하였습니다.",
                         "invitationId", invitation.getId(),
-                        "invitationToken", invitation.getInvitationToken()
+                        "invitationToken", invitation.getToken()
                 ));
 
     }
@@ -348,7 +348,7 @@ public class InvitationService {
         String invitationToken = generateInvitationToken();
 
         return Invitation.builder()
-                .invitationToken(invitationToken)
+                .token(invitationToken)
                 .title(invitationReq.getTitle())
                 .cardImage(cardImageUrl)
                 .tempSaved(isTemporary)
@@ -574,6 +574,7 @@ public class InvitationService {
         return invitations.stream()
                 .map(invitation -> MyInvitationOverViewRes.InvitationRes.builder()
                         .invitationId(invitation.getId())
+                        .invitationToken(invitation.getToken())
                         .title(invitation.getTitle())
                         .cardImage(invitation.getCardImage())
                         .date(invitation.getCreatedDate())

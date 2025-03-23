@@ -175,6 +175,7 @@ public class FeedbackService {
                     if (checkNotificationFeedback(invitation) && !feedbackRepository.existsByInvitationAndUser(invitation, user)) {
                         return NotificationFeedbackRes.builder()
                                 .invitationId(invitation.getId())
+                                .invitationToken(invitation.getToken())
                                 .title(invitation.getTitle())
                                 .build();
                     }
