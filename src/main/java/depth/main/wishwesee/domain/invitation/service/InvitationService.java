@@ -252,9 +252,9 @@ public class InvitationService {
     }
 
     @Transactional
-    public ResponseEntity<?> deleteSentInvitation(String invitationToken, UserPrincipal userPrincipal) {
+    public ResponseEntity<?> deleteSentInvitation(Long invitationId, UserPrincipal userPrincipal) {
         // 초대장 조회
-        Invitation invitation = findInvitationByToken(invitationToken);
+        Invitation invitation = findInvitationById(invitationId);
 
         // 보낸 사람 확인
         if (!invitation.getSender().getId().equals(userPrincipal.getId())) {
@@ -289,12 +289,12 @@ public class InvitationService {
 
     }
     @Transactional
-    public ResponseEntity<?> deleteReceivedInvitation(String invitationToken, UserPrincipal userPrincipal) {
+    public ResponseEntity<?> deleteReceivedInvitation(Long invitationId, UserPrincipal userPrincipal) {
         // 현재 사용자 조회
         User receiver = findUserByPrincipal(userPrincipal);
 
         // 초대장 조회
-        Invitation invitation = findInvitationByToken(invitationToken);
+        Invitation invitation = findInvitationById(invitationId);
 
         // 받은 초대장 데이터 조회
         ReceivedInvitation receivedInvitation = receivedInvitationRepository.findByReceiverAndInvitationId(receiver, invitation.getId())
