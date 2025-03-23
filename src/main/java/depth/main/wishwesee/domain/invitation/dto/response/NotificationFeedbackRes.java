@@ -16,6 +16,9 @@ public class NotificationFeedbackRes {
     @Schema(description = "초대장ID", example = "1", type = "Long")
     private Long invitationId;
 
+    @Schema(description = "초대장 토큰", example = "328d5c51-79b4-4ae3-860b-17cbe178f345", type = "String")
+    private String invitationToken;
+
     @Schema(description = "초대장 제목", example = "크리스마스", type = "String")
     private String title;
 }
